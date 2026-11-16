@@ -32,7 +32,7 @@ public class DocumentChunk extends BaseEntity {
 
     @JdbcTypeCode(SqlTypes.OTHER)
     @Column(name = "search_vector", columnDefinition = "tsvector", insertable = false, updatable = false)
-    private String searchVector;
+    private Object searchVector;
 
     public DocumentChunk() {}
 
@@ -84,7 +84,7 @@ public class DocumentChunk extends BaseEntity {
         this.tokenCount = tokenCount;
     }
 
-    public String getSearchVector() {
+    public Object getSearchVector() {
         return searchVector;
     }
 }

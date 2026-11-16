@@ -1,38 +1,152 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { FileText, ShieldAlert, Key, HelpCircle, MessageSquare, Download } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import api from "../services/api";
+import {
+  FileText,
+  ShieldAlert,
+  Key,
+  HelpCircle,
+  MessageSquare,
+  Download,
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  Calendar,
+  Layers,
+} from "lucide-react";
 
 export default function AnalysisPage() {
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState("summary");
+  const [activeTab, setActiveTab] = useState("preview");
+  const [document, setDocument] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Text preview state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageText, setPageText] = useState("");
+  const [loadingText, setLoadingText] = useState(false);
+
+  useEffect(() => {
+    let timer = null;
+
+    async function loadDocument() {
+      try {
+        const resp = await api.get(`/documents/${id}`);
+        setDocument(resp.data);
+        setError(null);
+
+        // If still extracting, poll status
+        if (resp.data.status === "EXTRACTING" || resp.data.status === "UPLOADED") {
+          timer = setTimeout(loadDocument, 2000);
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load document.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDocument();
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [id]);
+
+  useEffect(() => {
+    async function loadPageText() {
+      if (!id || !document || document.status !== "EXTRACTED") return;
+      try {
+        setLoadingText(true);
+        const resp = await api.get(`/documents/${id}/text`, {
+          params: { page: currentPage },
+        });
+        setPageText(resp.data.text || "(No text content found on this page)");
+      } catch (err) {
+        setPageText("(Could not load text for this page)");
+      } finally {
+        setLoadingText(false);
+      }
+    }
+
+    loadPageText();
+  }, [id, currentPage, document?.status]);
+
+  const totalPages = document?.pageCount || 1;
 
   const tabs = [
+    { id: "preview", label: "Document Text", icon: BookOpen },
     { id: "summary", label: "Summary", icon: FileText },
-    { id: "clauses", label: "Clauses", icon: FileText },
+    { id: "clauses", label: "Clauses", icon: Layers },
     { id: "risks", label: "Risks", icon: ShieldAlert },
     { id: "key-info", label: "Key Information", icon: Key },
     { id: "missing", label: "Missing Clauses", icon: HelpCircle },
     { id: "chat", label: "Document Chat", icon: MessageSquare },
   ];
 
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-slate-500 text-xs">
+        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+        Loading document workspace...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 space-y-4 text-center">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h2 className="text-base font-semibold text-slate-900 dark:text-white">Document Not Available</h2>
+        <p className="text-xs text-slate-500">{error}</p>
+        <Link
+          to="/history"
+          className="inline-block text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          &larr; Back to Document History
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Document Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Document Analysis
-          </h1>
-          <p className="text-xs text-slate-500">ID: {id || "sample-doc-id"}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {document.originalFilename}
+            </h1>
+            <span className="px-2 py-0.5 rounded text-[11px] font-medium uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              {document.fileType}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+            <span>Pages: {document.pageCount || 1}</span>
+            <span>&bull;</span>
+            <span>Status: {document.status}</span>
+            <span>&bull;</span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {new Date(document.createdAt).toLocaleDateString()}
+            </span>
+          </div>
         </div>
 
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          disabled
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
+          title="PDF report generation will be activated in Phase 7"
         >
-          <Download className="w-3.5 h-3.5" /> Download PDF Report
+          <Download className="w-3.5 h-3.5" /> Download Report
         </button>
       </div>
 
+      {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -42,23 +156,89 @@ export default function AnalysisPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               type="button"
-              className={`flex items-center gap-2 px-3 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                 active
-                  ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                  ? "border-blue-600 text-blue-600 dark:text-blue-400 font-semibold"
                   : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3.5 h-3.5" />
               {tab.label}
             </button>
           );
         })}
       </div>
 
-      <div className="p-6 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-sm text-slate-600 dark:text-slate-400">
-        Active tab: <strong className="text-slate-900 dark:text-white">{activeTab}</strong>. Detailed analysis views will be connected in Phase 8 and 9.
-      </div>
+      {/* Tab Content */}
+      {activeTab === "preview" && (
+        <div className="space-y-4">
+          {document.status === "EXTRACTING" ? (
+            <div className="p-12 text-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-500">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+              Extracting document pages and section references...
+            </div>
+          ) : document.status === "FAILED" ? (
+            <div className="p-6 rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-xs text-rose-700 dark:text-rose-300">
+              <strong>Extraction Error:</strong> {document.failureReason || "Could not extract text from document."}
+            </div>
+          ) : (
+            <div className="border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
+              {/* Page Navigator Toolbar */}
+              <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span className="font-medium text-slate-700 dark:text-slate-300">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" /> Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 dark:border-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800"
+                  >
+                    Next <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Text Preview Body */}
+              <div className="p-6 min-h-[360px] font-legal text-sm leading-relaxed text-slate-800 dark:text-slate-200 whitespace-pre-wrap select-text">
+                {loadingText ? (
+                  <div className="py-12 text-center text-xs text-slate-400">Loading page text...</div>
+                ) : (
+                  pageText
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab !== "preview" && (
+        <div className="p-8 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-xs text-slate-500 space-y-2">
+          <p className="font-medium text-slate-700 dark:text-slate-300">
+            {activeTab.toUpperCase()} Module
+          </p>
+          <p>
+            Document text has been extracted and indexed into Postgres search chunks. Structured LLM analysis (summary, clause extraction, risk assessment, and chat Q&amp;A) will be processed in Phase 4 and Phase 5.
+          </p>
+          <button
+            type="button"
+            onClick={() => setActiveTab("preview")}
+            className="text-blue-600 dark:text-blue-400 hover:underline pt-2 inline-block"
+          >
+            &larr; Switch to Document Text Preview
+          </button>
+        </div>
+      )}
     </div>
   );
 }
-

@@ -1,0 +1,77 @@
+package com.lexilegal.controller;
+
+import com.lexilegal.dto.response.*;
+import com.lexilegal.entity.User;
+import com.lexilegal.security.UserPrincipal;
+import com.lexilegal.service.DocumentService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/documents")
+public class DocumentController {
+
+    private final DocumentService documentService;
+
+    public DocumentController(DocumentService documentService) {
+        this.documentService = documentService;
+    }
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentUploadResponse> upload(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam("file") MultipartFile file) {
+        DocumentUploadResponse response = documentService.upload(principal.getId(), file);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<PageResponse<DocumentResponse>> list(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "status", required = false) String status) {
+        PageResponse<DocumentResponse> response = documentService.listDocuments(principal.getId(), page, size, search, status);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DocumentResponse> getDocument(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        DocumentResponse response = documentService.getDocument(principal.getId(), id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<DocumentStatusResponse> getStatus(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        DocumentStatusResponse response = documentService.getStatus(principal.getId(), id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/text")
+    public ResponseEntity<DocumentTextResponse> getText(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id,
+            @RequestParam(name = "page", required = false) Integer page) {
+        DocumentTextResponse response = documentService.getText(principal.getId(), id, page);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        documentService.deleteDocument(principal.getId(), id);
+        return ResponseEntity.noContent().build();
+    }
+}

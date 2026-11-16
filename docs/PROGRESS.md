@@ -10,7 +10,7 @@ This document tracks implementation status across the 10 phases of the project. 
 |---|---|---|---|
 | Phase 1 | Toolchain Setup & Project Scaffolding | Completed | 2026-11-16 |
 | Phase 2 | Database Schema, All Entities & Complete Auth Flow (Backend + Frontend) | Completed | 2026-11-16 |
-| Phase 3 | FastAPI AI Engine: Text Extraction, OCR & Document Chunking | Not Started | - |
+| Phase 3 | Document Extraction, OCR, Chunking, Upload Pipeline & Text Preview (Full Stack) | Completed | 2026-11-17 |
 | Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Not Started | - |
 | Phase 5 | Spring Boot Backend: Document Storage, Hash Caching & Async Pipeline | Not Started | - |
 | Phase 6 | Spring Boot Backend: Analysis Persistence & Full-Text Search Retrieval | Not Started | - |
@@ -204,13 +204,92 @@ node frontend/test-auth-e2e.cjs
 
 ---
 
-### Phase 3: FastAPI AI Engine — Text Extraction & OCR
-- [ ] Set up Python virtual environment, dependencies (`pyproject.toml` / `requirements.txt`)
-- [ ] Implement text extractors for PDF (PyMuPDF), DOCX (python-docx), and plain text
-- [ ] Implement OCR fallback with Tesseract for scanned/image-based documents
-- [ ] Implement page-aware text chunker with overlap and token limits
-- [ ] Create `/internal/extract` endpoint with internal API key authentication
-- [ ] Write unit tests for extraction and OCR on sample documents
+### Phase 3: Document Extraction, OCR, Chunking, Upload Pipeline & Text Preview (Full Stack)
+- [x] Implement AI Engine text extractors for PDF (PyMuPDF) with page numbers and text blocks
+- [x] Implement scanned page detection (< 50 chars) and Tesseract OCR fallback (page -> PNG image -> pytesseract)
+- [x] Implement DOCX extractor (python-docx) extracting paragraphs, tables, and section headings with page-break heuristics
+- [x] Implement TXT extractor with virtual page splitting (~3000 chars per page)
+- [x] Implement section heading detector regex (`1.`, `1.1`, `Article IV`, `Clause 7`) attaching `section_ref`
+- [x] Define typed extraction error codes (`CORRUPTED_FILE`, `PASSWORD_PROTECTED`, `EMPTY_FILE`, `UNSUPPORTED_TYPE`)
+- [x] Implement page-aware and section-aware text chunker (~3–4k tokens, 200 token overlap) preserving `page_start`, `page_end`, and `section_ref`
+- [x] Expose protected `POST /internal/extract` and public `POST /extract` endpoints in FastAPI
+- [x] Build Spring Boot `DocumentStorageService`: magic byte validation (`%PDF-`, `PK\x03\x04`, text binary check, rejecting `MZ` / `.exe`), 10MB limit, SHA-256 computation, randomized storage outside web root (`uploads/`), and file deletion
+- [x] Implement per-user SHA-256 duplicate detection returning existing document with `duplicate: true`
+- [x] Implement `@Async` pipeline in Spring Boot: `UPLOADED` -> `EXTRACTING` (calls AI engine `/internal/extract`) -> saves chunks with tsvector -> `EXTRACTED` (or `FAILED` with failure reason)
+- [x] Implement `DocumentController` endpoints: `POST /api/documents/upload` (202 Accepted), `GET /api/documents` (paginated, search, status filter), `GET /api/documents/{id}`, `GET /api/documents/{id}/status`, `GET /api/documents/{id}/text?page=N`, and `DELETE /api/documents/{id}`
+- [x] Enforce strict user ownership across all document endpoints (returning HTTP 404 for documents owned by other users to prevent ID enumeration)
+- [x] Build frontend `UploadPage`: drag-and-drop, file picker, file size/type client validation, privacy consent checkbox, upload progress bar, status polling stepper (`Uploaded` -> `Extracting` -> `Extracted`), and duplicate notification
+- [x] Build frontend `HistoryPage`: document search, status filter, paginated vault table, status badges, and delete action with confirmation modal
+- [x] Build frontend `AnalysisPage` document viewer: page text preview with page navigation controls (Prev/Next) and metadata banner
+- [x] Generate 7 sample contracts in `samples/contracts/`: clean text PDF, DOCX, TXT, scanned PDF, corrupted PDF, empty file, and renamed `.exe` to `.pdf`
+- [x] Add automated Postman collection requests for Document Upload, Status, Pagination, Text by Page, and Delete
+- [x] Verify end-to-end with automated browser test (`test-phase3-e2e.cjs`), pytest suite (11 tests), backend integration tests (15 tests), and automated pipeline script
+
+**What was built:**
+- AI Engine (`ai-engine/`):
+  - `app/schemas/extraction.py`: Pydantic models for `PageExtraction`, `SectionExtraction`, `ChunkExtraction`, `ExtractionResponse`, and `ExtractionErrorResponse`.
+  - `app/services/extractor.py`: Multi-format document parser handling PDF via PyMuPDF, scanned PDF via Tesseract OCR, DOCX via `python-docx` with table flattening, and TXT with virtual pagination. Regex heading detector tagging clauses (`Article [IVXLCDM]+`, `Section \d+`, `\d+\.\d+`, etc.).
+  - `app/services/chunker.py`: Page-aware chunking preserving exact `page_start`, `page_end`, and `section_ref` for citations.
+  - `app/api/routes.py`: Mounted `POST /internal/extract` (internal key) and `POST /extract` (public/doc-facing).
+  - `tests/test_extraction.py`: 7 automated tests covering all formats, error codes, and authentication.
+- Backend (`backend/`):
+  - `DocumentStorageService`: File validation (magic bytes, 10MB limit, Windows PE executable rejection), SHA-256 hash calculation, unique disk persistence, and deletion.
+  - `AiEngineClient`: Configured with `SimpleClientHttpRequestFactory` (HTTP/1.1 without `h2c` upgrade) and `ByteArrayResource` with filename for multipart transmission to FastAPI.
+  - `DocumentAsyncPipeline`: Spring `@Async` service updating document status, delegating extraction to AI Engine, saving chunk records with PostgreSQL tsvector search vectors, and updating page counts.
+  - `DocumentController` & `DocumentService`: Complete document lifecycle management with ownership checks (404 on isolation violation), pagination, text preview by page number, and cascade deletion.
+  - `DocumentControllerTest`: 7 automated integration tests verifying upload, duplicate hash detection, MZ binary rejection, magic byte mismatch, ownership isolation (User B cannot access User A documents), and deletion.
+- Frontend (`frontend/`):
+  - `UploadPage.jsx`: Drag-and-drop zone, file size/format validation, required privacy consent notice, progress bar, real-time polling stepper (`Uploaded` -> `Extracting` -> `Extracted`), duplicate notice banner, and link to document viewer.
+  - `HistoryPage.jsx`: Document vault table with search input, status dropdown filter, timestamp formatting, status badges, and delete action.
+  - `AnalysisPage.jsx`: Document viewer displaying extracted text page by page with navigation controls, page indicators, and loading spinners.
+  - `test-phase3-e2e.cjs`: Puppeteer test verifying the full browser flow end to end.
+- Sample Contracts (`samples/contracts/`):
+  - `clean_nda.pdf`: 2-page text PDF with standard confidentiality sections.
+  - `service_agreement.docx`: Word document with headings and tabular terms.
+  - `promissory_note.txt`: Plaintext contract with virtual paging.
+  - `scanned_deed.pdf`: Image-only PDF requiring Tesseract OCR.
+  - `corrupted_contract.pdf`: Damaged PDF header triggering `CORRUPTED_FILE`.
+  - `empty_contract.pdf`: 0-byte file triggering `EMPTY_FILE`.
+  - `malicious_renamed.exe.pdf`: Renamed PE binary triggering `INVALID_FILE_MAGIC`.
+
+**How it was verified:**
+- Backend Integration Tests (`mvn test`):
+  - 15 tests executed across `AuthControllerTest`, `DocumentControllerTest`, and `LexiLegalApplicationTests`: 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`).
+- AI Engine Pytest (`pytest`):
+  - 11 tests executed across extraction and health test suites: 11 passed in 0.82s.
+- End-to-End Browser Flow (`node frontend/test-phase3-e2e.cjs`):
+  - User registration -> redirects to `/dashboard`
+  - Navigate to `/upload` -> attach `clean_nda.pdf` -> consent checkbox -> click "Upload & Process"
+  - Stepper advances from "Uploaded" to "Extracting" to "Extracted" within ~3 seconds
+  - Click "View Extracted Text" -> navigates to `/documents/{id}`
+  - Verified Page 1 rendered ("NON-DISCLOSURE AND CONFIDENTIALITY AGREEMENT", "1. Confidential Information")
+  - Click "Next" -> verified Page 2 rendered ("4. Term and Termination", "Delaware")
+  - Navigate to `/history` -> document listed in table with "Extracted" badge and 2 pages
+  - Click "Delete" -> confirm dialog -> document permanently removed from table
+- Negative & Edge Case Verification:
+  - Executable (`.exe` renamed to `.pdf`) upload rejected with HTTP 400 Bad Request (`Invalid file format: executable files are prohibited`).
+  - Corrupted PDF rejected by AI Engine with typed code `CORRUPTED_FILE`.
+  - Empty file upload rejected with HTTP 400 Bad Request (`File is empty`).
+  - Duplicate upload returns existing document with `duplicate: true`.
+  - Cross-tenant access attempt (User B requesting User A's document) returns HTTP 404 Not Found.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run AI Engine Unit Tests
+cd ai-engine
+.venv/bin/pytest
+
+# 2. Run Backend Unit & Integration Tests
+cd backend
+mvn test
+
+# 3. Build Frontend
+cd frontend
+npm run build
+
+# 4. Run Frontend E2E Browser Verification
+node frontend/test-phase3-e2e.cjs
+```
 
 ### Phase 4: FastAPI AI Engine — LLM Providers, Structured Analysis & Verification
 - [ ] Implement `LLMProvider` abstraction with `GeminiProvider` and `OllamaProvider`
