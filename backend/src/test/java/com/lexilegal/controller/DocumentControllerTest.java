@@ -150,6 +150,58 @@ class DocumentControllerTest {
     }
 
     @Test
+    void testUploadOversizeFile() throws Exception {
+        // 11 MB file exceeds 10MB limit
+        byte[] oversizeContent = new byte[11 * 1024 * 1024];
+        oversizeContent[0] = 0x25;
+        oversizeContent[1] = 0x50;
+        oversizeContent[2] = 0x44;
+        oversizeContent[3] = 0x46; // %PDF
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "large.pdf",
+                "application/pdf",
+                oversizeContent
+        );
+
+        mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("exceeds maximum allowed size")));
+    }
+
+    @Test
+    void testUploadBadExtension() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "script.py",
+                "text/x-python",
+                "print('hello')".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("unsupported file extension")));
+    }
+
+    @Test
+    void testUploadUnauthenticated() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "contract.pdf",
+                "application/pdf",
+                "%PDF-1.4 test".getBytes()
+        );
+
+        mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void testListDocuments() throws Exception {
         byte[] pdfContent = "%PDF-1.4 file content".getBytes();
         MockMultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", pdfContent);

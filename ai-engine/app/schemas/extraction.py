@@ -33,3 +33,4 @@ class ExtractionResponse(BaseModel):
 class ExtractionErrorResponse(BaseModel):
     code: str
     detail: str
+

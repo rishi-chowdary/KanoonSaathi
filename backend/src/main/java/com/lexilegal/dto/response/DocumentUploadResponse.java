@@ -59,3 +59,4 @@ public class DocumentUploadResponse {
         this.duplicate = duplicate;
     }
 }
+

@@ -80,3 +80,4 @@ public class DocumentTextResponse {
         this.pages = pages;
     }
 }
+

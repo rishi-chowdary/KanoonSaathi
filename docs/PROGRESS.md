@@ -254,30 +254,40 @@ node frontend/test-auth-e2e.cjs
 
 **How it was verified:**
 - Backend Integration Tests (`mvn test`):
-  - 15 tests executed across `AuthControllerTest`, `DocumentControllerTest`, and `LexiLegalApplicationTests`: 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`).
-- AI Engine Pytest (`pytest`):
-  - 11 tests executed across extraction and health test suites: 11 passed in 0.82s.
-- End-to-End Browser Flow (`node frontend/test-phase3-e2e.cjs`):
+  - 18 tests executed across `AuthControllerTest`, `DocumentControllerTest`, and `LexiLegalApplicationTests`: 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`).
+  - Covers: upload success, oversize (11MB) rejection (400), bad extension rejection (400), fake-PDF magic byte mismatch (400), duplicate hash detection (202 duplicate=true), unauthenticated request (401), and cross-tenant access attempt (User B trying to read User A's document returns 404).
+- AI Engine Pytest (`pytest -v`):
+  - 16 tests executed across extraction and health test suites: 16 passed in 3.33s.
+  - Covers: clean text PDF, multi-page sample with strictly consecutive page numbers (1, 2, 3), scanned PDF triggering Tesseract OCR (`ocr_used=True`), DOCX with tables/paragraphs, TXT with virtual paging, empty file (`EMPTY_FILE`), corrupted PDF (`CORRUPTED_FILE`), password-protected PDF (`PASSWORD_PROTECTED`), wrong magic bytes PDF (`CORRUPTED_FILE`), wrong magic bytes DOCX (`CORRUPTED_FILE`), unsupported type (`UNSUPPORTED_TYPE`), and unauthenticated request (401).
+- End-to-End Browser & System Verification (`node frontend/test-phase3-full-verification.cjs`):
   - User registration -> redirects to `/dashboard`
-  - Navigate to `/upload` -> attach `clean_nda.pdf` -> consent checkbox -> click "Upload & Process"
-  - Stepper advances from "Uploaded" to "Extracting" to "Extracted" within ~3 seconds
-  - Click "View Extracted Text" -> navigates to `/documents/{id}`
-  - Verified Page 1 rendered ("NON-DISCLOSURE AND CONFIDENTIALITY AGREEMENT", "1. Confidential Information")
-  - Click "Next" -> verified Page 2 rendered ("4. Term and Termination", "Delaware")
-  - Navigate to `/history` -> document listed in table with "Extracted" badge and 2 pages
-  - Click "Delete" -> confirm dialog -> document permanently removed from table
-- Negative & Edge Case Verification:
-  - Executable (`.exe` renamed to `.pdf`) upload rejected with HTTP 400 Bad Request (`Invalid file format: executable files are prohibited`).
-  - Corrupted PDF rejected by AI Engine with typed code `CORRUPTED_FILE`.
-  - Empty file upload rejected with HTTP 400 Bad Request (`File is empty`).
-  - Duplicate upload returns existing document with `duplicate: true`.
-  - Cross-tenant access attempt (User B requesting User A's document) returns HTTP 404 Not Found.
+  - Valid sample uploads through UI:
+    - `clean_nda.pdf`: uploaded, pipeline completed to `Extracted`, navigated to text preview, verified Page 1 text (430 chars), clicked "Next", verified Page 2 text.
+    - `service_agreement.docx`: uploaded, pipeline completed to `Extracted`, verified Page 1 text (607 chars).
+    - `promissory_note.txt`: uploaded, pipeline completed to `Extracted`, verified Page 1 text (830 chars).
+    - `scanned_deed.pdf`: uploaded, pipeline completed to `Extracted`, verified OCR extracted text ("QUITCLAIM DEED", "State of Texas, County of Travis", "Grantor conveys to Grantee").
+  - Edge cases and rejection samples:
+    - `empty_contract.pdf`: client-side validation immediately rejects empty file before submission.
+    - `malicious_renamed.exe.pdf`: backend rejects with HTTP 400 (`executable files are not allowed`).
+    - `corrupted_contract.pdf`: async pipeline fails with status `FAILED` and error alert displayed in UI (`CORRUPTED_FILE`).
+- Storage Randomization & Web URL Isolation:
+  - All stored files in `backend/uploads/` verified to follow randomized UUID naming (`^[0-9a-f-]{36}\.[a-z0-9]+$`).
+  - Direct HTTP GET to `/uploads/<stored_file>` returns HTTP 401 Unauthorized without token and HTTP 404 Not Found with valid token (`NoResourceFoundException` handled in `GlobalExceptionHandler`), ensuring zero static exposure.
+- PostgreSQL `document_chunks` & `tsvector` Verification:
+  - Inspected `document_chunks` rows: verified `id`, `document_id`, `chunk_index`, `page_number`, `token_count`, and populated `search_vector`.
+  - Executed sample `to_tsquery` full-text search query in psql:
+    `SELECT chunk_index, page_number, ts_headline('english', content, to_tsquery('english', 'confidential & information'), 'MaxWords=20, MinWords=10') AS match_headline FROM document_chunks WHERE search_vector @@ to_tsquery('english', 'confidential & information');`
+    Result: successfully matched rows and highlighted `<b>Confidential</b> <b>Information</b>` headlines via GIN index `idx_chunks_search_vector`.
+- Cascade Deletion Verification:
+  - User deleted `promissory_note.txt` via UI on `/history`, accepting confirmation dialog.
+  - Verified physical file was unlinked and deleted from disk (`fs.existsSync(diskPath) === false`).
+  - Verified database rows were completely removed (`SELECT count(*) FROM documents WHERE id = ...` = 0, `SELECT count(*) FROM document_chunks WHERE document_id = ...` = 0).
 
 **Exact commands to run and test:**
 ```bash
 # 1. Run AI Engine Unit Tests
 cd ai-engine
-.venv/bin/pytest
+.venv/bin/pytest -v
 
 # 2. Run Backend Unit & Integration Tests
 cd backend
@@ -287,8 +297,8 @@ mvn test
 cd frontend
 npm run build
 
-# 4. Run Frontend E2E Browser Verification
-node frontend/test-phase3-e2e.cjs
+# 4. Run Full E2E Browser & System Verification (All 5 items)
+node frontend/test-phase3-full-verification.cjs
 ```
 
 ### Phase 4: FastAPI AI Engine — LLM Providers, Structured Analysis & Verification

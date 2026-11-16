@@ -55,3 +55,4 @@ public class ExtractionResponseDto {
         this.warnings = warnings;
     }
 }
+

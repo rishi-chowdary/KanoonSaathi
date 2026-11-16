@@ -84,12 +84,15 @@ def extract_pdf(file_bytes: bytes) -> tuple[list[PageExtraction], list[SectionEx
     if not file_bytes:
         raise ExtractionException("EMPTY_FILE", "file is empty", 400)
 
+    if not file_bytes.startswith(b"%PDF"):
+        raise ExtractionException("CORRUPTED_FILE", "invalid pdf header: missing %PDF magic bytes", 400)
+
     try:
         doc = fitz.open(stream=file_bytes, filetype="pdf")
     except Exception as e:
         raise ExtractionException("CORRUPTED_FILE", f"corrupted or invalid pdf: {e}", 400)
 
-    if doc.is_encrypted:
+    if doc.is_encrypted or getattr(doc, "needs_pass", 0) > 0:
         doc.close()
         raise ExtractionException("PASSWORD_PROTECTED", "pdf is password protected", 400)
 
@@ -137,6 +140,9 @@ def extract_pdf(file_bytes: bytes) -> tuple[list[PageExtraction], list[SectionEx
 def extract_docx(file_bytes: bytes) -> tuple[list[PageExtraction], list[SectionExtraction], list[str]]:
     if not file_bytes:
         raise ExtractionException("EMPTY_FILE", "file is empty", 400)
+
+    if not file_bytes.startswith(b"PK\x03\x04"):
+        raise ExtractionException("CORRUPTED_FILE", "invalid docx header: missing PK magic bytes", 400)
 
     try:
         doc = docx.Document(io.BytesIO(file_bytes))
@@ -265,3 +271,4 @@ def process_document(filename: str, file_bytes: bytes) -> ExtractionResponse:
         language_guess=lang,
         warnings=warnings,
     )
+

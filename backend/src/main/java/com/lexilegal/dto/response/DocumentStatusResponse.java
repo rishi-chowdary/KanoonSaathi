@@ -60,3 +60,4 @@ public class DocumentStatusResponse {
         this.updatedAt = updatedAt;
     }
 }
+
