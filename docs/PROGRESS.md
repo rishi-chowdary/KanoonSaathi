@@ -147,32 +147,41 @@ npm run preview -- --port 5173 --host 127.0.0.1
   - `src/components/common/Navbar.jsx` with active route styling and user dropdown menu
   - `src/pages/RegisterPage.jsx`, `src/pages/LoginPage.jsx`, `src/pages/ProfilePage.jsx`
   - `test-auth-e2e.cjs` automated Puppeteer test suite
+  - `verify-browser-flow.cjs` targeted browser flow verification script
+- Postman:
+  - `postman/lexilegal.postman_collection.json` covering registration, duplicate handling, password complexity, login, wrong password rejection, user retrieval with/without token, profile update, logout, and service health checks.
 
 **How it was verified:**
 - Backend Integration Tests (`mvn test`):
-  - 8 tests executed, 0 failures, 0 errors, 0 skipped.
-- Real API HTTP Verification (automated Python test runner):
-  - `POST /api/auth/register` with empty body -> HTTP 400 (`validation failed`, fieldErrors map)
-  - `POST /api/auth/register` with invalid password -> HTTP 400
-  - `POST /api/auth/register` with valid payload -> HTTP 201 (returns JWT token and User summary)
-  - `POST /api/auth/register` duplicate email -> HTTP 409 Conflict
-  - `POST /api/auth/login` with wrong password -> HTTP 401 Unauthorized
-  - `POST /api/auth/login` with correct password -> HTTP 200 OK
-  - `GET /api/users/me` without token -> HTTP 401 Unauthorized
-  - `GET /api/users/me` with valid token -> HTTP 200 OK
-  - `PUT /api/users/me` with valid token -> HTTP 200 OK (updated full name)
-  - Rate Limiter: 5 failed login attempts -> HTTP 401; 6th attempt -> HTTP 429 Too Many Requests
-  - CORS Preflight: `OPTIONS /api/auth/register` from `http://127.0.0.1:5173` -> HTTP 200 with `Access-Control-Allow-Origin: http://127.0.0.1:5173`
-- Frontend E2E Automated Browser Verification (`node frontend/test-auth-e2e.cjs`):
-  - Access `/dashboard` unauthenticated -> redirected to `/login`
-  - Register new account -> auto-login and redirected to `/dashboard`
-  - Verify user dropdown menu in Navbar displays user name
-  - Navigate to `/profile` -> update profile name -> verified confirmation message
-  - Click Sign Out -> cleared token and redirected to `/login`
-  - Sign back in -> authenticated and redirected to `/dashboard`
-- Frontend Theme & Route E2E (`node frontend/test-e2e.cjs`):
-  - Theme toggle switch and persistence in localStorage verified
-  - Public routes (`/`, `/login`, `/register`) and protected redirects verified
+  - 8 tests executed, 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`).
+- Postman Collection & Direct API Verification:
+  - `POST /api/auth/register` with valid payload -> HTTP 201 Created (JWT issued, user profile returned)
+  - `POST /api/auth/register` duplicate email -> HTTP 409 Conflict (`an account with this email already exists`)
+  - `POST /api/auth/register` weak password ("weak") -> HTTP 400 Bad Request (`fieldErrors.password`: must be at least 8 chars with letter + digit)
+  - `POST /api/auth/login` with wrong password -> HTTP 401 Unauthorized (`invalid email or password`)
+  - `POST /api/auth/login` with correct credentials -> HTTP 200 OK (JWT issued)
+  - `GET /api/users/me` without token -> HTTP 401 Unauthorized (`unauthorized: authentication required`)
+  - `GET /api/users/me` with valid token -> HTTP 200 OK (returns user profile)
+  - `PUT /api/users/me` with valid token -> HTTP 200 OK (updates profile)
+  - Rate Limiter: 5 failed login attempts return 401; 6th attempt returns HTTP 429 Too Many Requests
+  - CORS Preflight: `OPTIONS /api/auth/register` from `http://127.0.0.1:5173` returns HTTP 200 with `Access-Control-Allow-Origin: http://127.0.0.1:5173`
+- Database Inspection with `psql`:
+  - Relations list (`\dt`) confirms all 11 tables exist: `chat_conversations`, `chat_messages`, `document_analyses`, `document_chunks`, `documents`, `extracted_clauses`, `extracted_information`, `flyway_schema_history`, `missing_clause_warnings`, `risk_findings`, `users`.
+  - Passwords in `users.password_hash` confirmed to be standard 60-character BCrypt hashes (`$2a$10$...`), never plaintext.
+  - `flyway_schema_history` confirmed: rank 1 (`V1__init_schema.sql`) and rank 2 (`V2__add_indexes.sql`) both executed with `success = t`.
+  - Hibernate schema validation (`hibernate.ddl-auto: validate`) boots cleanly with zero entity-schema discrepancies.
+- Browser Flow Verification (`node frontend/verify-browser-flow.cjs`):
+  - Register new account on `/register` -> auto-redirects to `/dashboard`
+  - Sign out via user menu -> redirects to `/login`
+  - Log in with newly created credentials -> redirects to `/dashboard`
+  - Navigate to `/profile` -> update full name -> updates profile and Navbar display
+  - Log out -> redirects to `/login`
+  - Attempt to visit `/dashboard` directly while logged out -> immediately redirects to `/login`
+- Expired & Tampered Token Verification:
+  - Tampered signature token -> HTTP 401 Unauthorized (`unauthorized: authentication required`)
+  - Tampered payload token -> HTTP 401 Unauthorized (`unauthorized: authentication required`)
+  - Expired token (`exp` timestamp in the past) -> HTTP 401 Unauthorized (`unauthorized: authentication required`)
+  - Malformed token string -> HTTP 401 Unauthorized (`unauthorized: authentication required`)
 
 **Exact commands to run and test:**
 ```bash

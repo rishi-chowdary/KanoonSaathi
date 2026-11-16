@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface DocumentAnalysisRepository extends JpaRepository<DocumentAnalysis, UUID> {
     Optional<DocumentAnalysis> findByDocumentId(UUID documentId);
 }
+

@@ -180,3 +180,4 @@ public class RiskFinding extends BaseEntity {
         this.provenance = provenance;
     }
 }
+

@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface RiskFindingRepository extends JpaRepository<RiskFinding, UUID> {
     List<RiskFinding> findByAnalysisId(UUID analysisId);
 }
+

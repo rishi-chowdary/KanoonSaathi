@@ -132,3 +132,4 @@ public class Document extends BaseEntity {
         this.failureReason = failureReason;
     }
 }
+

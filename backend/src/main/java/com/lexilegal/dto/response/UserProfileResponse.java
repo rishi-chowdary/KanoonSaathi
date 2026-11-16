@@ -73,3 +73,4 @@ public class UserProfileResponse {
         this.createdAt = createdAt;
     }
 }
+

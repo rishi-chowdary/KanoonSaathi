@@ -28,3 +28,4 @@ public class AuthResponse {
         this.user = user;
     }
 }
+

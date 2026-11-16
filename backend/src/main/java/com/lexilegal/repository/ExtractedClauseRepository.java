@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface ExtractedClauseRepository extends JpaRepository<ExtractedClause, UUID> {
     List<ExtractedClause> findByAnalysisId(UUID analysisId);
 }
+

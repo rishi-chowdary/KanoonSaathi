@@ -56,3 +56,4 @@ public class ChatConversation extends BaseEntity {
         this.title = title;
     }
 }
+

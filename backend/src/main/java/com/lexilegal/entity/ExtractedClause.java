@@ -187,3 +187,4 @@ public class ExtractedClause extends BaseEntity {
         this.provenance = provenance;
     }
 }
+

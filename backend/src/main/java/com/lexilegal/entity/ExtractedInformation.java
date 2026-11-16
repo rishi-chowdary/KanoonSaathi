@@ -236,3 +236,4 @@ public class ExtractedInformation extends BaseEntity {
         this.importantDates = importantDates;
     }
 }
+

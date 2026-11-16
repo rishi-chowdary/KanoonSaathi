@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface ExtractedInformationRepository extends JpaRepository<ExtractedInformation, UUID> {
     Optional<ExtractedInformation> findByAnalysisId(UUID analysisId);
 }
+

@@ -81,3 +81,4 @@ public class ChatMessage extends BaseEntity {
         this.addressedInDocument = addressedInDocument;
     }
 }
+

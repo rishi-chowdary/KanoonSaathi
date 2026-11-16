@@ -75,3 +75,4 @@ public class AuthService {
         return new AuthResponse(token, UserProfileResponse.fromEntity(user));
     }
 }
+

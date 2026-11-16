@@ -11,3 +11,4 @@ import java.util.UUID;
 public interface ChatConversationRepository extends JpaRepository<ChatConversation, UUID> {
     List<ChatConversation> findByDocumentIdAndUserIdOrderByCreatedAtDesc(UUID documentId, UUID userId);
 }
+

@@ -99,3 +99,4 @@ public class MissingClauseWarning extends BaseEntity {
         this.label = label;
     }
 }
+

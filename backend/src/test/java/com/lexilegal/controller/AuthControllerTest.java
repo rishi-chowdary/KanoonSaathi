@@ -137,3 +137,4 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.fullName", is("Frank")));
     }
 }
+

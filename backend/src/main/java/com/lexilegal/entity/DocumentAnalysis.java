@@ -173,3 +173,4 @@ public class DocumentAnalysis extends BaseEntity {
         this.verificationRate = verificationRate;
     }
 }
+

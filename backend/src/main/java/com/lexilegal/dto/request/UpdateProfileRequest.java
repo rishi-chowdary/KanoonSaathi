@@ -37,3 +37,4 @@ public class UpdateProfileRequest {
         this.password = password;
     }
 }
+
