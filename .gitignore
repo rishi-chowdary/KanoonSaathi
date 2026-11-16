@@ -1,0 +1,49 @@
+# Environment variables and secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Java and Maven
+backend/target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# Node and Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python and AI Engine
+ai-engine/__pycache__/
+ai-engine/*/__pycache__/
+ai-engine/*/*/__pycache__/
+ai-engine/.venv/
+ai-engine/venv/
+.venv/
+venv/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Local uploads and data
+uploads/
+backend/uploads/
+.local-storage/
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.swp
+*.swo
