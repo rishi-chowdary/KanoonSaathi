@@ -10,3 +10,4 @@ public class LexiLegalApplication {
         SpringApplication.run(LexiLegalApplication.class, args);
     }
 }
+

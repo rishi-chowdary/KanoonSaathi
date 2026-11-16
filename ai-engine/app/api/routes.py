@@ -12,3 +12,4 @@ def internal_health():
         "provider": settings.llm_provider,
         "tesseract_available": settings.tesseract_available,
     }
+

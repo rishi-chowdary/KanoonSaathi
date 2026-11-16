@@ -14,3 +14,4 @@ CREATE INDEX idx_chunks_doc_id ON document_chunks(document_id);
 CREATE INDEX idx_chunks_search_vector ON document_chunks USING GIN(search_vector);
 CREATE INDEX idx_chat_conv_doc_user ON chat_conversations(document_id, user_id);
 CREATE INDEX idx_chat_messages_conv_id ON chat_messages(conversation_id);
+

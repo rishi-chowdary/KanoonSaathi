@@ -23,8 +23,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Token expired or invalid
+      const isAuthRoute =
+        window.location.pathname === "/login" ||
+        window.location.pathname === "/register";
+
       localStorage.removeItem("lexilegal_token");
+
+      if (!isAuthRoute && typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

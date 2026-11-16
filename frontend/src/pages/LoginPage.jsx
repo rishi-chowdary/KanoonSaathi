@@ -1,12 +1,35 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    try {
+      setLoading(true);
+      await login(email, password);
+      navigate(from, { replace: true });
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        "Invalid email or password. Please try again.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -14,9 +37,15 @@ export default function LoginPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign In</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Enter your account details to access your legal documents.
+          Enter your account details to access your documents.
         </p>
       </div>
+
+      {error && (
+        <div className="p-3 text-xs rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -48,9 +77,10 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full py-2 px-4 rounded bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-sm font-medium transition-colors"
+          disabled={loading}
+          className="w-full py-2 px-4 rounded bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
         >
-          Sign In
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 

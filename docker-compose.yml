@@ -20,3 +20,4 @@ services:
 volumes:
   lexilegal_pgdata:
     name: lexilegal_pgdata
+

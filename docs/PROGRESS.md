@@ -9,13 +9,13 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase | Description | Status | Completed Date |
 |---|---|---|---|
 | Phase 1 | Toolchain Setup & Project Scaffolding | Completed | 2026-11-16 |
-| Phase 2 | FastAPI AI Engine: Text Extraction & OCR | Not Started | - |
-| Phase 3 | FastAPI AI Engine: LLM Providers, Structured Analysis & Verification | Not Started | - |
-| Phase 4 | Spring Boot Backend: Authentication & Core Security | Not Started | - |
+| Phase 2 | Database Schema, All Entities & Complete Auth Flow (Backend + Frontend) | Completed | 2026-11-16 |
+| Phase 3 | FastAPI AI Engine: Text Extraction, OCR & Document Chunking | Not Started | - |
+| Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Not Started | - |
 | Phase 5 | Spring Boot Backend: Document Storage, Hash Caching & Async Pipeline | Not Started | - |
 | Phase 6 | Spring Boot Backend: Analysis Persistence & Full-Text Search Retrieval | Not Started | - |
 | Phase 7 | Spring Boot Backend: OpenPDF Report Generation & Dashboard Statistics | Not Started | - |
-| Phase 8 | Frontend: Project Setup, Auth, Layout & Document Upload | Not Started | - |
+| Phase 8 | Frontend: Document Upload, Progress Polling & File Validation | Not Started | - |
 | Phase 9 | Frontend: Analysis Workspace, Side-by-Side Viewer & Grounded Chat | Not Started | - |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Not Started | - |
 
@@ -62,12 +62,24 @@ This document tracks implementation status across the 10 phases of the project. 
   - Pre-configured Axios instance with auth interceptor.
 
 **How it was verified:**
-- FastAPI: `cd ai-engine && .venv/bin/pytest` -> 4 passed. Running on port 8000. `curl http://127.0.0.1:8000/internal/health` returns 422 without header, 401 with wrong key, 200 with valid key.
-- Spring Boot: `mvn test-compile` and `mvn spring-boot:run`. Flyway migrated schema to version 2 on PostgreSQL. Running on port 8080.
-- Database: `GET /api/health` returned `{"status":"ok","database":"connected","service":"lexilegal-backend"}`.
-- Service-to-Service: `GET /api/health/ai` returned `{"status":"ok","service_to_service_auth":"verified","ai_engine":{"status":"ok","service":"ai-engine","provider":"gemini","tesseract_available":false}}`.
-- Frontend: `npm run build` completed in 2.96s without errors. Vite preview running on port 5173. Browser returns 200 for root HTML.
-- CORS: OPTIONS preflight from `http://localhost:5173` to `http://localhost:8080/api/health` returned 200 with `Access-Control-Allow-Origin: http://localhost:5173`.
+- PostgreSQL Container: `docker compose up -d postgres` running `postgres:16-alpine`, port `5433:5432`, volume `lexilegal_pgdata`. Healthcheck status confirmed `healthy`.
+- FastAPI: `cd ai-engine && .venv/bin/pytest` -> 4 passed. Running on port 8000.
+  - `curl -i http://127.0.0.1:8000/health` -> HTTP 200 OK.
+  - `curl -i http://127.0.0.1:8000/internal/health` (without key) -> HTTP 401 Unauthorized.
+  - `curl -i -H "X-Internal-Api-Key: wrong" http://127.0.0.1:8000/internal/health` -> HTTP 401 Unauthorized.
+  - `curl -i -H "X-Internal-Api-Key: <key>" http://127.0.0.1:8000/internal/health` -> HTTP 200 OK.
+- Spring Boot: `mvn test-compile` and `mvn spring-boot:run`. Flyway applied schema version 1 and 2 to PostgreSQL.
+  - `GET /api/health` -> HTTP 200 `{"status":"ok","database":"connected","service":"lexilegal-backend"}`.
+  - `GET /api/health/ai` -> HTTP 200 `{"status":"ok","service_to_service_auth":"verified","ai_engine":{"status":"ok","service":"ai-engine","provider":"gemini","tesseract_available":false}}`.
+  - Swagger UI: `/swagger-ui.html` redirects to `/swagger-ui/index.html` (HTTP 200). OpenAPI spec available at `/v3/api-docs` (HTTP 200).
+  - CORS: OPTIONS preflight from `http://localhost:5173` returned HTTP 200 with `Access-Control-Allow-Origin: http://localhost:5173`.
+- Frontend: `npm run build` bundled production assets cleanly. Preview server running on port 5173.
+  - Automated browser test via headless Chrome (`node frontend/test-e2e.cjs`):
+    - Verified landing page heading and title.
+    - Verified theme toggle switch: adds `dark` class, updates `localStorage.getItem("lexilegal_theme") = "dark"`.
+    - Verified persistence: page reload maintains `dark` class and `localStorage`.
+    - Verified all placeholder routes render successfully: `/dashboard`, `/upload`, `/documents/:id`, `/history`, `/profile`, `/login`, `/register`.
+- Secrets & Gitignore: `.env` and `.env.local` confirmed gitignored (`git check-ignore`). No private keys or real API keys tracked.
 
 **Exact commands to run and test:**
 ```bash
@@ -92,7 +104,98 @@ npm run preview -- --port 5173 --host 127.0.0.1
 
 ---
 
-### Phase 2: FastAPI AI Engine — Text Extraction & OCR
+### Phase 2: Database Schema, All Entities & Complete Auth Flow (Backend + Frontend)
+- [x] Create Flyway migration `V1__init_schema.sql` creating all 10 tables: `users`, `documents`, `document_analyses`, `extracted_clauses`, `risk_findings`, `extracted_information`, `missing_clause_warnings`, `chat_conversations`, `chat_messages`, `document_chunks`
+- [x] Configure UUID primary keys, foreign key constraints with `ON DELETE CASCADE`, and timestamps (`created_at`, `updated_at`) across all tables
+- [x] Create Flyway migration `V2__add_indexes.sql` creating B-Tree indexes on foreign keys, hashes, and a GIN tsvector full-text search index on `document_chunks.search_vector`
+- [x] Implement `BaseEntity` with `@CreationTimestamp` and `@UpdateTimestamp` auditing
+- [x] Implement JPA entities for all 10 schema tables with proper relations and Jackson JSON serialization mappings
+- [x] Implement Spring Data JPA repositories for all 10 entities
+- [x] Configure stateless Spring Security with BCrypt password hashing (`PasswordEncoder`)
+- [x] Implement JWT token generator and validator (`JwtTokenProvider`) using `io.jsonwebtoken` (HMAC-SHA256)
+- [x] Implement once-per-request JWT authentication filter (`JwtAuthFilter`) and custom `UserPrincipal`
+- [x] Implement authentication service with in-memory IP rate limiting (`LoginRateLimiter`: max 5 failed attempts per minute)
+- [x] Implement auth endpoints:
+  - `POST /api/auth/register` (email format and uniqueness check, password min 8 chars with letter + digit)
+  - `POST /api/auth/login` (stateless JWT issue, returns user details and token)
+  - `GET /api/users/me` (returns authenticated user profile)
+  - `PUT /api/users/me` (updates full name and optional password change)
+  - `POST /api/auth/logout` (acknowledged client-side token discard)
+- [x] Implement `GlobalExceptionHandler` returning structured `ErrorResponse` (400 validation, 401 bad credentials, 404 resource not found/access denied, 409 conflict, 429 rate limit)
+- [x] Implement frontend authentication system:
+  - `AuthContext` and `useAuth` hook managing token, user session, and auth actions
+  - Axios interceptor attaching `Authorization: Bearer <token>` on all requests and auto-redirecting to `/login` on 401
+  - `ProtectedRoute` component guarding `/dashboard`, `/upload`, `/history`, and `/profile`
+  - Responsive `Navbar` displaying user full name, profile settings link, and Sign Out action
+  - Functional `RegisterPage`, `LoginPage`, and `ProfilePage` with form validation, error banners, and loading states
+- [x] Write backend integration test suite (`AuthControllerTest.java`): 8 tests verifying registration success, duplicate email conflict, password complexity validation, login success, wrong password rejection, protected route without token (401), and protected route with token (200)
+- [x] Write automated frontend E2E browser test suites (`test-e2e.cjs` and `test-auth-e2e.cjs`) verifying protected route redirects, registration, navbar user display, profile update, logout, and login
+
+**What was built:**
+- Backend:
+  - Flyway migrations: `backend/src/main/resources/db/migration/V1__init_schema.sql` and `V2__add_indexes.sql`
+  - JPA Entities: `BaseEntity`, `User`, `Document`, `DocumentAnalysis`, `ExtractedClause`, `RiskFinding`, `ExtractedInformation`, `MissingClauseWarning`, `DocumentChunk`, `ChatConversation`, `ChatMessage`
+  - Repositories: 10 Spring Data JPA repository interfaces in `com.lexilegal.repository`
+  - Security & Auth: `JwtTokenProvider`, `JwtAuthFilter`, `UserPrincipal`, `CustomUserDetailsService`, `LoginRateLimiter`, `SecurityConfig`, `CorsConfig`
+  - Controllers & Services: `AuthController`, `UserController`, `AuthService`, `UserService`
+  - Exception Handling: `GlobalExceptionHandler`, `DuplicateEmailException`, `ResourceNotFoundException`, `RateLimitExceededException`, `ErrorResponse`
+  - Automated Integration Tests: `AuthControllerTest` with 8 test cases
+- Frontend:
+  - `src/context/AuthContext.jsx` & `src/hooks/useAuth.js`
+  - `src/services/api.js` with Bearer request interceptor and 401 response interceptor
+  - `src/components/common/ProtectedRoute.jsx`
+  - `src/components/common/Navbar.jsx` with active route styling and user dropdown menu
+  - `src/pages/RegisterPage.jsx`, `src/pages/LoginPage.jsx`, `src/pages/ProfilePage.jsx`
+  - `test-auth-e2e.cjs` automated Puppeteer test suite
+
+**How it was verified:**
+- Backend Integration Tests (`mvn test`):
+  - 8 tests executed, 0 failures, 0 errors, 0 skipped.
+- Real API HTTP Verification (automated Python test runner):
+  - `POST /api/auth/register` with empty body -> HTTP 400 (`validation failed`, fieldErrors map)
+  - `POST /api/auth/register` with invalid password -> HTTP 400
+  - `POST /api/auth/register` with valid payload -> HTTP 201 (returns JWT token and User summary)
+  - `POST /api/auth/register` duplicate email -> HTTP 409 Conflict
+  - `POST /api/auth/login` with wrong password -> HTTP 401 Unauthorized
+  - `POST /api/auth/login` with correct password -> HTTP 200 OK
+  - `GET /api/users/me` without token -> HTTP 401 Unauthorized
+  - `GET /api/users/me` with valid token -> HTTP 200 OK
+  - `PUT /api/users/me` with valid token -> HTTP 200 OK (updated full name)
+  - Rate Limiter: 5 failed login attempts -> HTTP 401; 6th attempt -> HTTP 429 Too Many Requests
+  - CORS Preflight: `OPTIONS /api/auth/register` from `http://127.0.0.1:5173` -> HTTP 200 with `Access-Control-Allow-Origin: http://127.0.0.1:5173`
+- Frontend E2E Automated Browser Verification (`node frontend/test-auth-e2e.cjs`):
+  - Access `/dashboard` unauthenticated -> redirected to `/login`
+  - Register new account -> auto-login and redirected to `/dashboard`
+  - Verify user dropdown menu in Navbar displays user name
+  - Navigate to `/profile` -> update profile name -> verified confirmation message
+  - Click Sign Out -> cleared token and redirected to `/login`
+  - Sign back in -> authenticated and redirected to `/dashboard`
+- Frontend Theme & Route E2E (`node frontend/test-e2e.cjs`):
+  - Theme toggle switch and persistence in localStorage verified
+  - Public routes (`/`, `/login`, `/register`) and protected redirects verified
+
+**Exact commands to run and test:**
+```bash
+# 1. Run Backend Unit & Integration Tests
+cd backend
+mvn test
+
+# 2. Run Backend Application Server
+mvn spring-boot:run
+
+# 3. Build and Preview Frontend
+cd frontend
+npm run build
+npm run preview -- --port 5173 --host 127.0.0.1
+
+# 4. Run Frontend E2E Tests
+node frontend/test-e2e.cjs
+node frontend/test-auth-e2e.cjs
+```
+
+---
+
+### Phase 3: FastAPI AI Engine — Text Extraction & OCR
 - [ ] Set up Python virtual environment, dependencies (`pyproject.toml` / `requirements.txt`)
 - [ ] Implement text extractors for PDF (PyMuPDF), DOCX (python-docx), and plain text
 - [ ] Implement OCR fallback with Tesseract for scanned/image-based documents
@@ -100,7 +203,7 @@ npm run preview -- --port 5173 --host 127.0.0.1
 - [ ] Create `/internal/extract` endpoint with internal API key authentication
 - [ ] Write unit tests for extraction and OCR on sample documents
 
-### Phase 3: FastAPI AI Engine — LLM Providers, Structured Analysis & Verification
+### Phase 4: FastAPI AI Engine — LLM Providers, Structured Analysis & Verification
 - [ ] Implement `LLMProvider` abstraction with `GeminiProvider` and `OllamaProvider`
 - [ ] Implement exponential backoff for rate limits and connection retries
 - [ ] Define Pydantic v2 validation schemas for summary, clauses, risks, key information, and missing clauses
@@ -109,16 +212,6 @@ npm run preview -- --port 5173 --host 127.0.0.1
 - [ ] Add prompt injection mitigation tests and delimiters
 - [ ] Create `/internal/analyze` and `/internal/chat` endpoints
 - [ ] Write unit tests for schemas, verification, and mock LLM flows
-
-### Phase 4: Spring Boot Backend — Authentication & Core Security
-- [ ] Initialize Spring Boot 3.x project with Maven (`pom.xml`)
-- [ ] Configure PostgreSQL database connection and Flyway migrations
-- [ ] Create Flyway migrations (`V1__init_schema.sql`, `V2__add_indexes.sql`)
-- [ ] Implement User entity and UserRepository
-- [ ] Configure Spring Security with stateless JWT authentication, BCrypt password encoder, and rate limiter on auth routes
-- [ ] Implement AuthController with register, login, logout, me, and profile update endpoints
-- [ ] Implement GlobalExceptionHandler with consistent JSON error responses
-- [ ] Write unit and integration tests for authentication endpoints
 
 ### Phase 5: Spring Boot Backend — Document Storage, Hash Caching & Async Pipeline
 - [ ] Implement Document entity and DocumentRepository

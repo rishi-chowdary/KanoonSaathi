@@ -16,8 +16,8 @@ def test_public_health_does_not_require_auth():
 
 def test_internal_health_requires_key():
     response = client.get("/internal/health")
-    # Missing header returns 422
-    assert response.status_code in (401, 422)
+    assert response.status_code == 401
+    assert response.json()["detail"] == "invalid or missing internal api key"
 
 
 def test_internal_health_rejects_wrong_key():
@@ -26,6 +26,7 @@ def test_internal_health_rejects_wrong_key():
         headers={"X-Internal-Api-Key": "wrong-key"},
     )
     assert response.status_code == 401
+    assert response.json()["detail"] == "invalid or missing internal api key"
 
 
 def test_internal_health_succeeds_with_valid_key():

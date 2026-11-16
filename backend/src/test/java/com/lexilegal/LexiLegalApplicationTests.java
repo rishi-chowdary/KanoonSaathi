@@ -10,3 +10,4 @@ class LexiLegalApplicationTests {
     void contextLoads() {
     }
 }
+
