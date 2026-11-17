@@ -18,6 +18,17 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 8 | Grounded Document Chat, PostgreSQL Full-Text Search Retrieval & Conversation History | Completed | 2026-11-17 |
 | Phase 9 | OpenPDF Report Generation, Dashboard Statistics & Workspace Polish | Completed | 2026-11-17 |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Completed | 2026-11-17 |
+| Phase M0 | Migration Preparation, Toolchain Audit & Baseline LLM Capture | Completed | 2026-11-17 |
+| Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Planned | - |
+| Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Planned | - |
+| Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Planned | - |
+| Phase M4 | Tri-Tier Rule-Based Simplification Engine | Planned | - |
+| Phase M5 | Grounded Risk Analyzer, Key Facts & Missing Provisions | Planned | - |
+| Phase M6 | Extractive Document QA & Conversation Engine | Planned | - |
+| Phase M7 | Jinja2 Templates, Hand-Crafted CSS & Interactive Frontend | Planned | - |
+| Phase M8 | ReportLab PDF Dossier & Analytics Dashboard | Planned | - |
+| Phase M9 | Offline Evaluation Suite, Parity Verification & Benchmarks | Planned | - |
+| Phase M10 | Legacy Code Deletion, Cleanup, Packaging & One-Command Run | Planned | - |
 
 ---
 
@@ -884,3 +895,39 @@ cd ai-engine && PATH="/home/rishichowdary/.local/bin:$PATH" .venv/bin/pytest
 # 5. Run Frontend Component Test Suite (10 tests)
 cd frontend && npm test
 ```
+
+---
+
+### Phase M0: Migration Preparation, Toolchain Audit & Baseline LLM Capture
+- [x] Confirmed clean git working tree on base tag `pre-migration` (commit `723df24`).
+- [x] Switched to new development branch `nlp-stack`.
+- [x] Audited toolchain versions: Python 3.11+ (installed Python 3.11.16 via `uv`, Python 3.14 on host), Git 2.56.0, Tesseract OCR 5.5.4, Podman 5.8.9, MySQL 8.0 image pulled (`mysql:8.0`).
+- [x] Authored `docs/migration-plan.md`: comprehensive 10-phase migration plan, file-by-file KEEP/ADAPT/REPLACE/REMOVE action matrix, target schema, fallback strategy when optional models fail.
+- [x] Authored `docs/parity.md`: exhaustive 47-row feature parity matrix mapping every legacy route, page, and feature to its target Python NLP equivalent and verifying test.
+- [x] Captured baseline LLM outputs for all 6 sample contracts (`rental_agreement.pdf`, `clean_nda.pdf`, `employment_agreement.pdf`, `one_sided_agreement.pdf`, `service_agreement.docx`, `promissory_note.txt`) in `evaluation/baseline_llm/` with full clause, risk, key facts, missing provisions, and chat question baselines.
+- [x] Stopped legacy microservices (Spring Boot, FastAPI AI Engine, React preview) and verified clean local development baseline.
+
+**What was built:**
+- `docs/migration-plan.md`: Full architectural blueprint detailing migration from Spring Boot / React / FastAPI / PostgreSQL / Gemini to Flask / MySQL 8 / spaCy / NLTK / sentence-transformers / BERT / Jinja2 / Chart.js.
+- `docs/parity.md`: 1-to-1 feature parity table across 47 functional items, defining the new implementation and the specific automated test proving parity.
+- `evaluation/capture_baseline_llm.py`: Baseline capture harness running against the legacy system to persist reference outputs.
+- `evaluation/baseline_llm/`:
+  - `clean_nda_baseline.json`: 4 clauses, 2 risks, key facts, missing warnings, chat answers.
+  - `rental_agreement_baseline.json`: 7 clauses, 1 risk, key facts, missing warnings, chat answers.
+  - `employment_agreement_baseline.json`: 7 clauses, 4 risks, key facts, missing warnings, chat answers.
+  - `one_sided_agreement_baseline.json`: 8 clauses, 6 risks, key facts, missing warnings, chat answers.
+  - `service_agreement_baseline.json`: 3 clauses, 3 risks, key facts, missing warnings, chat answers.
+  - `promissory_note_baseline.json`: 5 clauses, 2 risks, key facts, missing warnings, chat answers.
+- MySQL 8 container image cached locally via Podman (`docker.io/library/mysql:8.0`).
+- Python 3.11.16 installed and verified via `uv`.
+
+**How it was verified:**
+- Toolchain:
+  - Python: `uv python list` -> CPython 3.11.16, Python 3.14.10.
+  - Git: `git status` -> `On branch nlp-stack`, tag `pre-migration` verified.
+  - Tesseract: `tesseract --version` -> `tesseract 5.5.4`.
+  - MySQL: `podman images` -> `docker.io/library/mysql:8.0` (ready for `docker-compose.yml` or container launch).
+- Baseline Capture:
+  - `python3 evaluation/capture_baseline_llm.py` executed cleanly across all 6 sample contracts.
+  - Outputs inspected and confirmed non-empty valid JSON in `evaluation/baseline_llm/`.
+  - Cloud Gemini API 503 unavailability spikes observed and handled gracefully by retry backoff, confirming empirical rationale for offline local NLP models.
