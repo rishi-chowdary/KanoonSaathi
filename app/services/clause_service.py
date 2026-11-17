@@ -11,6 +11,7 @@ from app.nlp.evidence import extract_evidence_quote
 from app.nlp.importance import calculate_clause_importance
 from app.nlp.parties import detect_affected_party, extract_document_parties
 from app.nlp.segmentation import SegmentedClause
+from app.nlp.simplifier import simplify_clause
 
 logger = logging.getLogger("lexilegal.services.clause_service")
 
@@ -98,14 +99,15 @@ def process_document_clauses(
         if is_verified:
             verified_count += 1
 
-        # Provisional 3-tier simplifications (Phase M5 will enrich with full legal glossary & syntax parser)
-        clause_disp = custom_label if category == "Other" and custom_label else category
-        simple_expl = f"{affected_party} must follow the {clause_disp.lower()} obligations set out here."
-        detailed_expl = (
-            f"This section establishes terms, conditions, and procedures regarding "
-            f"{clause_disp.lower()} binding on {affected_party}."
+        # Deterministic 3-tier simplifications (Phase M5: Simple, Detailed, Professional)
+        simplification_result = simplify_clause(
+            original_text=clause.original_text,
+            category=category,
+            affected_party=affected_party,
         )
-        prof_expl = f"Governs {clause_disp.lower()} contractual covenants and associated liabilities for {affected_party}."
+        simple_expl = simplification_result["simple_english"]
+        detailed_expl = simplification_result["detailed"]
+        prof_expl = simplification_result["professional"]
 
         model_clause = ExtractedClause(
             id=str(uuid.uuid4()),

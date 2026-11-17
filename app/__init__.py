@@ -29,10 +29,12 @@ def create_app(config_class=Config) -> Flask:
     from app.blueprints.auth import auth_bp
     from app.blueprints.documents import documents_bp
     from app.blueprints.main import main_bp
+    from app.blueprints.studio import studio_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(documents_bp)
+    app.register_blueprint(studio_bp)
 
     # Global template context
     @app.context_processor

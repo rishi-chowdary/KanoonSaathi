@@ -1,0 +1,636 @@
+# LexiLegal AI — 150+ Legal Term Glossary
+# Each term contains:
+# - definition: Clear 1-2 sentence plain-English explanation for non-lawyers
+# - plain_replacement: Direct plain-English substitution used in simple English rewriting
+# - category: Domain category (Liability, Procedure, Contractual, Latin, IP, etc.)
+
+terms:
+  indemnify:
+    plain_replacement: "compensate for loss and protect from legal claims"
+    definition: "To agree to pay for someone else's legal fees, damages, or losses if they get sued."
+    category: "Liability"
+  indemnification:
+    plain_replacement: "financial compensation for legal losses"
+    definition: "A promise where one party reimburses the other for legal damages or third-party claims."
+    category: "Liability"
+  hold harmless:
+    plain_replacement: "not hold responsible for any harm or damages"
+    definition: "An agreement not to blame or sue the other party if problems or losses occur."
+    category: "Liability"
+  severability:
+    plain_replacement: "independent validity of remaining parts"
+    definition: "If a court finds one clause invalid, the rest of the contract still remains legally active."
+    category: "Contractual"
+  force majeure:
+    plain_replacement: "unforeseeable emergencies (acts of God)"
+    definition: "Uncontrollable events like natural disasters, war, or pandemics that excuse non-performance."
+    category: "Contractual"
+  liquidated damages:
+    plain_replacement: "pre-agreed penalty amount"
+    definition: "A predetermined amount of money parties agree to pay in advance if a specific breach happens."
+    category: "Liability"
+  cure period:
+    plain_replacement: "grace period to fix the issue"
+    definition: "The amount of time a party has to correct a contract violation before penalties apply."
+    category: "Procedure"
+  subrogation:
+    plain_replacement: "taking over another's right to sue"
+    definition: "When an insurance company pays a claim and steps into the claimant's shoes to recover the money."
+    category: "Insurance"
+  joint and several liability:
+    plain_replacement: "shared and individual responsibility for full payment"
+    definition: "Each person can be sued individually or together for the full amount owed."
+    category: "Liability"
+  heretofore:
+    plain_replacement: "before this"
+    definition: "Prior to this time or document."
+    category: "Archaic"
+  herein:
+    plain_replacement: "in this document"
+    definition: "Inside this contract or section."
+    category: "Archaic"
+  hereinafter:
+    plain_replacement: "from now on called"
+    definition: "From this point forward in this agreement."
+    category: "Archaic"
+  hereby:
+    plain_replacement: "by this agreement"
+    definition: "As a direct result of this statement or signing."
+    category: "Archaic"
+  hereof:
+    plain_replacement: "of this agreement"
+    definition: "Concerning or belonging to this document."
+    category: "Archaic"
+  hereto:
+    plain_replacement: "to this agreement"
+    definition: "Attached or related to this document."
+    category: "Archaic"
+  hereunder:
+    plain_replacement: "under this agreement"
+    definition: "Governed by the provisions of this contract."
+    category: "Archaic"
+  wherefore:
+    plain_replacement: "for that reason"
+    definition: "Because of the reasons just stated."
+    category: "Archaic"
+  whereupon:
+    plain_replacement: "after which"
+    definition: "Immediately following that event."
+    category: "Archaic"
+  notwithstanding:
+    plain_replacement: "regardless of"
+    definition: "In spite of what another section says; taking priority over other terms."
+    category: "Contractual"
+  inter alia:
+    plain_replacement: "among other things"
+    definition: "Latin phrase meaning 'among other things' or 'including but not limited to'."
+    category: "Latin"
+  mutatis mutandis:
+    plain_replacement: "with necessary changes made"
+    definition: "Applying the same rules to a different situation with appropriate minor alterations."
+    category: "Latin"
+  in perpetuity:
+    plain_replacement: "forever without end"
+    definition: "Lasting indefinitely into the future with no expiration date."
+    category: "Contractual"
+  covenant:
+    plain_replacement: "formal legal promise"
+    definition: "A binding contractual agreement to do or refrain from doing something specific."
+    category: "Contractual"
+  warranty:
+    plain_replacement: "formal promise or guarantee"
+    definition: "A legally enforceable promise that a fact, product, or condition is as represented."
+    category: "Contractual"
+  representation:
+    plain_replacement: "factual statement"
+    definition: "A statement of past or present fact made to induce someone into a contract."
+    category: "Contractual"
+  material breach:
+    plain_replacement: "major violation that breaks the deal"
+    definition: "A severe failure to perform that undermines the core value of the agreement."
+    category: "Contractual"
+  assignment:
+    plain_replacement: "transfer of rights to another"
+    definition: "Giving your contract rights, benefits, or duties to a third party."
+    category: "Contractual"
+  sublet:
+    plain_replacement: "re-renting to someone else"
+    definition: "When a tenant rents part or all of their leased property to a third person."
+    category: "Real Estate"
+  sublease:
+    plain_replacement: "secondary rental agreement"
+    definition: "A lease by a tenant to a third party for part or all of the lease term."
+    category: "Real Estate"
+  arbitration:
+    plain_replacement: "private binding dispute hearing"
+    definition: "Resolving a legal disagreement through a private arbitrator instead of a public court."
+    category: "Dispute"
+  mediation:
+    plain_replacement: "assisted negotiation with a neutral helper"
+    definition: "A non-binding meeting where an independent neutral party helps both sides settle."
+    category: "Dispute"
+  injunctive relief:
+    plain_replacement: "court order to stop or perform an act"
+    definition: "A judge's formal command ordering a party to do something or stop an action immediately."
+    category: "Remedy"
+  specific performance:
+    plain_replacement: "court order forcing completion of the deal"
+    definition: "A court ruling requiring a party to carry out their exact contractual obligation."
+    category: "Remedy"
+  consequential damages:
+    plain_replacement: "indirect losses (like lost profits)"
+    definition: "Foreseeable indirect damages that happen as a secondary result of a contract breach."
+    category: "Liability"
+  punitive damages:
+    plain_replacement: "punishment fines"
+    definition: "Extra financial penalties awarded by a court to punish malicious or reckless behavior."
+    category: "Liability"
+  compensatory damages:
+    plain_replacement: "money to pay back actual losses"
+    definition: "Money awarded to replace the actual financial harm suffered by the non-breaching party."
+    category: "Liability"
+  mitigation:
+    plain_replacement: "duty to reduce losses"
+    definition: "The legal obligation to take reasonable steps to minimize damages after a breach."
+    category: "Procedure"
+  confidential information:
+    plain_replacement: "secret business information"
+    definition: "Private, proprietary data that must be kept secret and protected from outside disclosure."
+    category: "IP"
+  trade secret:
+    plain_replacement: "secret commercial formula or method"
+    definition: "Confidential technical or business knowledge giving a business competitive advantage."
+    category: "IP"
+  work for hire:
+    plain_replacement: "employer-owned work product"
+    definition: "Creative work created by an employee where the employer automatically owns the copyright."
+    category: "IP"
+  intellectual property:
+    plain_replacement: "patents, copyrights, and trademarks"
+    definition: "Creations of the human mind protected by law from unauthorized commercial copying."
+    category: "IP"
+  prima facie:
+    plain_replacement: "accepted as true unless proven otherwise"
+    definition: "Evidence sufficient at first glance to prove a fact unless contrary proof is shown."
+    category: "Latin"
+  bona fide:
+    plain_replacement: "in good faith and genuine"
+    definition: "Acting honestly, sincerely, and without intention to deceive."
+    category: "Latin"
+  de facto:
+    plain_replacement: "in practical reality"
+    definition: "Existing in practice even if not formally or legally established."
+    category: "Latin"
+  de jure:
+    plain_replacement: "by legal right"
+    definition: "Existing according to formal, written law."
+    category: "Latin"
+  ultra vires:
+    plain_replacement: "beyond legal power"
+    definition: "An action taken beyond the legal authority granted to a company or officer."
+    category: "Latin"
+  res judicata:
+    plain_replacement: "already decided by a court"
+    definition: "A legal rule preventing parties from relitigating a matter already judged."
+    category: "Latin"
+  stare decisis:
+    plain_replacement: "following past court rulings"
+    definition: "The legal principle of adhering to established judicial precedents."
+    category: "Latin"
+  pro rata:
+    plain_replacement: "in proportional share"
+    definition: "Divided or calculated proportionately according to an exact fraction or share."
+    category: "Latin"
+  pari passu:
+    plain_replacement: "on equal ranking"
+    definition: "Ranking side-by-side on completely equal footing without priority."
+    category: "Latin"
+  ex parte:
+    plain_replacement: "for one side only"
+    definition: "A court hearing or action brought by one party without the presence of the other."
+    category: "Latin"
+  status quo:
+    plain_replacement: "current existing state"
+    definition: "The current state of affairs before any proposed change."
+    category: "Latin"
+  in lieu of:
+    plain_replacement: "instead of"
+    definition: "As a direct replacement or substitute for something."
+    category: "General"
+  null and void:
+    plain_replacement: "completely without legal effect"
+    definition: "Having zero legal binding power from the beginning."
+    category: "Contractual"
+  without prejudice:
+    plain_replacement: "without losing legal rights"
+    definition: "Done without forfeiting any existing rights or future claims."
+    category: "Procedure"
+  with prejudice:
+    plain_replacement: "permanently closed; cannot refile"
+    definition: "A final dismissal that permanently bars bringing the same claim again."
+    category: "Procedure"
+  consideration:
+    plain_replacement: "value exchanged between parties"
+    definition: "The money, goods, or promise given by each side that makes a contract enforceable."
+    category: "Contractual"
+  recitals:
+    plain_replacement: "background explanations"
+    definition: "Introductory statements explaining the background context and goals of the deal."
+    category: "Contractual"
+  preamble:
+    plain_replacement: "opening contract section"
+    definition: "The opening sentence of an agreement naming the parties and effective date."
+    category: "Contractual"
+  statute of limitations:
+    plain_replacement: "legal deadline to file a lawsuit"
+    definition: "The maximum statutory timeframe after an incident within which a lawsuit must be filed."
+    category: "Procedure"
+  default:
+    plain_replacement: "failure to fulfill obligations"
+    definition: "Failing to meet a contractual duty or miss a scheduled payment."
+    category: "Contractual"
+  acceleration:
+    plain_replacement: "demanding immediate full payment"
+    definition: "A clause making all future unpaid amounts due immediately upon a missed payment."
+    category: "Financial"
+  statutory:
+    plain_replacement: "required by written law"
+    definition: "Created, defined, or mandated by legislative statute."
+    category: "Legal"
+  fiduciary duty:
+    plain_replacement: "duty to act in someone's best interest"
+    definition: "The highest legal standard of care requiring complete loyalty and honesty."
+    category: "Legal"
+  governing law:
+    plain_replacement: "state laws that control this agreement"
+    definition: "Specifies which state's legal statutes interpret and enforce the contract."
+    category: "Legal"
+  jurisdiction:
+    plain_replacement: "which court has authority"
+    definition: "The official authority of a specific court to decide legal cases."
+    category: "Legal"
+  venue:
+    plain_replacement: "physical location of the court"
+    definition: "The specific geographic city or county where a lawsuit will be heard."
+    category: "Legal"
+  waiver:
+    plain_replacement: "giving up a legal right"
+    definition: "Intentionally and voluntarily relinquishing a known right or claim."
+    category: "Contractual"
+  forbearance:
+    plain_replacement: "temporarily delaying enforcement"
+    definition: "Agreeing to temporarily hold off on collecting a debt or enforcing a right."
+    category: "Financial"
+  inducement:
+    plain_replacement: "incentive to sign"
+    definition: "A promise or statement that persuades a party to enter into a contract."
+    category: "Contractual"
+  implied warranty:
+    plain_replacement: "unwritten legal guarantee"
+    definition: "A warranty assumed by law to exist even if not explicitly written down."
+    category: "Commercial"
+  express warranty:
+    plain_replacement: "written specific promise"
+    definition: "An explicit, clearly stated written or spoken guarantee about product quality."
+    category: "Commercial"
+  disclaimer:
+    plain_replacement: "statement denying responsibility"
+    definition: "A clear contractual statement refusing liability or denying a warranty."
+    category: "Liability"
+  as is:
+    plain_replacement: "in current condition with no guarantees"
+    definition: "Accepting property or goods in their current state with zero warranties."
+    category: "Commercial"
+  sole discretion:
+    plain_replacement: "exclusive personal decision with no restrictions"
+    definition: "Having complete freedom to make a decision without needing consent or explanation."
+    category: "Contractual"
+  best efforts:
+    plain_replacement: "all reasonable steps possible"
+    definition: "A high legal commitment requiring a party to take all prudent and diligent steps."
+    category: "Contractual"
+  commercially reasonable:
+    plain_replacement: "standard fair business practice"
+    definition: "Conduct that a reasonable and prudent business person would follow."
+    category: "Commercial"
+  good faith:
+    plain_replacement: "honest dealing without cheating"
+    definition: "Acting honestly, fairly, and with sincere intentions in contractual dealing."
+    category: "Legal"
+  tortious:
+    plain_replacement: "wrongful and causing harm"
+    definition: "Constituting a civil wrong that gives rise to legal liability."
+    category: "Legal"
+  promissory note:
+    plain_replacement: "formal written promise to pay money"
+    definition: "A signed document containing a written promise to pay a stated sum on demand or date."
+    category: "Financial"
+  collateral:
+    plain_replacement: "property pledged to guarantee a loan"
+    definition: "An asset pledged by a borrower that a lender can seize if the loan is not paid."
+    category: "Financial"
+  encumbrance:
+    plain_replacement: "debt or claim on property"
+    definition: "A mortgage, lien, or liability attached to property that limits its transfer."
+    category: "Real Estate"
+  lien:
+    plain_replacement: "legal claim against property for unpaid debt"
+    definition: "A legal right of a creditor to keep possession of property until debt is discharged."
+    category: "Financial"
+  quitclaim deed:
+    plain_replacement: "deed transferring ownership without any guarantees"
+    definition: "A deed releasing whatever title a grantor has without promising clear ownership."
+    category: "Real Estate"
+  warranty deed:
+    plain_replacement: "deed guaranteeing clear and valid ownership"
+    definition: "A deed guaranteeing the grantor holds clear title and has the right to convey it."
+    category: "Real Estate"
+  grantor:
+    plain_replacement: "property transferor (seller/giver)"
+    definition: "The person or entity conveying an interest in real estate."
+    category: "Real Estate"
+  grantee:
+    plain_replacement: "property recipient (buyer/receiver)"
+    definition: "The person or entity receiving an interest in real estate."
+    category: "Real Estate"
+  easement:
+    plain_replacement: "right to use someone else's land for a purpose"
+    definition: "A legal right to cross or otherwise use someone else's land for a specified reason."
+    category: "Real Estate"
+  lessor:
+    plain_replacement: "landlord (property owner)"
+    definition: "A person or company that leases property to another under a lease contract."
+    category: "Real Estate"
+  lessee:
+    plain_replacement: "tenant (renter)"
+    definition: "A person or company who holds the lease of a property."
+    category: "Real Estate"
+  premises:
+    plain_replacement: "leased building or land"
+    definition: "The specific house, office, or land referenced in the contract."
+    category: "Real Estate"
+  eviction:
+    plain_replacement: "legal removal of tenant"
+    definition: "The court-ordered physical removal of a tenant from rental property."
+    category: "Real Estate"
+  non-compete:
+    plain_replacement: "restriction against working for competitors"
+    definition: "An agreement prohibiting a person from working for or starting a rival business."
+    category: "Employment"
+  non-solicitation:
+    plain_replacement: "promise not to poach customers or employees"
+    definition: "An agreement not to recruit clients, customers, or employees from a former employer."
+    category: "Employment"
+  severance:
+    plain_replacement: "exit pay upon dismissal"
+    definition: "Money and benefits provided to an employee upon involuntary departure."
+    category: "Employment"
+  termination for cause:
+    plain_replacement: "firing immediately for serious misconduct"
+    definition: "Ending employment or contract rights because of serious wrongdoing or breach."
+    category: "Employment"
+  termination without cause:
+    plain_replacement: "ending agreement at will without misconduct"
+    definition: "Ending a contract at discretion upon notice without needing to show breach."
+    category: "Employment"
+  restrictive covenant:
+    plain_replacement: "binding restriction on future conduct"
+    definition: "A clause placing legal limits on what a person or company is allowed to do."
+    category: "Contractual"
+  trade secret misappropriation:
+    plain_replacement: "theft or wrongful use of confidential business methods"
+    definition: "Acquiring or disclosing secret proprietary information by improper means."
+    category: "IP"
+  infringement:
+    plain_replacement: "unauthorized violation of intellectual property rights"
+    definition: "Encroaching upon or violating patent, copyright, or trademark rights."
+    category: "IP"
+  indemnitor:
+    plain_replacement: "party paying the legal protection"
+    definition: "The party who agrees to protect, defend, and pay for the other's losses."
+    category: "Liability"
+  indemnitee:
+    plain_replacement: "party receiving the legal protection"
+    definition: "The party who is protected and repaid for losses under an indemnity clause."
+    category: "Liability"
+  obligor:
+    plain_replacement: "party required to perform the duty"
+    definition: "The party who is legally bound to fulfill a duty or pay money."
+    category: "Contractual"
+  obligee:
+    plain_replacement: "party entitled to receive performance"
+    definition: "The person or entity to whom another is legally obligated."
+    category: "Contractual"
+  force and effect:
+    plain_replacement: "legal validity and power"
+    definition: "Having active, operative legal authority and binding power."
+    category: "Contractual"
+  counterparts:
+    plain_replacement: "signing identical separate copies"
+    definition: "Signing separate copies of the same contract that together form one agreement."
+    category: "Contractual"
+  entire agreement:
+    plain_replacement: "complete final deal replacing all prior talks"
+    definition: "A clause stating this written contract is the final and only agreement."
+    category: "Contractual"
+  integration clause:
+    plain_replacement: "all-inclusive agreement clause"
+    definition: "A provision declaring that the contract constitutes the entire final agreement."
+    category: "Contractual"
+  surviving provisions:
+    plain_replacement: "terms that continue after contract ends"
+    definition: "Contract terms (like confidentiality) that remain enforceable after expiration."
+    category: "Contractual"
+  contingency:
+    plain_replacement: "condition that must happen first"
+    definition: "A future event or circumstance that must occur before a duty becomes active."
+    category: "Contractual"
+  conditions precedent:
+    plain_replacement: "requirements that must be fulfilled before duties start"
+    definition: "An event that must happen before a party is obligated to perform."
+    category: "Contractual"
+  conditions subsequent:
+    plain_replacement: "events that cancel existing duties"
+    definition: "An event that terminates an existing contractual duty or right."
+    category: "Contractual"
+  disgorgement:
+    plain_replacement: "giving up illegal or wrongful profits"
+    definition: "A court order forcing a wrongdoer to surrender profits earned wrongfully."
+    category: "Remedy"
+  restitution:
+    plain_replacement: "restoring injured party to original position"
+    definition: "Returning property or monetary value to restore a party to their prior position."
+    category: "Remedy"
+  rescission:
+    plain_replacement: "unwinding and canceling contract as if it never happened"
+    definition: "Canceling a contract from its beginning and returning both sides to original state."
+    category: "Remedy"
+  declaratory judgment:
+    plain_replacement: "official court ruling clarifying legal rights"
+    definition: "A judgment of a court which determines the rights of parties without awarding damages."
+    category: "Procedure"
+  injunction:
+    plain_replacement: "official court order to act or stop acting"
+    definition: "An authoritative warning or order from a court."
+    category: "Remedy"
+  privity:
+    plain_replacement: "direct legal relationship between contract parties"
+    definition: "The direct relationship between parties to a contract allowing them to sue each other."
+    category: "Contractual"
+  third-party beneficiary:
+    plain_replacement: "outside person intended to benefit from deal"
+    definition: "A person who is not party to a contract but receives legal rights under it."
+    category: "Contractual"
+  unconscionable:
+    plain_replacement: "excessively unfair and one-sided"
+    definition: "So unjust or overwhelmingly one-sided that a court refuses to enforce it."
+    category: "Legal"
+  adhesion contract:
+    plain_replacement: "take-it-or-leave-it standard form contract"
+    definition: "A standard contract drafted by one party with no opportunity to negotiate."
+    category: "Contractual"
+  quantum meruit:
+    plain_replacement: "reasonable value of work done"
+    definition: "A reasonable sum of money to be paid for services when no amount was set."
+    category: "Latin"
+  estoppel:
+    plain_replacement: "rule barring a party from going back on their word"
+    definition: "A legal principle preventing someone from asserting a claim contrary to past acts."
+    category: "Legal"
+  promissory estoppel:
+    plain_replacement: "enforcing an unwritten promise that caused reliance"
+    definition: "Holding someone to their promise when another relied on it to their detriment."
+    category: "Legal"
+  laches:
+    plain_replacement: "unreasonable delay in claiming a right"
+    definition: "A defense arguing that excessive delay in suing harmed the defense."
+    category: "Procedure"
+  tolling:
+    plain_replacement: "pausing the legal deadline clock"
+    definition: "Suspending or pausing the statute of limitations clock."
+    category: "Procedure"
+  standing:
+    plain_replacement: "legal right to bring a lawsuit"
+    definition: "The legal requirement that a person must have suffered actual harm to sue."
+    category: "Procedure"
+  summary judgment:
+    plain_replacement: "early court decision without full trial"
+    definition: "A ruling made by a judge where no essential facts are disputed."
+    category: "Procedure"
+  interlocutory:
+    plain_replacement: "provisional court order before final verdict"
+    definition: "Given on a provisional basis during the course of legal action."
+    category: "Procedure"
+  deposition:
+    plain_replacement: "out-of-court sworn witness questioning"
+    definition: "Witness testimony taken under oath before trial for discovery purposes."
+    category: "Procedure"
+  interrogatories:
+    plain_replacement: "formal written questions in a lawsuit"
+    definition: "A list of written questions submitted by one party that the other must answer under oath."
+    category: "Procedure"
+  subpoena:
+    plain_replacement: "legal order requiring witness appearance or documents"
+    definition: "A formal writ ordering a person to attend court or turn over documents."
+    category: "Procedure"
+  affidavit:
+    plain_replacement: "written statement sworn under oath"
+    definition: "A written statement confirmed by oath or affirmation for use as evidence."
+    category: "Procedure"
+  attestation:
+    plain_replacement: "witnessing and signing a document"
+    definition: "The act of witnessing the signing of a document and certifying it is genuine."
+    category: "Procedure"
+  notarization:
+    plain_replacement: "official fraud-prevention stamp by a notary"
+    definition: "Official fraud-deterrent process certifying the signer's identity."
+    category: "Procedure"
+  power of attorney:
+    plain_replacement: "legal authority to act on someone's behalf"
+    definition: "A written authorization allowing a person to represent or act for another."
+    category: "Legal"
+  attorney-client privilege:
+    plain_replacement: "confidential legal consultation secrecy"
+    definition: "A legal rule protecting communications between a client and their lawyer."
+    category: "Legal"
+  work product doctrine:
+    plain_replacement: "privacy protection for lawyer's trial prep notes"
+    definition: "Protects materials prepared by a lawyer for litigation from discovery."
+    category: "Legal"
+  non-waiver:
+    plain_replacement: "preserving rights even if not immediately enforced"
+    definition: "Failing to enforce a term once does not surrender the right to enforce it later."
+    category: "Contractual"
+  arm's length:
+    plain_replacement: "fair deal between independent parties"
+    definition: "A transaction where parties act independently and with equal bargaining power."
+    category: "Commercial"
+  preponderance of the evidence:
+    plain_replacement: "more likely than not (over 50% probability)"
+    definition: "The standard of proof in civil cases requiring proof greater than 50%."
+    category: "Procedure"
+  clear and convincing evidence:
+    plain_replacement: "highly and substantially probable"
+    definition: "A medium burden of proof higher than preponderance but lower than reasonable doubt."
+    category: "Procedure"
+  beyond a reasonable doubt:
+    plain_replacement: "leaving no reasonable uncertainty"
+    definition: "The highest standard of proof, required in criminal cases."
+    category: "Procedure"
+  parol evidence rule:
+    plain_replacement: "outside oral agreements cannot contradict this contract"
+    definition: "A rule stating that outside oral or written statements made before signing cannot alter the final written agreement."
+    category: "Contractual"
+  statute of frauds:
+    plain_replacement: "requirement for written contracts"
+    definition: "A law requiring certain contracts (such as land sales or multi-year terms) to be in writing and signed to be valid."
+    category: "Contractual"
+  promissory estoppel:
+    plain_replacement: "enforcing a promise relied on in good faith"
+    definition: "A legal principle preventing a party from breaking a promise if the other party reasonably relied on it to their detriment."
+    category: "Contractual"
+  unconscionability:
+    plain_replacement: "extreme, oppressive unfairness"
+    definition: "A defense against enforcing a contract because the terms or signing conditions were so one-sided as to shock the conscience."
+    category: "Contractual"
+  tortious interference:
+    plain_replacement: "wrongful disruption of business contracts"
+    definition: "When a third party intentionally damages a contractual or business relationship between other parties."
+    category: "Tort"
+  novation:
+    plain_replacement: "replacing an existing contract with a new one"
+    definition: "The act of replacing an obligation to perform with another obligation, or replacing an original party with a new one."
+    category: "Contractual"
+  rescission:
+    plain_replacement: "cancelling the contract as if it never existed"
+    definition: "The unwinding or unmaking of a contract, restoring both parties to their pre-contract positions."
+    category: "Contractual"
+  quantum meruit:
+    plain_replacement: "fair payment for services rendered"
+    definition: "A claim for the fair market value of services provided even when no formal contract amount was finalized."
+    category: "Latin"
+  implied covenant of good faith:
+    plain_replacement: "duty to act honestly and not sabotage the deal"
+    definition: "An unwritten requirement in every contract that neither party will act to unfairly destroy the other party's benefits."
+    category: "Contractual"
+  substantive unconscionability:
+    plain_replacement: "unfairness in the contract terms themselves"
+    definition: "Unfairness regarding the actual terms of the agreement, such as exorbitant pricing or one-sided liability waivers."
+    category: "Contractual"
+  procedural unconscionability:
+    plain_replacement: "unfairness in bargaining tactics and signing"
+    definition: "Unfairness in the negotiation process, such as surprise terms in fine print or high-pressure tactics."
+    category: "Contractual"
+  surviving provisions:
+    plain_replacement: "terms that continue after termination"
+    definition: "Clauses (like confidentiality and dispute resolution) that remain enforceable even after the contract ends."
+    category: "Contractual"
+  injunctive relief:
+    plain_replacement: "court order halting immediate misconduct"
+    definition: "An extraordinary court order requiring a party to stop a specific harmful act, rather than just paying money damages."
+    category: "Remedy"
+  specific performance:
+    plain_replacement: "court order demanding exact contract performance"
+    definition: "A court order requiring a breaching party to complete their exact contractual duty rather than paying damages."
+    category: "Remedy"
+

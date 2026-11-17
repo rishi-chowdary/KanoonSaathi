@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Simplification Studio — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="studio-container" style="max-width: 1100px; margin: 0 auto; padding: 1.5rem 0;">
+  <!-- Header -->
+  <div class="page-header" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h1 style="font-family: var(--font-serif); font-size: 2.2rem; margin: 0 0 0.5rem 0; color: var(--color-primary);">
+          Simplification Studio
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem; margin: 0; max-width: 760px;">
+          Instant rule-based plain-English translation, Flesch readability scoring, and contract trap detection.
+          Offline and deterministic — zero external LLM dependencies.
+        </p>
+      </div>
+      <div>
+        <button id="open-glossary-btn" class="btn btn-secondary btn-sm" type="button">
+          📖 Glossary Directory (150+ Terms)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick-load sample buttons -->
+  <div class="sample-pills-card" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+    <div style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem;">
+      Load Pre-loaded Sample Clauses
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      {% for sample in sample_clauses %}
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm sample-clause-btn"
+          data-category="{{ sample.category }}"
+          data-text="{{ sample.text }}"
+          style="font-size: 0.85rem;"
+        >
+          {{ sample.name }}
+        </button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Main Grid: Input & Output -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="studio-grid">
+    <!-- Left Column: Input Form -->
+    <div class="studio-card" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);">
+      <h2 style="font-size: 1.2rem; margin: 0 0 1rem 0; display: flex; justify-content: space-between; align-items: center;">
+        <span>Original Legal Text</span>
+        <span id="char-word-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">0 words</span>
+      </h2>
+
+      <div style="margin-bottom: 1rem;">
+        <label for="clause-input" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--text-muted);">
+          Paste any contractual clause or legal sentence:
+        </label>
+        <textarea
+          id="clause-input"
+          rows="9"
+          style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem; font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.5; background: var(--bg-page); color: var(--text-main); resize: vertical;"
+          placeholder="The Tenant shall indemnify, defend, and hold harmless the Landlord..."
+        ></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div>
+          <label for="clause-category" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--text-muted);">
+            Category (Optional)
+          </label>
+          <select id="clause-category" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-page); color: var(--text-main);">
+            <option value="">Auto-detect</option>
+            <option value="INDEMNITY">Indemnification</option>
+            <option value="NON_COMPETE">Non-Compete</option>
+            <option value="CONFIDENTIALITY">Confidentiality</option>
+            <option value="TERMINATION">Termination</option>
+            <option value="GOVERNING_LAW">Governing Law</option>
+            <option value="SEVERABILITY">Severability</option>
+            <option value="PAYMENT">Payment & Fees</option>
+            <option value="LIABILITY">Limitation of Liability</option>
+            <option value="FORCE_MAJEURE">Force Majeure</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="affected-party" style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.35rem; color: var(--text-muted);">
+            Affected Party (Optional)
+          </label>
+          <input
+            type="text"
+            id="affected-party"
+            placeholder="e.g. Tenant, Employee"
+            style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-page); color: var(--text-main);"
+          />
+        </div>
+      </div>
+
+      <!-- Mode Selector -->
+      <div style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--text-muted);">
+          Simplification Mode
+        </label>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-primary btn-sm mode-btn" data-mode="simple_english" style="flex: 1;">
+            Simple English
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm mode-btn" data-mode="detailed" style="flex: 1;">
+            Detailed Context
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm mode-btn" data-mode="professional" style="flex: 1;">
+            Professional
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: auto; display: flex; gap: 0.75rem;">
+        <button id="simplify-submit-btn" type="button" class="btn btn-accent" style="flex: 1; justify-content: center; font-weight: 600;">
+          <span id="btn-text">Simplify & Analyze</span>
+          <span id="btn-spinner" style="display: none;">Analyzing...</span>
+        </button>
+        <button id="clear-btn" type="button" class="btn btn-secondary" style="padding: 0 1rem;">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Column: Results & Analytics -->
+    <div class="studio-card" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; display: flex; flex-direction: column; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.2rem; margin: 0;">
+          Simplified Explanation
+        </h2>
+        <button id="copy-result-btn" class="btn btn-secondary btn-sm" type="button" style="display: none;">
+          📋 Copy
+        </button>
+      </div>
+
+      <!-- Readability Score Comparison Banner -->
+      <div id="readability-card" style="display: none; background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+              Readability Shift (Flesch Reading Ease)
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.2rem;">
+              <span id="score-orig" style="font-weight: 600; font-size: 1rem; color: var(--text-muted);">-</span>
+              <span style="color: var(--text-muted);">➔</span>
+              <span id="score-simp" style="font-weight: 700; font-size: 1.2rem; color: var(--color-success);">-</span>
+              <span id="score-diff-badge" class="badge" style="background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success-border); font-size: 0.75rem; padding: 0.15rem 0.4rem; border-radius: 4px;">
+                +0.0 FRE
+              </span>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+              Grade Level
+            </div>
+            <div id="grade-level-text" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.2rem;">
+              -
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation Box -->
+      <div id="explanation-container" style="flex: 1; min-height: 140px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem; overflow-y: auto;">
+        <div id="empty-state-msg" style="color: var(--text-muted); font-style: italic; text-align: center; padding: 2.5rem 1rem;">
+          Select a sample clause above or paste your legal text to see instant plain-English simplifications.
+        </div>
+        <div id="active-explanation-text" style="display: none; line-height: 1.6; font-size: 0.98rem; white-space: pre-line;"></div>
+      </div>
+
+      <!-- Subtle Traps / Risks Alert Box -->
+      <div id="traps-alert-box" style="display: none; margin-bottom: 1rem;">
+        <div style="background: var(--color-danger-bg); border: 1px solid var(--color-danger-border); border-radius: var(--radius-sm); padding: 0.85rem 1rem;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--color-danger); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>⚠️</span>
+            <span>Subtle Traps & Contract Risks Detected</span>
+          </div>
+          <ul id="traps-list" style="margin: 0; padding-left: 1.2rem; font-size: 0.88rem; color: var(--text-main); line-height: 1.45;"></ul>
+        </div>
+      </div>
+
+      <!-- Detected Legal Glossary Chips -->
+      <div id="glossary-chips-section" style="display: none;">
+        <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">
+          Detected Legal Jargon & Meanings
+        </div>
+        <div id="glossary-chips-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Glossary Modal / Drawer -->
+  <div id="glossary-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1.5rem;">
+    <div style="background: var(--bg-surface); border-radius: var(--radius-md); max-width: 800px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="font-size: 1.3rem; margin: 0; font-family: var(--font-serif);">Legal Glossary Directory</h2>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">150+ Plain-English Definitions for Contract Law</span>
+        </div>
+        <button id="close-glossary-modal-btn" type="button" class="btn btn-secondary btn-sm" style="font-size: 1.1rem; line-height: 1;">✕</button>
+      </div>
+
+      <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+        <input
+          type="text"
+          id="glossary-search-input"
+          placeholder="Search 150+ legal terms (e.g. indemnity, cure period, severability)..."
+          style="width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-page); color: var(--text-main);"
+        />
+      </div>
+
+      <div id="glossary-modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Loading glossary...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const clauseInput = document.getElementById("clause-input");
+  const charWordCount = document.getElementById("char-word-count");
+  const simplifyBtn = document.getElementById("simplify-submit-btn");
+  const clearBtn = document.getElementById("clear-btn");
+  const categorySelect = document.getElementById("clause-category");
+  const partyInput = document.getElementById("affected-party");
+  const modeBtns = document.querySelectorAll(".mode-btn");
+  const sampleBtns = document.querySelectorAll(".sample-clause-btn");
+
+  const emptyMsg = document.getElementById("empty-state-msg");
+  const activeExplanation = document.getElementById("active-explanation-text");
+  const readabilityCard = document.getElementById("readability-card");
+  const scoreOrig = document.getElementById("score-orig");
+  const scoreSimp = document.getElementById("score-simp");
+  const scoreBadge = document.getElementById("score-diff-badge");
+  const gradeLevelText = document.getElementById("grade-level-text");
+  const trapsBox = document.getElementById("traps-alert-box");
+  const trapsList = document.getElementById("traps-list");
+  const glossarySection = document.getElementById("glossary-chips-section");
+  const glossaryList = document.getElementById("glossary-chips-list");
+  const copyBtn = document.getElementById("copy-result-btn");
+
+  // State
+  let currentMode = "simple_english";
+  let lastAnalysis = null;
+
+  // Word count tracker
+  function updateWordCount() {
+    const text = clauseInput.value.trim();
+    if (!text) {
+      charWordCount.textContent = "0 words";
+      return;
+    }
+    const words = text.split(/\s+/).filter(Boolean).length;
+    charWordCount.textContent = `${words} words`;
+  }
+  clauseInput.addEventListener("input", updateWordCount);
+
+  // Sample clause clicks
+  sampleBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      clauseInput.value = btn.getAttribute("data-text");
+      categorySelect.value = btn.getAttribute("data-category") || "";
+      updateWordCount();
+      triggerSimplify();
+    });
+  });
+
+  // Mode selection
+  modeBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      modeBtns.forEach(b => {
+        b.classList.remove("btn-primary");
+        b.classList.add("btn-secondary");
+      });
+      btn.classList.remove("btn-secondary");
+      btn.classList.add("btn-primary");
+      currentMode = btn.getAttribute("data-mode");
+
+      if (lastAnalysis) {
+        renderAnalysisResult(lastAnalysis);
+      }
+    });
+  });
+
+  // Clear button
+  clearBtn.addEventListener("click", () => {
+    clauseInput.value = "";
+    categorySelect.value = "";
+    partyInput.value = "";
+    updateWordCount();
+    emptyMsg.style.display = "block";
+    activeExplanation.style.display = "none";
+    readabilityCard.style.display = "none";
+    trapsBox.style.display = "none";
+    glossarySection.style.display = "none";
+    copyBtn.style.display = "none";
+    lastAnalysis = null;
+  });
+
+  // Copy button
+  copyBtn.addEventListener("click", () => {
+    if (activeExplanation.textContent) {
+      navigator.clipboard.writeText(activeExplanation.textContent).then(() => {
+        copyBtn.textContent = "✓ Copied!";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy"; }, 2000);
+      });
+    }
+  });
+
+  // Simplify submission
+  simplifyBtn.addEventListener("click", triggerSimplify);
+
+  function triggerSimplify() {
+    const text = clauseInput.value.trim();
+    if (!text) {
+      alert("Please enter or paste a legal clause to simplify.");
+      clauseInput.focus();
+      return;
+    }
+
+    simplifyBtn.disabled = true;
+    document.getElementById("btn-text").style.display = "none";
+    document.getElementById("btn-spinner").style.display = "inline";
+
+    fetch("/api/simplify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: text,
+        mode: currentMode,
+        category: categorySelect.value,
+        affected_party: partyInput.value.trim(),
+      }),
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Simplification request failed");
+      return res.json();
+    })
+    .then(data => {
+      lastAnalysis = data;
+      renderAnalysisResult(data);
+    })
+    .catch(err => {
+      alert("Error simplifying clause: " + err.message);
+    })
+    .finally(() => {
+      simplifyBtn.disabled = false;
+      document.getElementById("btn-text").style.display = "inline";
+      document.getElementById("btn-spinner").style.display = "none";
+    });
+  }
+
+  function renderAnalysisResult(data) {
+    emptyMsg.style.display = "none";
+    activeExplanation.style.display = "block";
+    copyBtn.style.display = "inline-block";
+
+    // Set text based on currentMode
+    let textToDisplay = data.simpleEnglish;
+    let readScoreObj = data.readabilitySimple;
+    if (currentMode === "detailed") {
+      textToDisplay = data.detailed;
+      readScoreObj = data.readabilityDetailed;
+    } else if (currentMode === "professional") {
+      textToDisplay = data.professional;
+      readScoreObj = data.readabilitySimple;
+    }
+
+    activeExplanation.textContent = textToDisplay;
+
+    // Readability scores
+    if (data.readabilityOriginal && readScoreObj) {
+      readabilityCard.style.display = "block";
+      const origFre = data.readabilityOriginal.flesch_reading_ease;
+      const simpFre = readScoreObj.flesch_reading_ease;
+      const diff = simpFre - origFre;
+
+      scoreOrig.textContent = origFre.toFixed(1);
+      scoreSimp.textContent = simpFre.toFixed(1);
+
+      if (diff >= 0) {
+        scoreBadge.textContent = `+${diff.toFixed(1)} FRE`;
+        scoreBadge.style.color = "var(--color-success)";
+        scoreBadge.style.background = "var(--color-success-bg)";
+      } else {
+        scoreBadge.textContent = `${diff.toFixed(1)} FRE`;
+        scoreBadge.style.color = "var(--text-muted)";
+        scoreBadge.style.background = "var(--bg-surface)";
+      }
+
+      gradeLevelText.textContent = `${data.readabilityOriginal.interpretation.split(' ')[0]} ➔ ${readScoreObj.interpretation.split(' ')[0]}`;
+    }
+
+    // Traps
+    trapsList.innerHTML = "";
+    if (data.traps && data.traps.length > 0) {
+      trapsBox.style.display = "block";
+      data.traps.forEach(t => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${t.trap}:</strong> ${t.explanation}`;
+        trapsList.appendChild(li);
+      });
+    } else {
+      trapsBox.style.display = "none";
+    }
+
+    // Glossary Chips
+    glossaryList.innerHTML = "";
+    if (data.glossary && data.glossary.length > 0) {
+      glossarySection.style.display = "block";
+      data.glossary.forEach(g => {
+        const chip = document.createElement("div");
+        chip.style.cssText = "background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: 16px; padding: 0.25rem 0.65rem; font-size: 0.8rem; cursor: pointer;";
+        chip.title = `${g.term}: ${g.definition}`;
+        chip.innerHTML = `<strong>${g.term}</strong>: <span style="color: var(--text-muted);">${g.plain_replacement}</span>`;
+        glossaryList.appendChild(chip);
+      });
+    } else {
+      glossarySection.style.display = "none";
+    }
+  }
+
+  // Glossary Directory Modal
+  const openGlossaryBtn = document.getElementById("open-glossary-btn");
+  const closeGlossaryBtn = document.getElementById("close-glossary-modal-btn");
+  const glossaryModal = document.getElementById("glossary-modal");
+  const glossaryBody = document.getElementById("glossary-modal-body");
+  const glossarySearch = document.getElementById("glossary-search-input");
+  let allGlossaryTerms = [];
+
+  openGlossaryBtn.addEventListener("click", () => {
+    glossaryModal.style.display = "flex";
+    if (allGlossaryTerms.length === 0) {
+      fetch("/api/glossary")
+        .then(res => res.json())
+        .then(data => {
+          allGlossaryTerms = data.terms || [];
+          renderGlossaryTerms(allGlossaryTerms);
+        });
+    }
+  });
+
+  closeGlossaryBtn.addEventListener("click", () => {
+    glossaryModal.style.display = "none";
+  });
+
+  glossaryModal.addEventListener("click", (e) => {
+    if (e.target === glossaryModal) {
+      glossaryModal.style.display = "none";
+    }
+  });
+
+  glossarySearch.addEventListener("input", () => {
+    const q = glossarySearch.value.toLowerCase().trim();
+    if (!q) {
+      renderGlossaryTerms(allGlossaryTerms);
+      return;
+    }
+    const filtered = allGlossaryTerms.filter(t =>
+      t.term.toLowerCase().includes(q) ||
+      t.plainReplacement.toLowerCase().includes(q) ||
+      t.definition.toLowerCase().includes(q)
+    );
+    renderGlossaryTerms(filtered);
+  });
+
+  function renderGlossaryTerms(terms) {
+    glossaryBody.innerHTML = "";
+    if (terms.length === 0) {
+      glossaryBody.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">No matching legal terms found.</div>';
+      return;
+    }
+    terms.forEach(t => {
+      const card = document.createElement("div");
+      card.style.cssText = "background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1rem;";
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+          <h4 style="margin: 0; font-size: 0.95rem; color: var(--color-primary);">${t.term}</h4>
+          <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); background: var(--bg-surface); padding: 0.1rem 0.35rem; border-radius: 3px; border: 1px solid var(--border-color);">${t.category}</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500; color: var(--color-secondary); margin-bottom: 0.25rem;">
+          Plain: ${t.plainReplacement}
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+          ${t.definition}
+        </div>
+      `;
+      glossaryBody.appendChild(card);
+    });
+  }
+});
+</script>
+{% endblock %}
+

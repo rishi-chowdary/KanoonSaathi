@@ -23,7 +23,8 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Completed | 2026-11-17 |
 | Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Completed | 2026-11-17 |
 | Phase M4 | Entities, Key Facts & Extractive Summarization | Completed | 2026-11-17 |
-| Phase M5 | Tri-Tier Rule-Based Simplification & Readability | Planned | - |
+| Phase M5 | Tri-Tier Rule-Based Simplification & Readability | Completed | 2026-11-17 |
+
 | Phase M6 | Grounded Risk Detection & Missing Provisions | Planned | - |
 | Phase M7 | Hybrid Retrieval & Extractive QA Document Chat | Planned | - |
 | Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Planned | - |
@@ -1118,5 +1119,62 @@ cd frontend && npm test
 - Linter & Formatter:
   - `ruff check app tests scripts` -> `All checks passed!`.
   - `black --check app tests scripts` -> `44 files left unchanged.`.
+
+---
+
+### Phase M5: Tri-Tier Rule-Based Simplification, Readability Scorer & Simplification Studio
+- [x] Curated comprehensive offline legal terms glossary (`data/glossary.yaml`) with 151 terms, plain-English definitions, categories, and direct concise replacements.
+- [x] Implemented pure-Python readability scoring engine (`app/nlp/readability.py`):
+  - Rule-based syllable counting with legal suffix handling (`-tion`, `-sion`, diphthongs, and silent 'e').
+  - Flesch Reading Ease (FRE) and Flesch-Kincaid Grade Level formulas.
+  - Grade-level human interpretation strings.
+- [x] Implemented Tri-Tier Rule-Based Legal Simplifier (`app/nlp/simplifier.py`):
+  - **Simple English**: Replaces legalese triplets/doublets ("indemnify, defend, and hold harmless" -> "protect, defend, and pay legal costs for"), normalizes modal verbs ("shall" -> "must", "shall not" -> "must not"), and breaks complex run-on sentences (> 25 words) into clean standalone sentences.
+  - **Detailed Explanation**: Synthesizes category-tailored context (e.g. Indemnity, Confidentiality, Termination, Governing Law, Non-Compete, Severability), bound party obligations, and explicit timelines/amounts.
+  - **Professional Breakdown**: Structured legal briefing format (Obligor, Covenant Type, Core Duty, Conditions & Triggers, Exceptions & Carve-Outs, Timeline/Cure Period, Remedies & Liabilities).
+- [x] **Enforced Hard Gate / Rule 6 Invariant: Condition & Negation Preservation Check (`verify_preservation`)**:
+  - Validates that negations ("shall not", "must not", "cannot", "no", "never", "without") are never stripped or inverted into positive covenants.
+  - Validates that condition markers ("unless", "except", "if", "provided", "subject to") are preserved.
+  - If a candidate drops a negation or condition, the engine safely falls back to lexical substitution (`lexical_simplify`), guaranteeing 100% semantic safety.
+  - **Passed Hard Gate**: 100.0% of test clauses (20/20) verified for condition & negation preservation.
+- [x] Implemented subtle contract trap and nuance detector (`detect_traps_and_nuances`):
+  - Identifies 8 dangerous terms: Uncapped Indemnification, Unilateral Modification, Automatic Renewal/Evergreen, Short Notice/Cure Windows (<= 7 days), Jury Trial / Class Action Waiver, Pre-Agreed Liquidated Damages, Broad Non-Compete Scope (> 1 year or worldwide), and Perpetual Confidentiality.
+- [x] Updated Clause Service (`app/services/clause_service.py`): Replaced provisional placeholders with real tri-tier simplifications and exact quote verification.
+- [x] Built Simplification Studio (`app/blueprints/studio.py` and `app/templates/studio/index.html`):
+  - Web page at `/studio` with live word counters, sample clauses (Indemnity, Non-Compete, Confidentiality, Termination, Severability), mode switcher, and instant copy button.
+  - Visual Flesch Reading Ease comparison card showing before/after scores, difference badge (e.g. `+45.2 FRE`), and grade-level shift.
+  - Subtles traps alert banner and interactive glossary chips.
+  - Modal directory to search and explore all 151+ legal terms with plain-English definitions.
+  - REST API `POST /api/simplify` (CSRF-exempt JSON endpoint) returning all 3 modes, before/after readability, glossary terms, and traps.
+  - REST API `GET /api/glossary` returning the full 151-term legal dictionary.
+- [x] Added navigation link in `app/templates/base.html` and "Open in Studio" links on individual clause cards in `app/templates/documents/detail.html`.
+- [x] Created comprehensive automated test suite (`tests/test_simplifier.py`):
+  - 16 tests covering syllable counting, readability calculations, 150+ glossary validation, lexical simplification, negation/condition preservation checks, trap detection, tri-tier generation, hard gate readability improvement across 20 clauses, web views, and REST APIs.
+- [x] **Passed Hard Gate**: Average Flesch Reading Ease improvement across 20 diverse legal clauses is **+24.53 points** (with 95% of clauses showing positive gains and 100% condition/negation preservation).
+- [x] Full test suite now passes **62 / 62 tests** across SQLite and live MySQL 8 with **82% coverage** (2,084 statements).
+- [x] Linters & formatters 100% clean: `ruff check app tests` (0 warnings) and `black app tests` (clean).
+
+**What was built:**
+- `data/glossary.yaml`: 151 contractual terms with plain replacements, definitions, and categories.
+- `app/nlp/readability.py`: Pure-Python Flesch Reading Ease and Flesch-Kincaid Grade Level calculator.
+- `app/nlp/simplifier.py`: Tri-tier legal simplifier, lexical substitution engine, negation/condition preservation check, subtle trap detector, and glossary matcher.
+- `app/blueprints/studio.py`: Simplification Studio blueprint (`GET /studio`, `POST /api/simplify`, `GET /api/glossary`).
+- `app/templates/studio/index.html`: Interactive client studio with live readability comparison, sample clauses, subtle traps, and glossary modal.
+- `tests/test_simplifier.py`: 16 tests verifying readability math, 20-clause improvement gate, preservation invariant, and endpoints.
+
+**How it was verified:**
+- Readability Improvement Across 20 Real Contract Clauses:
+  - Average FRE gain: **+24.53 points** (e.g., Indemnity: -4.0 -> 43.4 [+47.4], Entire Agreement: 7.2 -> 53.9 [+46.7], Warranty: 24.3 -> 63.8 [+39.5], Severability: 2.0 -> 35.3 [+33.3], Amendment: -3.9 -> 79.6 [+83.5]).
+  - Positive gain rate: 19 / 20 clauses (95.0%).
+- Condition & Negation Preservation:
+  - 20 / 20 clauses (100.0%) verified that prohibitions ("shall not", "must not", "without") and conditions ("provided that", "unless", "except") are preserved without semantic inversion.
+- Subtle Traps Detection:
+  - Accurately flagged uncapped indemnification, unilateral modification, short cure window, and jury trial waiver.
+- Full Test Suite:
+  - `.venv/bin/pytest tests/ --cov=app -q` -> **62 passed in 29.12s (82% coverage across 2,084 statements)**.
+- Linter & Formatter:
+  - `ruff check app tests` -> `All checks passed!`.
+  - `black --check app tests` -> `All done! 47 files left unchanged.`.
+
 
 

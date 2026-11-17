@@ -417,8 +417,12 @@
               <span class="badge badge-success" title="Ground truth exact slice">
                 {{ clause.provenance }}
               </span>
+              <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; text-decoration: none;" title="Explore in Simplification Studio">
+                ⚡ Studio
+              </a>
             </div>
           </div>
+
 
           <!-- Evidence Quote Box -->
           <div class="evidence-quote-box">
@@ -449,8 +453,9 @@
               <p style="margin: 0; color: var(--text-main);">{{ clause.simplified_detailed }}</p>
             </div>
             <div id="professional-{{ clause.id }}" class="exp-text-block" style="display: none;">
-              <p style="margin: 0; color: var(--text-main); font-family: var(--font-serif);">{{ clause.simplified_professional }}</p>
+              <p style="margin: 0; color: var(--text-main); font-family: var(--font-sans); white-space: pre-line; line-height: 1.55;">{{ clause.simplified_professional }}</p>
             </div>
+
           </div>
 
           <!-- Collapsible Original Source Slice -->
