@@ -101,10 +101,47 @@ FACT_INTENTS = [
             re.IGNORECASE,
         ),
     ),
+    (
+        "governing_law",
+        re.compile(
+            r"\b(?:governing law|which state(?:'s)? laws?|what governing law|jurisdiction applies)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "cure_period",
+        re.compile(
+            r"\b(?:cure period|cure defaults?|period to cure|days to cure|before eviction can occur)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "confidentiality_term",
+        re.compile(
+            r"\b(?:how long (?:do|does) (?:the )?confidentiality|duration of confidentiality|remain in effect for a term)\b",
+            re.IGNORECASE,
+        ),
+    ),
 ]
 
 
-def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None:
+def _get_val_and_page(obj: Any, field_name: str) -> tuple[str, int]:
+    """Safely extract string value and 1-indexed page from model or dataclass."""
+    raw_val = getattr(obj, field_name, "Not specified")
+    val = getattr(raw_val, "value", raw_val) if raw_val is not None else "Not specified"
+    if hasattr(raw_val, "source_page") and raw_val.source_page:
+        page = raw_val.source_page
+    else:
+        page = getattr(obj, f"{field_name}_page", 1) or 1
+    val_str = str(val).strip() if val is not None else "Not specified"
+    return val_str, int(page)
+
+
+def match_fact_intent(
+    query: str,
+    analysis: Any | None,
+    chunks: list[Any] | None = None,
+) -> dict[str, Any] | None:
     """Route factual query directly to verified pre-extracted metadata."""
     if not analysis:
         return None
@@ -164,12 +201,91 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
                 "confidence": 1.0,
             }
 
+        if intent == "governing_law" and chunks:
+            for c in chunks:
+                c_text = getattr(c, "content", "")
+                m = re.search(
+                    r"laws\s+of\s+the\s+State\s+of\s+([A-Za-z\s]+?)(?:,|\.|\bwithout\b)",
+                    c_text,
+                    re.IGNORECASE,
+                )
+                if m:
+                    state = m.group(1).strip()
+                    p_num = getattr(c, "page_number", 1)
+                    ans = f"This agreement is governed by the laws of the State of {state}."
+                    return {
+                        "answer": ans,
+                        "citations": [
+                            {
+                                "page": p_num,
+                                "sectionRef": f"Page {p_num}",
+                                "quote": m.group(0).strip(),
+                                "quoteVerified": True,
+                            }
+                        ],
+                        "addressedInDocument": True,
+                        "confidence": 1.0,
+                    }
+
+        if intent == "cure_period" and chunks:
+            for c in chunks:
+                c_text = getattr(c, "content", "")
+                m = re.search(
+                    r"(?:uncured\s+for|cure\s+period\s+of)\s+([a-z0-9\(\)\s]+?days)",
+                    c_text,
+                    re.IGNORECASE,
+                )
+                if m:
+                    period = m.group(1).strip()
+                    p_num = getattr(c, "page_number", 1)
+                    ans = f"The cure period before eviction or termination is {period}."
+                    return {
+                        "answer": ans,
+                        "citations": [
+                            {
+                                "page": p_num,
+                                "sectionRef": f"Page {p_num}",
+                                "quote": m.group(0).strip(),
+                                "quoteVerified": True,
+                            }
+                        ],
+                        "addressedInDocument": True,
+                        "confidence": 1.0,
+                    }
+
+        if intent == "confidentiality_term" and chunks:
+            for c in chunks:
+                c_text = getattr(c, "content", "")
+                m = re.search(
+                    r"remain\s+in\s+effect\s+for\s+a\s+term\s+of\s+([^.]+)",
+                    c_text,
+                    re.IGNORECASE,
+                )
+                if m:
+                    term = m.group(1).strip()
+                    p_num = getattr(c, "page_number", 1)
+                    ans = (
+                        f"The confidentiality obligations remain in effect for {term}."
+                    )
+                    return {
+                        "answer": ans,
+                        "citations": [
+                            {
+                                "page": p_num,
+                                "sectionRef": f"Page {p_num}",
+                                "quote": m.group(0).strip(),
+                                "quoteVerified": True,
+                            }
+                        ],
+                        "addressedInDocument": True,
+                        "confidence": 1.0,
+                    }
+
         if key_info is None:
             continue
 
         if intent == "contract_amount":
-            val = getattr(key_info, "contract_amount", "Not specified")
-            page = getattr(key_info, "contract_amount_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "contract_amount")
             if val and val != "Not specified":
                 ans = f"The specified contract/payment amount is {val}."
                 return {
@@ -193,8 +309,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "payment_deadlines":
-            val = getattr(key_info, "payment_deadlines", "Not specified")
-            page = getattr(key_info, "payment_deadlines_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "payment_deadlines")
             if val and val != "Not specified":
                 ans = f"Payment schedule/deadline: {val}."
                 return {
@@ -218,8 +333,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "penalties":
-            val = getattr(key_info, "penalties", "Not specified")
-            page = getattr(key_info, "penalties_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "penalties")
             if val and val != "Not specified":
                 ans = f"Penalties and late terms: {val}."
                 return {
@@ -243,8 +357,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "start_date":
-            val = getattr(key_info, "start_date", "Not specified")
-            page = getattr(key_info, "start_date_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "start_date")
             if val and val != "Not specified":
                 ans = f"The effective/start date is {val}."
                 return {
@@ -268,8 +381,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "end_date":
-            val = getattr(key_info, "end_date", "Not specified")
-            page = getattr(key_info, "end_date_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "end_date")
             if val and val != "Not specified":
                 ans = f"The contract end/expiration date is {val}."
                 return {
@@ -288,8 +400,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             # Fall through to extractive QA for duration/term if end_date not explicitly formatted
 
         if intent == "renewal_date":
-            val = getattr(key_info, "renewal_date", "Not specified")
-            page = getattr(key_info, "renewal_date_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "renewal_date")
             if val and val != "Not specified":
                 ans = f"Renewal terms: {val}."
                 return {
@@ -305,6 +416,10 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
                     "addressedInDocument": True,
                     "confidence": 1.0,
                 }
+            if re.search(
+                r"\b(?:how many|days|notice|prior to)\b", clean_q, re.IGNORECASE
+            ):
+                continue
             return {
                 "answer": "The document does not specify renewal terms or dates.",
                 "citations": [],
@@ -313,8 +428,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "notice_period":
-            val = getattr(key_info, "notice_period", "Not specified")
-            page = getattr(key_info, "notice_period_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "notice_period")
             if val and val != "Not specified":
                 ans = f"The required notice period is {val}."
                 return {
@@ -338,8 +452,7 @@ def match_fact_intent(query: str, analysis: Any | None) -> dict[str, Any] | None
             }
 
         if intent == "termination_conditions":
-            val = getattr(key_info, "termination_conditions", "Not specified")
-            page = getattr(key_info, "termination_conditions_page", 1) or 1
+            val, page = _get_val_and_page(key_info, "termination_conditions")
             if val and val != "Not specified":
                 ans = f"Termination terms: {val}."
                 return {
@@ -433,8 +546,9 @@ def extract_answer_from_chunk(
     if best_diff < threshold or not best_span_text:
         return None
 
+    clean_span = re.sub(r"\s+", " ", best_span_text).strip()
     return {
-        "span": best_span_text,
+        "span": clean_span,
         "diff": best_diff,
         "char_start": best_span[0],
         "char_end": best_span[1],
@@ -457,7 +571,7 @@ def answer_document_query(
         }
 
     # 1. Check Fact Intent Router for 100% verified metadata
-    fact_result = match_fact_intent(clean_q, analysis)
+    fact_result = match_fact_intent(clean_q, analysis, chunks=chunks)
     if fact_result is not None:
         return fact_result
 

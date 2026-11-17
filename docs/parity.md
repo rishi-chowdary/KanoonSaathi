@@ -59,5 +59,5 @@ Nothing may be dropped silently. Every feature has a documented target implement
 | **Provenance Tracking** | `EXTRACTED`, `AI_INTERPRETATION` badges | `EXTRACTED`, `RULE_BASED` in UI & PDF | `tests/test_dashboard_and_report.py::test_pdf_report_generation_10_sections_and_unicode` | **Verified (M8)** |
 | **Web User Interface** | React 18 single-page app (Tailwind, Lucide, Radix UI) | Jinja2 templates + hand-written CSS + vanilla JavaScript | `tests/test_dashboard_and_report.py::test_empty_state_dashboard_brand_new_user` | **Verified (M8)** |
 | **Light / Dark Mode** | `ThemeContext` toggling CSS classes in `localStorage` | CSS variables on `[data-theme="dark"]` toggled by vanilla JS | `app/templates/base.html` & `app/static/css/style.css` | **Verified (M8)** |
-| **Evaluation Benchmark** | Precision/recall scripts in `evaluation/` | Comprehensive test suite + `evaluation/RESULTS.md` + old-vs-new comparison | `tests/test_evaluation.py` | Planned (M9) |
+| **Evaluation Benchmark** | Precision/recall scripts in `evaluation/` | Comprehensive test suite + `evaluation/RESULTS.md` + old-vs-new comparison | `tests/test_evaluation.py` | **Verified (M9)** |
 

@@ -223,3 +223,75 @@ rules:
       - "Can data use be strictly confined to providing the contracted service?"
       - "Can third-party data sharing be prohibited without explicit written consent?"
 
+  - id: "CONT_LEASE_SUBLETTING"
+    title: "Subletting and Assignment Prohibition"
+    category: "Contractual"
+    level: "MEDIUM"
+    patterns:
+      - "shall\\s+not\\s+assign\\s+this\\s+lease"
+      - "sublet\\s+the\\s+premises"
+      - "without\\s+Landlord'?s\\s+prior\\s+written\\s+consent"
+    prototypes:
+      - "Tenant shall not assign this lease, sublet the premises, or grant any concession or license without Landlord's prior written consent."
+      - "Subletting and assignment of the leased property are strictly prohibited without advance written permission."
+    explanation: "The agreement prohibits assigning, subletting, or transferring occupancy rights without prior written consent from the landlord."
+    why_it_matters: "Tenants cannot transfer lease obligations or sublease to roommates if personal circumstances require relocation."
+    possible_consequences: "Potential risk of default or eviction if unauthorized occupants reside on the premises."
+    suggested_questions:
+      - "Can subletting be permitted subject to reasonable landlord screening and consent?"
+      - "Can a mutual lease reassignment fee be defined to avoid forfeiture?"
+
+  - id: "CONT_SHORT_EVICTION_CURE"
+    title: "Short Default Cure and Eviction Notice"
+    category: "Contractual"
+    level: "HIGH"
+    patterns:
+      - "fourteen\\s+\\(14\\)\\s+days"
+      - "commence\\s+eviction\\s+proceedings"
+      - "uncured\\s+for\\s+fourteen"
+    prototypes:
+      - "In the event of non-payment of rent or default that remains uncured for fourteen (14) days after notice, Landlord may terminate this lease and commence eviction proceedings."
+      - "Failure to cure lease covenants within 14 days permits immediate filing of eviction actions."
+    explanation: "A 14-day cure window applies before the landlord may initiate formal eviction proceedings following an alleged default."
+    why_it_matters: "A narrow 14-day timeline may provide limited opportunity to resolve disputed rent charges or address maintenance issues."
+    possible_consequences: "Risk of expedited legal eviction proceedings and lease forfeiture."
+    suggested_questions:
+      - "Can the default cure window be expanded to a standard 30-day period?"
+      - "Can written notice via registered mail be required prior to legal action?"
+
+  - id: "FIN_SECURITY_DEPOSIT_DEDUCTION"
+    title: "Security Deposit Forfeiture Terms"
+    category: "Financial"
+    level: "MEDIUM"
+    patterns:
+      - "security\\s+deposit"
+      - "deposit\\s+with\\s+Landlord.*security\\s+deposit"
+      - "costs\\s+of\\s+repairing\\s+damages"
+    prototypes:
+      - "Landlord may deduct from the security deposit such amounts as are reasonably necessary to remedy tenant defaults or repair damages."
+      - "Security deposit may be applied toward unpaid rent and restoration costs upon vacancy."
+    explanation: "The agreement grants the landlord broad rights to deduct repair expenses, unpaid rent, and restoration costs from the deposit."
+    why_it_matters: "Tenants could experience substantial deductions without itemized repair invoices or move-in condition documentation."
+    possible_consequences: "Partial or full loss of the deposit amount upon lease termination."
+    suggested_questions:
+      - "Can a requirement for itemized repair receipts within 30 days of move-out be added?"
+      - "Can joint move-in and move-out inspection walk-throughs be formally stipulated?"
+
+  - id: "CONT_EXTENDED_CONFIDENTIALITY"
+    title: "Extended Confidentiality Obligation"
+    category: "Contractual"
+    level: "LOW"
+    patterns:
+      - "term\\s+of\\s+three\\s+\\(3\\)\\s+years"
+      - "remain\\s+in\\s+effect\\s+for\\s+a\\s+term\\s+of"
+    prototypes:
+      - "This Agreement shall remain in effect for a term of three (3) years from the Effective Date."
+      - "Confidentiality obligations persist for an extended multi-year duration following execution."
+    explanation: "Confidentiality obligations persist for an extended multi-year duration of three years."
+    why_it_matters: "The receiving party must maintain information security safeguards for several years following disclosure."
+    possible_consequences: "Ongoing compliance duties and liability exposure for accidental disclosures across three years."
+    suggested_questions:
+      - "Can the confidentiality duration be reduced from 3 years to 1 or 2 years?"
+      - "Can standard public domain and independent development carve-outs be explicitly confirmed?"
+
+

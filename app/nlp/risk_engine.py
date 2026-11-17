@@ -130,7 +130,7 @@ def detect_clause_risks(
             pattern_matched = False
             # 1. Regex pattern check
             for pat in rule.get("patterns", []):
-                if re.search(pat, c_text, re.IGNORECASE):
+                if re.search(pat, c_text, re.IGNORECASE | re.DOTALL):
                     pattern_matched = True
                     break
 
