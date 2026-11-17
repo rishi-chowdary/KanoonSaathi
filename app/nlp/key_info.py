@@ -217,41 +217,6 @@ def _extract_contract_amount(
             weight = num_val + primary_bonus
             candidates.append((weight, raw_matched, page, sent.strip()))
 
-        # Fallback for PDF font subsets that drop the leading "$" or first digit
-        m_salary = re.search(
-            r"base\s+salary\s+of\s+([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
-            sent,
-            re.IGNORECASE,
-        )
-        if m_salary:
-            val_str = m_salary.group(1)
-            fmt = f"${'1' + val_str if val_str.startswith('85,') else val_str}"
-            candidates.append(
-                (
-                    2000000.0,
-                    fmt,
-                    _page_for_sentence(sent, full_text, page_list),
-                    sent.strip(),
-                )
-            )
-
-        m_rent = re.search(
-            r"monthly\s+rent\s+of\s+(?:,\s*|\$\s*)?([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
-            sent,
-            re.IGNORECASE,
-        )
-        if m_rent:
-            val_str = m_rent.group(1)
-            fmt = f"${'2,' + val_str if val_str == '400.00' else val_str}"
-            candidates.append(
-                (
-                    2000000.0,
-                    fmt,
-                    _page_for_sentence(sent, full_text, page_list),
-                    sent.strip(),
-                )
-            )
-
     if not candidates:
         return ExtractedFact()
     candidates.sort(key=lambda x: x[0], reverse=True)

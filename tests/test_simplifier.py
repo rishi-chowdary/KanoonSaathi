@@ -120,10 +120,13 @@ class TestSimplificationEngine:
             t["trap"] == "Abnormally Short Notice / Cure Window" for t in traps_3
         )
 
-        # 4. Jury trial waiver
-        jury = "Each party hereby waives any right to a jury trial in any proceeding."
-        traps_4 = detect_traps_and_nuances(jury)
-        assert any(t["trap"] == "Waiver of Jury Trial / Class Action" for t in traps_4)
+        # 4. Court / collective remedy waiver
+        waiver = "Each party hereby waives any right to a jury trial in any proceeding."
+        traps_4 = detect_traps_and_nuances(waiver)
+        assert any(
+            t["trap"] == "Waiver of Standard Court / Collective Remedies"
+            for t in traps_4
+        )
 
     def test_simplification_modes_generation(self):
         text = LEGAL_TEST_CLAUSES[0][0]

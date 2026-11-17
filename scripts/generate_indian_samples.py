@@ -712,6 +712,55 @@ def generate_constitution_pdf() -> None:
     )
 
 
+def generate_scanned_deed_pdf() -> None:
+    """Create a 1-page raster image-only PDF of an Indian Sale Deed for OCR testing."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    img = Image.new("RGB", (1240, 1754), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    font_path = next((p for p in FONT_CANDIDATES if Path(p).exists()), None)
+    title_font = (
+        ImageFont.truetype(font_path, 38) if font_path else ImageFont.load_default()
+    )
+    body_font = (
+        ImageFont.truetype(font_path, 26) if font_path else ImageFont.load_default()
+    )
+
+    lines = [
+        ("ABSOLUTE SALE DEED (KARNATAKA, INDIA)", title_font),
+        ("", body_font),
+        ("State of Karnataka, District of Bengaluru Urban", body_font),
+        ("Executed under the Transfer of Property Act, 1882.", body_font),
+        ("", body_font),
+        ("Section 1. Property Description", body_font),
+        (
+            "Vendor Sri Suresh Kulkarni conveys all right, title, and interest",
+            body_font,
+        ),
+        (
+            "in Residential Plot No. 42, Jayanagar 4th Block, Bengaluru 560011",
+            body_font,
+        ),
+        ("to Purchaser Smt. Kavitha Nair for Rs. 85,00,000.", body_font),
+        ("", body_font),
+        ("Section 2. Registration and Stamp Duty", body_font),
+        (
+            "Stamp duty and registration fees have been paid to the",
+            body_font,
+        ),
+        ("Sub-Registrar Office, Jayanagar, Bengaluru.", body_font),
+    ]
+
+    y = 120
+    for text_line, fnt in lines:
+        draw.text((100, y), text_line, fill=(15, 15, 15), font=fnt)
+        y += 58 if fnt is title_font else 44
+
+    out_path = SAMPLES_DIR / "scanned_deed.pdf"
+    img.save(str(out_path), "PDF", resolution=150.0)
+    print(f"Generated {out_path}")
+
+
 def main() -> None:
     SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
     generate_clean_nda()
@@ -723,6 +772,7 @@ def main() -> None:
     generate_bns_pdf()
     generate_ipc_pdf()
     generate_constitution_pdf()
+    generate_scanned_deed_pdf()
 
 
 if __name__ == "__main__":

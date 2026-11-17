@@ -30,13 +30,13 @@ lexilegal-ai/
                      retrieval, qa_engine, registry)
     templates/      (Jinja2 views)
     static/         (style.css, main.js, fonts/, img/, vendor/chart.js)
-  data/             (glossary.yaml, risk_rules.yaml, expected_provisions.yaml, clause_prototypes.yaml)
+  data/             (glossary.yaml, indian_statutes.yaml, risk_rules.yaml, expected_provisions.yaml, clause_prototypes.yaml, clause_rules.yaml)
   migrations/       (Alembic migrations)
-  samples/          (sample contracts and gold annotations)
-  evaluation/       (evaluate_nlp_stack.py, RESULTS.md, chat_questions.json, baseline_llm/, snapshots/)
-  tests/            (95 pytest tests)
-  scripts/          (download_models.py, snapshot.py, smoke_test.sh, style_check.py)
-  docs/             (architecture.md, api-documentation.md, privacy.md, parity.md, DEMO.md, PROGRESS.md, MIGRATION_NOTES.md)
+  samples/          (Indian contracts, BNS/IPC/Constitution PDFs, and gold annotations)
+  evaluation/       (evaluate_nlp_stack.py, evaluate_clauses.py, RESULTS.md, chat_questions.json, results/)
+  tests/            (106 pytest tests)
+  scripts/          (download_models.py, generate_indian_samples.py, smoke_test.sh, style_check.py)
+  docs/             (architecture.md, api-documentation.md, privacy.md, DEMO.md)
 ```
 
 ## Core invariants

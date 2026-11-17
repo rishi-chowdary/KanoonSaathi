@@ -88,8 +88,8 @@ rules:
       - "aggregate\\s+liability.*(?:limited\\s+to|exceed\\s+the\\s+sum\\s+of)\\s+(?:\\$|₹|Rs\\.?\\s*)[0-9,]+(?:\\.[0-9]+)?\\b"
       - "disclaims\\s+all\\s+warranties.*liability\\s+capped\\s+at\\s+(?:\\$|₹|Rs\\.?\\s*)"
     prototypes:
-      - "Vendor's total aggregate liability under this agreement shall under no circumstances exceed the sum of Rs. 1,000.00 or $100.00."
-      - "Company disclaims all warranties of any kind and caps its maximum liability at one thousand rupees or one hundred dollars."
+      - "Vendor's total aggregate liability under this agreement shall under no circumstances exceed the sum of Rs. 1,000.00."
+      - "Company disclaims all warranties of any kind and caps its maximum liability at one thousand rupees."
     explanation: "The counterparty disclaims standard performance warranties while capping their maximum aggregate liability at a nominal amount, offering minimal recourse if they breach."
     why_it_matters: "If the counterparty causes substantial business disruption or data loss, your legal recovery could be capped at negligible sums."
     possible_consequences: "Severe financial losses with virtually no avenue to recover damages from the defaulting vendor."
@@ -181,9 +181,9 @@ rules:
     prototypes:
       - "Each party hereby waives any right to a trial by jury and agrees to binding arbitration with cost-shifting."
       - "Parties waive jury trial and class-action participation in all disputes."
-    explanation: "The clause waives the constitutional right to a jury trial and may prohibit participation in class action proceedings."
-    why_it_matters: "Disputes will be decided solely by a judge or private arbitrator rather than a jury of peers."
-    possible_consequences: "Loss of standard procedural jury trial protections and collective legal leverage."
+    explanation: "The clause waives standard court procedures or collective remedies in favour of private arbitration."
+    why_it_matters: "Disputes may be restricted to private arbitration with limited appeal options and higher upfront fees."
+    possible_consequences: "Reduced access to standard civil court remedies and collective claims."
     suggested_questions:
       - "Can dispute resolution be handled through standard civil court procedures or mutual mediation before arbitration?"
 

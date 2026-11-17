@@ -11,9 +11,9 @@ _STATIC_TRAP_RULES = [
     ),
     (
         r"\b(waive(?:s)? (?:any )?right to (?:a )?jury trial|class action waiver|no jury trial)\b",
-        "Waiver of Jury Trial / Class Action",
+        "Waiver of Standard Court / Collective Remedies",
         "MEDIUM",
-        "You forfeit your constitutional right to a jury trial and may be prohibited from joining class-action lawsuits.",
+        "Restricts standard civil court or collective dispute remedies (often copied from foreign templates).",
     ),
     (
         r"\b(liquidated damages|forfeited as liquidated damages|penalty amount)\b",

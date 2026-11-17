@@ -155,7 +155,6 @@ It is worth being direct about what this tool does not do well:
 - [REST API reference](docs/api-documentation.md)
 - [Privacy and data handling](docs/privacy.md)
 - [5-minute demo walkthrough](docs/DEMO.md)
-- [Migration notes (old prototype to local Python stack)](docs/MIGRATION_NOTES.md)
 
 ## License
 

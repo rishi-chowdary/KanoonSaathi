@@ -59,12 +59,12 @@ def test_clause_classifier_ensemble_standard_categories():
         ),
         (
             "Monthly Rent and Security Deposit",
-            "Tenant agrees to pay monthly rent of $2,400.00 in advance on or before the first calendar day.",
+            "Tenant agrees to pay monthly rent of ₹28,000.00 in advance on or before the first calendar day.",
             "Payment Terms",
         ),
         (
             "Governing Law and Jurisdiction",
-            "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware.",
+            "This Agreement shall be governed by and construed in accordance with the laws of India and courts in Karnataka.",
             "Governing Law",
         ),
         (
@@ -120,13 +120,13 @@ def test_importance_scoring_rules():
     assert calculate_clause_importance("Term and Renewal", med_term) == "MEDIUM"
 
     # Low boilerplate
-    low_law = "This Agreement shall be governed by the laws of the State of Illinois."
+    low_law = "This Agreement shall be governed by the laws of the State of Karnataka."
     assert calculate_clause_importance("Governing Law", low_law) == "LOW"
 
 
 def test_affected_party_detection():
     """Verify extraction of contracting parties and affected obligor."""
-    preamble = "This Agreement is made between Acme Corp ('Company') and John Doe ('Employee')."
+    preamble = "This Agreement is made between Vayu Analytics Pvt. Ltd. ('Company') and Vikram Reddy ('Employee')."
     parties = extract_document_parties(preamble)
     assert "Company" in parties and "Employee" in parties
 
@@ -136,7 +136,7 @@ def test_affected_party_detection():
     )
     assert affected == "Employee"
 
-    mutual_text = "This Agreement shall be governed by the laws of California."
+    mutual_text = "This Agreement shall be governed by the laws of Maharashtra."
     assert (
         detect_affected_party(mutual_text, parties, "Governing Law") == "Both parties"
     )
@@ -159,12 +159,10 @@ def test_evidence_quote_exact_slice_verification():
 def test_model_fallback_without_crashing():
     """Verify that system operates smoothly when fine-tuned BERT checkpoint is absent."""
     hf_model, _hf_tokenizer = get_clause_hf_classifier()
-    # In clean environment without models/clause_classifier, returns None
     assert hf_model is None or hf_model is not None
-    # Clause classification runs without crashing via SBERT zero-shot + rules fallback
     cat, _, conf, _ = classify_clause(
         "Governing Law",
-        "This agreement shall be governed by Delaware law.",
+        "This agreement shall be governed by the laws of India.",
     )
     assert cat == "Governing Law"
     assert conf > 0.0

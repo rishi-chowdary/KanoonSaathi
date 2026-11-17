@@ -65,10 +65,7 @@ COMMENTED_CODE_RE = re.compile(
 )
 JINJA_SAFE_RE = re.compile(r"\|\s*safe\b")
 
-EXCLUDED_DOCS = {
-    "docs/humanize-audit.md",
-    "docs/MIGRATION_NOTES.md",
-}
+EXCLUDED_DOCS: set[str] = set()
 
 
 def rel(path: Path) -> str:

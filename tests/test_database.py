@@ -107,7 +107,7 @@ def test_complete_entity_graph_persistence_and_cascade(app):
         # 6. ExtractedInformation
         info = ExtractedInformation(
             analysis_id=analysis.id,
-            contract_amount="$150,000 USD",
+            contract_amount="₹15,00,000.00",
             contract_amount_page=1,
             payment_deadlines="Within 30 calendar days of invoice",
             payment_deadlines_page=2,
@@ -134,7 +134,7 @@ def test_complete_entity_graph_persistence_and_cascade(app):
             category="Dispute Resolution",
             clause_name="Governing Law & Jurisdiction",
             why_it_matters="Without governing law, cross-border disputes face conflict-of-law confusion.",
-            typical_provision="This Agreement shall be governed by Delaware law.",
+            typical_provision="This Agreement shall be governed by the laws of India.",
             risk_level="MEDIUM",
             label="Missing clause warning",
         )
