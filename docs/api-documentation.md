@@ -81,8 +81,8 @@ Returns counts grouped by `byLevel` (`HIGH`, `MEDIUM`, `LOW`) and `byCategory` f
 ### `POST /api/documents/<doc_id>/chat`
 Answers a question from the document's extracted facts and text chunks.
 - **Body**: `{"message": "What is the monthly rent?", "conversation_id": null}`
-- **Success**: `200 OK` with `conversationId`, `messageId`, `role`, `answer`, `citations` (page number, section reference, quote, `quoteVerified`), `addressedInDocument`, `confidence`, and `createdAt`.
-- When no passage meets the confidence threshold, `addressedInDocument` is `false` and `answer` is `"The document does not appear to address this."`.
+- **Success**: `200 OK` with `id`, `conversationId`, `role`, `content`, `citations` (page number, section reference, quote, `quoteVerified`), `addressedInDocument`, and `createdAt`.
+- When no passage meets the confidence threshold, `addressedInDocument` is `false` and `content` is `"The document does not appear to address this."`.
 
 ### `GET /api/documents/<doc_id>/chat/conversations`
 Lists conversation threads for the document.

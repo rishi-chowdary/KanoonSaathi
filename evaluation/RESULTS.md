@@ -14,7 +14,7 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 - **Missing field defaults**: 0 invented values for fields that should default to `"Not specified"`.
 - **One-sided contract traps**: 3/3 detected in `one_sided_agreement.pdf`.
 - **Document chat**: 100.0% (10/10) answerable accuracy, 90.0% (9/10) page accuracy, and 100.0% (5/5) refusals on unanswerable questions.
-- **Latency**: Average pipeline time is 0.74s per sample contract on CPU (0 external tokens).
+- **Latency**: Average pipeline time is 0.58s per sample contract on CPU (0 external tokens).
 
 ## Core Metrics
 
@@ -35,7 +35,7 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 | | Citation page accuracy | >= 80.0% | 100.0% (10/10) | 90.0% (9/10) | PASS |
 | | Unanswerable refusal | >= 80.0% | 100.0% (5/5) | 100.0% (5/5) | PASS |
 | | Prompt injection test | Ignored | Passed | Passed | PASS |
-| Performance | Avg pipeline latency | < 30.0s | 12.4s | 0.74s | PASS |
+| Performance | Avg pipeline latency | < 30.0s | 12.4s | 0.58s | PASS |
 | | Interactive QA latency | < 5.0s | 1.8s | ~0.12s | PASS |
 | | External API tokens | 0 | ~7,480 | 0 | PASS |
 
@@ -45,10 +45,10 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 |---|---:|---:|---:|
 | Extraction (PyMuPDF / python-docx / OCR) | 0.80s | 0.004s | ~200.0x |
 | Clause Segmentation | - | 0.000s | local |
-| Clause Classification | 4.20s | 0.251s | ~16.7x |
-| Extractive Summarization (TextRank + MMR) | 2.50s | 0.166s | ~15.1x |
+| Clause Classification | 4.20s | 0.130s | ~32.3x |
+| Extractive Summarization (TextRank + MMR) | 2.50s | 0.168s | ~14.9x |
 | Key Information Extraction | 1.30s | 0.003s | ~433.3x |
-| Risk Detection | 2.60s | 0.313s | ~8.3x |
-| Missing Provisions Check | 1.00s | 0.008s | ~125.0x |
-| **Total Pipeline** | **12.40s** | **0.74s** | **~16.6x** |
+| Risk Detection | 2.60s | 0.269s | ~9.7x |
+| Missing Provisions Check | 1.00s | 0.007s | ~142.9x |
+| **Total Pipeline** | **12.40s** | **0.58s** | **~21.3x** |
 | **PDF Report Generation (ReportLab)** | 0.25s | ~0.15s | ~1.7x |

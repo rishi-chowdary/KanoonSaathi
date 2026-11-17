@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-17 19:01:05 UTC",
+  "timestamp": "2026-11-17 19:35:52 UTC",
   "engine": "Local Python NLP Stack (DistilBERT + SBERT + spaCy + Minilm-SQuAD2)",
   "clauses": {
     "clause_recall": 1.0,
@@ -154,7 +154,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 1.962
+        "latency_sec": 1.472
       },
       {
         "id": "q4_rental_cure",
@@ -239,7 +239,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.426
+        "latency_sec": 0.378
       },
       {
         "id": "q9_one_sided_liability_cap",
@@ -256,7 +256,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.436
+        "latency_sec": 0.424
       },
       {
         "id": "q10_one_sided_late_charges",
@@ -282,7 +282,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.555
+        "latency_sec": 0.314
       },
       {
         "id": "q12_rental_pet_policy",
@@ -291,7 +291,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.364
+        "latency_sec": 0.3
       },
       {
         "id": "q13_nda_payment_terms",
@@ -300,7 +300,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.181
+        "latency_sec": 0.166
       },
       {
         "id": "q14_nda_solicitation",
@@ -309,7 +309,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.159
+        "latency_sec": 0.15
       },
       {
         "id": "q15_one_sided_health_benefits",
@@ -318,18 +318,18 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.4
+        "latency_sec": 0.37
       }
     ]
   },
   "latency": {
     "extraction": 0.004,
     "segmentation": 0.0,
-    "classification": 0.251,
-    "summarization": 0.166,
+    "classification": 0.13,
+    "summarization": 0.168,
     "key_info": 0.003,
-    "risk_detection": 0.313,
-    "missing_provisions": 0.008,
-    "total_pipeline": 0.745
+    "risk_detection": 0.269,
+    "missing_provisions": 0.007,
+    "total_pipeline": 0.581
   }
 }
