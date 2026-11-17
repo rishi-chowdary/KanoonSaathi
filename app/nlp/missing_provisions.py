@@ -26,15 +26,23 @@ _CHECKLIST_PATH = os.path.join(
 
 # Document type normalization mapping
 DOC_TYPE_MAPPING = {
+    "bharatiya nyaya sanhita (bns) statute": "INDIAN_STATUTE",
+    "indian penal code (ipc) statute": "INDIAN_STATUTE",
+    "constitution of india": "INDIAN_STATUTE",
     "non-disclosure agreement": "NON_DISCLOSURE_AGREEMENT",
+    "non-disclosure agreement (nda)": "NON_DISCLOSURE_AGREEMENT",
     "nda": "NON_DISCLOSURE_AGREEMENT",
     "confidentiality agreement": "NON_DISCLOSURE_AGREEMENT",
     "rental agreement": "LEASE_AGREEMENT",
     "lease agreement": "LEASE_AGREEMENT",
+    "leave and license": "LEASE_AGREEMENT",
+    "leave and license agreement": "LEASE_AGREEMENT",
     "commercial lease": "LEASE_AGREEMENT",
     "lease": "LEASE_AGREEMENT",
     "residential lease": "LEASE_AGREEMENT",
+    "residential lease agreement": "LEASE_AGREEMENT",
     "employment agreement": "EMPLOYMENT_AGREEMENT",
+    "executive employment agreement": "EMPLOYMENT_AGREEMENT",
     "employment contract": "EMPLOYMENT_AGREEMENT",
     "service agreement": "SERVICE_AGREEMENT",
     "services agreement": "SERVICE_AGREEMENT",

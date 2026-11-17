@@ -41,10 +41,10 @@ class ExtractionResult:
 
 SECTION_PATTERNS = [
     re.compile(
-        r"^(?:article|section|clause)\s+([0-9ivxlcdm]+|[a-z])(?:\.|\:|\s|\-)+\s*(.*)$",
+        r"^(article|section|clause)\s+([0-9]+[a-z]?|[ivxlcdm]+|[a-z])(?:\.|\:|\s|\-)+\s*(.*)$",
         re.IGNORECASE,
     ),
-    re.compile(r"^(\d+(?:\.\d+)*)\.?\s+([A-Z].*)$"),
+    re.compile(r"^(\d+[A-Z]?(?:\.\d+)*)\.?\s+([A-Z].*)$"),
     re.compile(
         r"^(?:schedule|exhibit|appendix)\s+([a-z0-9]+)(?:\.|\:|\s|\-)*\s*(.*)$",
         re.IGNORECASE,
@@ -69,17 +69,20 @@ def detect_sections(text: str, page_number: int) -> list[SectionHeader]:
     lines = text.split("\n")
     for line in lines:
         cleaned = line.strip()
-        if not cleaned or len(cleaned) > 120:
+        if not cleaned or len(cleaned) > 140:
             continue
 
         for pattern in SECTION_PATTERNS:
             match = pattern.match(cleaned)
             if match:
                 groups = match.groups()
-                if len(groups) == 2:
+                if len(groups) == 3:
+                    ref = f"{groups[0].title()} {groups[1].upper() if groups[1][-1:].isalpha() and groups[1][0].isdigit() else groups[1]}"
+                    title = cleaned
+                elif len(groups) == 2:
                     ref = (
                         f"Section {groups[0]}"
-                        if groups[0].replace(".", "").isdigit()
+                        if groups[0].replace(".", "")[0].isdigit()
                         else groups[0]
                     )
                     title = cleaned

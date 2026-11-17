@@ -73,9 +73,9 @@ def test_key_facts_extraction_matching():
     emp_doc = extract_document(emp_path.read_bytes(), "employment_agreement.pdf")
     emp_info = extract_contract_key_info(emp_doc.full_text, emp_doc.pages)
 
-    assert "$185,000.00" in emp_info.contract_amount.value
+    assert "₹18,00,000.00" in emp_info.contract_amount.value
     assert emp_info.contract_amount.source_page == 1
-    assert "bi-weekly" in emp_info.payment_deadlines.value.lower()
+    assert "monthly" in emp_info.payment_deadlines.value.lower()
     assert emp_info.payment_deadlines.source_page == 1
     assert "March 1, 2026" in emp_info.start_date.value
     assert "thirty (30) days" in emp_info.notice_period.value
@@ -86,7 +86,7 @@ def test_key_facts_extraction_matching():
     lease_doc = extract_document(lease_path.read_bytes(), "rental_agreement.pdf")
     lease_info = extract_contract_key_info(lease_doc.full_text, lease_doc.pages)
 
-    assert "$2,400.00" in lease_info.contract_amount.value
+    assert "₹28,000.00" in lease_info.contract_amount.value
     assert lease_info.contract_amount.source_page == 1
     assert (
         "first (1st) day" in lease_info.payment_deadlines.value
@@ -94,7 +94,7 @@ def test_key_facts_extraction_matching():
     )
     assert "August 1, 2026" in lease_info.start_date.value
     assert "July 31, 2027" in lease_info.end_date.value
-    assert "$100.00" in lease_info.penalties.value
+    assert "₹1,500.00" in lease_info.penalties.value
 
     # 3. One-Sided Predatory Agreement
     pred_path = Path("samples/contracts/one_sided_agreement.pdf")
@@ -152,8 +152,8 @@ def test_api_key_info_and_summary_endpoints(app, client):
         key_resp = client.get(f"/api/documents/{doc_id}/key-info")
         assert key_resp.status_code == 200
         key_data = key_resp.get_json()
-        assert key_data["contractAmount"] == "$185,000.00"
-        assert key_data["paymentDeadlines"] == "bi-weekly"
+        assert key_data["contractAmount"] == "₹18,00,000.00"
+        assert key_data["paymentDeadlines"] == "monthly"
         assert key_data["startDate"] == "March 1, 2026"
         assert key_data["penalties"] == NOT_SPECIFIED
 

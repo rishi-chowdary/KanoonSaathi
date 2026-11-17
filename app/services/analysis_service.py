@@ -95,6 +95,7 @@ def get_document_detail_context(doc: Document) -> dict:
     from app.models.clause import ExtractedClause
     from app.models.missing_warning import MissingClauseWarning
     from app.models.risk import RiskFinding
+    from app.nlp.indian_law import detect_statute_references
     from app.nlp.readability import calculate_readability
     from app.nlp.simplification import simplify_simple_english
 
@@ -139,6 +140,12 @@ def get_document_detail_context(doc: Document) -> dict:
             "simplified_grade": simp_metrics["flesch_kincaid_grade"],
         }
 
+    full_doc_text = "\n".join(c.content for c in chunks)
+    doc_type = analysis.document_type if analysis else ""
+    statute_references = detect_statute_references(
+        full_doc_text, document_type=doc_type
+    )
+
     return {
         "document": doc,
         "chunks": chunks,
@@ -149,4 +156,5 @@ def get_document_detail_context(doc: Document) -> dict:
         "missing_warnings": missing_warnings,
         "simplified_summary": simplified_summary,
         "summary_readability": summary_readability,
+        "statute_references": statute_references,
     }

@@ -7,7 +7,8 @@ from app.nlp.segmentation import legal_sentence_tokenizer
 NOT_SPECIFIED = "Not specified"
 
 MONEY_REGEX = re.compile(
-    r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)|\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)\s*(?:dollars|USD|rupees|INR)\b",
+    r"(?:\$|€|£|₹|Rs\.?|INR)\s*([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]{2})?)"
+    r"|\b([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]{2})?)\s*(?:dollars|USD|rupees|INR)\b",
     re.IGNORECASE,
 )
 
@@ -25,24 +26,27 @@ NOTICE_DAYS_REGEX = re.compile(
 )
 
 PENALTY_REGEX = re.compile(
-    r"\b\d+(?:\.\d+)?%\s+per\s+month(?:,\s+compounded\s+daily)?(?:\s+on\s+the\s+unpaid\s+balance)?"
-    r"(?:\s+alongside\s+a\s+mandatory\s+\$[\d,\.]+\s+(?:administrative\s+)?fee(?:\s+per\s+delinquent\s+notice)?)?\b"
+    r"\b\d+(?:\.\d+)?%\s+per\s+month(?:,\s+compounded\s+daily)?(?:\s+on\s+the\s+(?:unpaid|outstanding)\s+balance)?"
+    r"(?:\s+alongside\s+a\s+mandatory\s+(?:\$|₹|Rs\.?\s*)[\d,\.]+\s+(?:administrative\s+)?fee(?:\s+per\s+delinquent\s+notice)?)?\b"
     r"|\bcompounded\s+daily\b"
-    r"|\blate\s+(?:fee|interest)\s+of\s+[^,\.\n]+"
+    r"|\blate\s+(?:fee|interest)\s+of\s+(?:(?:\$|₹|Rs\.?\s*|INR\s*)[0-9,]+(?:\.[0-9]{2})?|[^,\.\n]+)"
     r"|\b\d+(?:\.\d+)?%\s+per\s+annum\s+late\s+charge\b",
     re.IGNORECASE,
 )
 
 PAYMENT_DEADLINE_PATTERNS = [
-    r"(?:on\s+or\s+before\s+the\s+)?(?:first|1st|last)\s+(?:\(1st\)\s+)?day\s+of\s+each\s+calenda(?:r\s+month)?",
+    r"(?:on\s+or\s+before\s+the\s+)?(?:first|1st|fifth|5th|last)\s+(?:\((?:1st|5th)\)\s+)?day\s+of\s+each\s+calenda(?:r\s+month)?",
     r"\bwithin\s+(?:three|five|ten|thirty|\w+)\s+(?:\(\d+\)\s+)?(?:calendar\s+|business\s+)?days\b",
-    r"\bbi-weekly\b|\bsemi-monthly\b|\bweekly\b",
+    r"\bbi-weekly\b|\bsemi-monthly\b|\bmonthly\b|\bweekly\b",
     r"\bnet\s+(?:30|60|90)\b",
 ]
 
 _PAYMENT_CONTEXT_HINTS = (
     "base salary",
+    "annual ctc",
+    "annual salary",
     "monthly rent",
+    "monthly license fee",
     "principal sum",
     "principal amount",
     "sum of",
@@ -111,7 +115,7 @@ def _extract_dates(
     found_dates: list[tuple[str, int, str]] = []
     for sent in sentences:
         for match in DATE_REGEX.finditer(sent):
-            date_str = match.group(0).strip()
+            date_str = re.sub(r"\s+", " ", match.group(0)).strip()
             sent_pos = full_text.find(sent)
             char_offset = sent_pos + match.start() if sent_pos >= 0 else 0
             page = _find_page_for_span(char_offset, page_list)
@@ -170,16 +174,18 @@ def _extract_contract_amount(
         is_payment_context = any(k in sent_lower for k in _PAYMENT_CONTEXT_HINTS)
 
         for match in re.finditer(
-            r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)", sent
+            r"(?:\$|€|£|₹|Rs\.?|INR)\s*([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]{2})?)",
+            sent,
         ):
             raw_matched = match.group(0).strip()
             num_val = float(match.group(1).replace(",", ""))
 
-            # Ignore administrative fees and liability caps when picking primary contract value
+            # Ignore administrative fees, security deposits (when monthly rent is present), and caps
             if (
                 "administrative fee" in sent_lower
                 or "delinquent notice" in sent_lower
                 or "in no event" in sent_lower
+                or "late fee" in sent_lower
             ):
                 continue
 
@@ -189,7 +195,26 @@ def _extract_contract_amount(
                 if sent_pos >= 0
                 else 1
             )
-            weight = num_val + (1000000.0 if is_payment_context else 0.0)
+            # Prefer monthly rent/salary/principal over refundable security deposit
+            primary_bonus = (
+                2000000.0
+                if any(
+                    k in sent_lower
+                    for k in (
+                        "monthly rent",
+                        "base salary",
+                        "annual ctc",
+                        "principal sum",
+                        "principal amount",
+                    )
+                )
+                else (
+                    1000000.0
+                    if is_payment_context and "security deposit" not in sent_lower
+                    else 0.0
+                )
+            )
+            weight = num_val + primary_bonus
             candidates.append((weight, raw_matched, page, sent.strip()))
 
         # Fallback for PDF font subsets that drop the leading "$" or first digit

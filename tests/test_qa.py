@@ -435,7 +435,11 @@ def test_chat_api_endpoints_and_tenant_isolation(client, app, test_user):
     assert resp_valid.status_code == 200
     data = resp_valid.get_json()
     assert data["role"] == "assistant"
-    assert "Delaware" in data["content"] or "accordance" in data["content"].lower()
+    assert (
+        "India" in data["content"]
+        or "Bengaluru" in data["content"]
+        or "accordance" in data["content"].lower()
+    )
     assert data["conversationId"] is not None
 
     conv_id = data["conversationId"]

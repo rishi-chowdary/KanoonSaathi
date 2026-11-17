@@ -20,7 +20,7 @@
     "party": "Either party"
   },
   {
-    "text": "This Agreement and any dispute arising out of or related to this Agreement shall be governed by, and construed in accordance with, the laws of the State of Delaware, without giving effect to any principles of conflicts of law.",
+    "text": "This Agreement and any dispute arising out of or related to this Agreement shall be governed by, and construed in accordance with, the laws of India and the courts at Bengaluru, Karnataka, without giving effect to any principles of conflicts of law.",
     "category": "GOVERNING_LAW",
     "party": "Both parties"
   },
@@ -90,7 +90,7 @@
     "party": "Both parties"
   },
   {
-    "text": "Any dispute, controversy, or claim arising out of or relating to this contract, or the breach thereof, shall be settled by binding arbitration in accordance with the Commercial Arbitration Rules of the American Arbitration Association.",
+    "text": "Any dispute, controversy, or claim arising out of or relating to this contract, or the breach thereof, shall be settled by binding arbitration in accordance with the Arbitration and Conciliation Act, 1996 at Mumbai, Maharashtra.",
     "category": "DISPUTE_RESOLUTION",
     "party": "Both parties"
   },

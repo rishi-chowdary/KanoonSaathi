@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.nlp.indian_law import detect_statute_references
 from app.nlp.readability import calculate_readability
 from app.nlp.simplification.glossary import (
     extract_clause_glossary,
@@ -37,6 +38,7 @@ def simplify_clause(
             "readability_detailed": empty_readability,
             "glossary_terms": [],
             "traps_and_nuances": [],
+            "statute_references": [],
             "preservation_verified": True,
         }
 
@@ -57,6 +59,7 @@ def simplify_clause(
         "readability_detailed": calculate_readability(detailed),
         "glossary_terms": extract_clause_glossary(original_text),
         "traps_and_nuances": detect_traps_and_nuances(original_text),
+        "statute_references": detect_statute_references(original_text),
         "preservation_verified": is_verified,
     }
 

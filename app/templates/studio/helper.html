@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Legal Issue Helper (India) — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 960px; margin: 0 auto;">
+  <div class="doc-header">
+    <div>
+      <h1>Indian Legal Issue Helper</h1>
+      <p class="card-subtitle">
+        Describe what happened in plain everyday English. The app checks your description locally against BNS 2023, IPC 1860, Constitution of India articles, and common Indian civil, consumer, cyber, and labour laws.
+      </p>
+    </div>
+    <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary btn-sm">Open Studio &amp; Lookup</a>
+  </div>
+
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.6rem;">
+      Try an everyday example
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.15rem;">
+      {% for ex in example_issues %}
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm example-issue-btn"
+          data-issue="{{ ex.text }}"
+        >
+          {{ ex.label }}
+        </button>
+      {% endfor %}
+    </div>
+
+    <div class="form-group">
+      <label for="issue-input" class="form-label">Describe your issue in your own words</label>
+      <textarea
+        id="issue-input"
+        rows="4"
+        class="form-input"
+        style="resize: vertical;"
+        placeholder="Example: Someone took Rs. 50,000 promising a job and blocked my number, or my landlord refused to return my security deposit..."
+      ></textarea>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+      <button id="find-sections-btn" type="button" class="btn btn-primary">
+        <span id="helper-btn-text">Find possible sections &amp; steps</span>
+        <span id="helper-btn-loading" style="display: none;">Searching local laws...</span>
+      </button>
+      <button id="clear-issue-btn" type="button" class="btn btn-secondary">Clear</button>
+      <span style="font-size: 0.82rem; color: var(--text-muted); margin-left: auto;">
+        Runs 100% locally. Your text is not sent outside this server.
+      </span>
+    </div>
+  </div>
+
+  <div id="helper-results-area" style="display: none;">
+    <div id="helper-summary-box" class="alert alert-info" style="margin-bottom: 1rem;"></div>
+    <div id="helper-cards-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+    <div id="helper-disclaimer" style="margin-top: 1.25rem; padding: 0.85rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-surface-alt); font-size: 0.84rem; color: var(--text-muted); line-height: 1.5;"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const issueInput = document.getElementById("issue-input");
+  const submitBtn = document.getElementById("find-sections-btn");
+  const clearBtn = document.getElementById("clear-issue-btn");
+  const btnText = document.getElementById("helper-btn-text");
+  const btnLoading = document.getElementById("helper-btn-loading");
+  const resultsArea = document.getElementById("helper-results-area");
+  const summaryBox = document.getElementById("helper-summary-box");
+  const cardsList = document.getElementById("helper-cards-list");
+  const disclaimerBox = document.getElementById("helper-disclaimer");
+
+  document.querySelectorAll(".example-issue-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      issueInput.value = btn.getAttribute("data-issue") || "";
+      runHelper();
+    });
+  });
+
+  clearBtn.addEventListener("click", () => {
+    issueInput.value = "";
+    resultsArea.style.display = "none";
+    cardsList.innerHTML = "";
+    issueInput.focus();
+  });
+
+  submitBtn.addEventListener("click", runHelper);
+
+  function runHelper() {
+    const issue = issueInput.value.trim();
+    if (!issue) {
+      alert("Please describe your issue first.");
+      issueInput.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    btnText.style.display = "none";
+    btnLoading.style.display = "inline";
+
+    fetch("/api/issue-helper", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ issue: issue }),
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Request failed");
+      return res.json();
+    })
+    .then(data => renderResults(data))
+    .catch(err => alert("Could not process issue: " + err.message))
+    .finally(() => {
+      submitBtn.disabled = false;
+      btnText.style.display = "inline";
+      btnLoading.style.display = "none";
+    });
+  }
+
+  function renderResults(data) {
+    resultsArea.style.display = "block";
+    summaryBox.className = data.matched ? "alert alert-info" : "alert alert-warning";
+    summaryBox.textContent = data.summary || "";
+    disclaimerBox.textContent = data.disclaimer || "";
+    cardsList.innerHTML = "";
+
+    (data.suggestions || []).forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const head = document.createElement("div");
+      head.style.cssText = "display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;";
+
+      const titleWrap = document.createElement("div");
+      const cit = document.createElement("div");
+      cit.style.cssText = "font-size: 0.82rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase; letter-spacing: 0.03em;";
+      cit.textContent = item.citation;
+
+      const h3 = document.createElement("h2");
+      h3.style.cssText = "font-size: 1.15rem; margin: 0.2rem 0 0 0;";
+      h3.textContent = item.title;
+      titleWrap.appendChild(cit);
+      titleWrap.appendChild(h3);
+
+      const badges = document.createElement("div");
+      badges.style.cssText = "display: flex; gap: 0.35rem; flex-wrap: wrap;";
+
+      const catBadge = document.createElement("span");
+      catBadge.className = "badge";
+      catBadge.textContent = item.category;
+
+      const relBadge = document.createElement("span");
+      relBadge.className = item.relevance === "Strong match" ? "badge badge-success" : "badge badge-warning";
+      relBadge.textContent = item.relevance;
+
+      const provBadge = document.createElement("span");
+      provBadge.className = "badge badge-provenance";
+      provBadge.textContent = "Model prediction";
+
+      badges.appendChild(catBadge);
+      badges.appendChild(relBadge);
+      badges.appendChild(provBadge);
+
+      head.appendChild(titleWrap);
+      head.appendChild(badges);
+      card.appendChild(head);
+
+      const plain = document.createElement("p");
+      plain.style.cssText = "margin: 0 0 0.75rem 0; line-height: 1.6; font-size: 0.95rem;";
+      plain.textContent = item.plainEnglish;
+      card.appendChild(plain);
+
+      const meta = document.createElement("div");
+      meta.style.cssText = "background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; font-size: 0.86rem; margin-bottom: 0.75rem; line-height: 1.5;";
+
+      const detailsRow = document.createElement("div");
+      const detailsStrong = document.createElement("strong");
+      detailsStrong.textContent = "Key details: ";
+      detailsRow.appendChild(detailsStrong);
+      detailsRow.appendChild(document.createTextNode(item.details));
+
+      const forumRow = document.createElement("div");
+      forumRow.style.marginTop = "0.25rem";
+      const forumStrong = document.createElement("strong");
+      forumStrong.textContent = "Where people generally file: ";
+      forumRow.appendChild(forumStrong);
+      forumRow.appendChild(document.createTextNode(item.whereToFile));
+
+      meta.appendChild(detailsRow);
+      meta.appendChild(forumRow);
+      card.appendChild(meta);
+
+      if (item.nextSteps && item.nextSteps.length > 0) {
+        const stepsTitle = document.createElement("div");
+        stepsTitle.style.cssText = "font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.35rem;";
+        stepsTitle.textContent = "General practical steps";
+        card.appendChild(stepsTitle);
+
+        const ul = document.createElement("ul");
+        ul.style.cssText = "margin: 0 0 0.75rem 0; padding-left: 1.2rem; font-size: 0.88rem; line-height: 1.5;";
+        item.nextSteps.forEach(st => {
+          const li = document.createElement("li");
+          li.textContent = st;
+          ul.appendChild(li);
+        });
+        card.appendChild(ul);
+      }
+
+      if (item.excerpt) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn btn-secondary btn-sm";
+        btn.textContent = "Simplify full section text in Studio";
+        btn.addEventListener("click", () => {
+          sessionStorage.setItem("studio_preload_text", item.excerpt);
+          sessionStorage.setItem("studio_preload_category", item.studioCategory || "");
+          window.location.href = "/studio";
+        });
+        card.appendChild(btn);
+      }
+
+      cardsList.appendChild(card);
+    });
+  }
+});
+</script>
+{% endblock %}
+

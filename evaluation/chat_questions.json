@@ -5,8 +5,8 @@
     "question": "What is the monthly rent amount and when is it due?",
     "is_answerable": true,
     "expected_page": 1,
-    "expected_answer_keywords": ["2,400", "first", "month"],
-    "explanation": "Section 2 specifies $2,400.00 payable in advance on or before the first day of each calendar month."
+    "expected_answer_keywords": ["28,000", "first", "month"],
+    "explanation": "Section 2 specifies ₹28,000.00 payable in advance on or before the first day of each calendar month."
   },
   {
     "id": "q2_rental_deposit",
@@ -14,8 +14,8 @@
     "question": "How much security deposit must the tenant provide?",
     "is_answerable": true,
     "expected_page": 1,
-    "expected_answer_keywords": ["2,400", "security deposit"],
-    "explanation": "Section 3 specifies a security deposit of $2,400.00."
+    "expected_answer_keywords": ["1,50,000", "security deposit"],
+    "explanation": "Section 3 specifies a security deposit of ₹1,50,000.00."
   },
   {
     "id": "q3_rental_sublet",
@@ -41,8 +41,8 @@
     "question": "Which state's laws govern this residential lease?",
     "is_answerable": true,
     "expected_page": 2,
-    "expected_answer_keywords": ["Illinois"],
-    "explanation": "Section 7 states the agreement is governed by the laws of the State of Illinois."
+    "expected_answer_keywords": ["Karnataka"],
+    "explanation": "Section 7 states the agreement is governed by the laws of the State of Karnataka."
   },
   {
     "id": "q6_nda_term",
@@ -59,8 +59,8 @@
     "question": "What governing law applies to this non-disclosure agreement?",
     "is_answerable": true,
     "expected_page": 2,
-    "expected_answer_keywords": ["Delaware"],
-    "explanation": "Section 4 specifies the laws of the State of Delaware."
+    "expected_answer_keywords": ["India", "Bengaluru", "Karnataka"],
+    "explanation": "Section 4 specifies the laws of India and courts in Bengaluru, Karnataka."
   },
   {
     "id": "q8_one_sided_renewal",
@@ -77,8 +77,8 @@
     "question": "What is the vendor's total aggregate liability limit under the contract?",
     "is_answerable": true,
     "expected_page": 2,
-    "expected_answer_keywords": ["100", "one hundred dollars"],
-    "explanation": "Section 4 limits vendor total aggregate liability to $100.00."
+    "expected_answer_keywords": ["1,000", "one thousand rupees"],
+    "explanation": "Section 4 limits vendor total aggregate liability to ₹1,000.00."
   },
   {
     "id": "q10_one_sided_late_charges",
@@ -86,8 +86,8 @@
     "question": "What late fee and interest rate apply to overdue payments?",
     "is_answerable": true,
     "expected_page": 1,
-    "expected_answer_keywords": ["2.5%", "compounded daily", "500"],
-    "explanation": "Section 2 imposes 2.5% monthly late interest compounded daily plus a $500 fee."
+    "expected_answer_keywords": ["2.5%", "compounded daily", "50,000"],
+    "explanation": "Section 2 imposes 2.5% monthly late interest compounded daily plus a ₹50,000 fee."
   },
   {
     "id": "q11_rental_non_compete",

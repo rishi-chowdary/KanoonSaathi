@@ -101,7 +101,16 @@ Simplifies an arbitrary legal clause without uploading a full document.
 - **Success**: `200 OK` with `simple`, `detailed`, `professional`, Flesch readability scores before and after, matched glossary terms, and trap warnings.
 
 ### `GET /api/glossary`
-Returns the local legal glossary entries from `data/glossary.yaml`.
+Returns the local Indian and general legal glossary entries from `data/glossary.yaml`.
+
+### `GET /api/statutes`
+Searches offline BNS 2023 <-> IPC 1860 sections and Constitution of India articles.
+- **Query params**: `q` (section number, article number, or keyword), `type` (`all`, `bns`, `ipc`, `constitution`).
+
+### `POST /api/issue-helper`
+Matches an everyday plain-English description of a legal problem to possible Indian legal provisions (BNS/IPC, Constitution, Negotiable Instruments Act, IT Act, Consumer Protection Act, Labour/Tenancy/Contract laws).
+- **Body**: `{"issue": "Someone took Rs. 50,000 promising a job via UPI and blocked my number."}`
+- **Success**: `200 OK` with `matched`, `summary`, `disclaimer`, and `suggestions` (`citation`, `title`, `category`, `relevance`, `plainEnglish`, `details`, `whereToFile`, `nextSteps`, `excerpt`).
 
 ## 6. Reports and dashboard
 
