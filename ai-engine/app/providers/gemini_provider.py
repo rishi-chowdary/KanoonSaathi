@@ -18,7 +18,7 @@ T = TypeVar("T", bound=BaseModel)
 class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str | None = None, model_name: str | None = None):
         self._api_key = api_key or settings.gemini_api_key
-        self._model_name = model_name or settings.gemini_model or "gemini-1.5-flash"
+        self._model_name = model_name or settings.gemini_model or "gemini-3.5-flash-lite"
         self._client = None
         if self._api_key and not self._api_key.startswith("replace_with"):
             self._client = genai.Client(api_key=self._api_key)

@@ -1,18 +1,18 @@
 # Phase 7 Evaluation: Risk Identification, Key Information & Missing Provisions
 
-**Generated**: 2026-11-17 15:04:55  
+**Generated**: 2026-11-17 16:07:38  
 **Evaluator**: Automated Phase 7 Test Suite  
-**LLM Provider**: Ollama (`qwen2.5:latest`)  
+**LLM Provider**: Gemini (`gemini-3.5-flash-lite`)  
 
 ## 1. Overall Summary
 
 | Metric | Measured Value | Standard / Threshold | Compliance Status |
 |---|---|---|---|
-| **Contracts Evaluated** | 3 | $\ge 3$ diverse samples | Verified |
-| **Total Gold Risks** | 10 | Hand-curated ground truth | Verified |
-| **Risk Recall** | **90.0%** | $\ge 70.0\%$ | **PASS** |
-| **Risk Precision** | **60.0%** | $\ge 60.0\%$ | **PASS** |
-| **Risk F1-Score** | **0.720** | $\ge 0.65$ | **PASS** |
+| **Contracts Evaluated** | 4 | $\ge 3$ diverse samples | Verified |
+| **Total Gold Risks** | 13 | Hand-curated ground truth | Verified |
+| **Risk Recall** | **92.3%** | $\ge 70.0\%$ | **PASS** |
+| **Risk Precision** | **100.0%** | $\ge 60.0\%$ | **PASS** |
+| **Risk F1-Score** | **0.960** | $\ge 0.65$ | **PASS** |
 | **Rule 7 Forbidden Phrases** | **0** | Exactly 0 (no legal conclusions) | **STRICT PASS** |
 | **Rule 6 "Not specified" Accuracy** | **100%** | Absent fields must be "Not specified" | **PASS** |
 | **Missing Provisions Standard Label** | **100%** | All labeled "Possible omission" | **PASS** |
@@ -21,9 +21,10 @@
 
 | Contract | Document Type | Gold Risks | Extracted Risks | TP | Recall | Precision | F1 | Missing Warnings |
 |---|---|---|---|---|---|---|---|---|
-| `rental_agreement.pdf` | rental_lease | 3 | 5 | 3 | 100.0% | 60.0% | 0.750 | 5 |
-| `clean_nda.pdf` | nda | 1 | 3 | 1 | 100.0% | 33.3% | 0.500 | 5 |
-| `one_sided_agreement.pdf` | service_agreement | 6 | 7 | 5 | 83.3% | 71.4% | 0.769 | 6 |
+| `rental_agreement.pdf` | rental_lease | 3 | 2 | 2 | 66.7% | 100.0% | 0.800 | 3 |
+| `clean_nda.pdf` | nda | 1 | 1 | 1 | 100.0% | 100.0% | 1.000 | 4 |
+| `one_sided_agreement.pdf` | service_agreement | 6 | 6 | 6 | 100.0% | 100.0% | 1.000 | 3 |
+| `employment_agreement.pdf` | employment | 3 | 3 | 3 | 100.0% | 100.0% | 1.000 | 1 |
 
 ## 3. Grounding & Rule Verification Details
 

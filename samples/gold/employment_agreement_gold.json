@@ -65,6 +65,46 @@
       "key_quote": "laws of the State of California",
       "importance": "LOW"
     }
+  ],
+  "gold_risks": [
+    {
+      "id": "emp_risk_1",
+      "title": "Post-Employment Non-Compete Restriction",
+      "category": "Restrictive Covenants",
+      "level": "HIGH",
+      "key_indicators": ["twelve (12) months", "directly competes", "shall not directly or indirectly"],
+      "why_it_matters": "Imposes a 12-month post-employment restriction on working with competing businesses, which may face enforceability issues under California law."
+    },
+    {
+      "id": "emp_risk_2",
+      "title": "Broad Intellectual Property Assignment",
+      "category": "Intellectual Property",
+      "level": "MEDIUM",
+      "key_indicators": ["assigns to Company", "all right, title, and interest", "inventions"],
+      "why_it_matters": "Assigns all inventions and intellectual property created during employment to Company."
+    },
+    {
+      "id": "emp_risk_3",
+      "title": "Termination Without Cause by Employer",
+      "category": "Contractual",
+      "level": "MEDIUM",
+      "key_indicators": ["terminate Employee", "at any time without cause", "thirty (30) days"],
+      "why_it_matters": "Employer can terminate employment at any time without cause upon 30 days notice."
+    }
+  ],
+  "gold_key_info": {
+    "contract_amount": "$185,000.00",
+    "payment_deadlines": "bi-weekly",
+    "penalties": "Not specified",
+    "start_date": "March 1, 2026",
+    "end_date": "Not specified",
+    "renewal_date": "Not specified",
+    "notice_period": "thirty (30) days"
+  },
+  "gold_missing_provisions": [
+    "Severance Package or Separation Pay Terms",
+    "Employee Termination for Good Reason",
+    "Scope of Pre-Existing Inventions Exclusion"
   ]
 }
 

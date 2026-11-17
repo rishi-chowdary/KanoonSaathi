@@ -578,7 +578,7 @@ node frontend/test-phase6-e2e.cjs
   - Grounding & Evidence Quotes: Normalized exact and fuzzy quote verifier (`verify_quote`) mapping quotes to page numbers and setting `quote_verified = True/False`. Injected jurisdiction caveat banner when governing law is absent.
   - `POST /internal/analyze/key-info`: Normalized extraction of contract amounts, payment deadlines, penalties, milestone dates, notice periods, and obligations. Strictly enforced **Rule 6**: absent fields default to `"Not specified"` with `source_page: None` and `evidence_quote: None`.
   - `POST /internal/analyze/missing`: Curated provision checklists in `app/analyzers/expected_provisions.yaml` mapped to detected contract type (`employment`, `rental_lease`, `nda`, `service_agreement`, `sale`, `loan`, `other`). Strictly labeled all items `"Possible omission"` with a statutory legal disclaimer.
-  - AI Engine Unit Tests: 47 pytest tests passing (`test_risks.py`, `test_key_info.py`, `test_missing.py`, `test_clauses.py`, `test_summary.py`, `test_simplify.py`, `test_extraction.py`, `test_health.py`).
+  - AI Engine Unit Tests: 49 pytest tests passing (`test_risks.py`, `test_key_info.py`, `test_missing.py`, `test_clauses.py`, `test_summary.py`, `test_simplify.py`, `test_extraction.py`, `test_health.py`).
 - [x] Spring Boot Backend Entities, Persistence & Pipeline Extension:
   - Entities & Flyway Migrations: `RiskFinding`, `ExtractedInformation`, and `MissingClauseWarning` entities linked via foreign keys to `DocumentAnalysis` with `ON DELETE CASCADE`.
   - Extended `DocumentAsyncPipeline`: chained analysis flow `EXTRACTED` -> `ANALYZING (Summary)` -> `ANALYZING (Clauses)` -> `ANALYZING (Risks)` -> `ANALYZING (Key Info)` -> `ANALYZING (Missing Provisions)` -> `COMPLETED`.
@@ -593,16 +593,20 @@ node frontend/test-phase6-e2e.cjs
   - `MissingProvisionsTab.jsx`: Statutory legal disclaimer banner, "Possible omission" badges, and expandable typical provision language for negotiation aid.
   - Integrated into `AnalysisPage.jsx` with real-time tab switching and preview rendering.
 - [x] Evaluation & Verification Suite:
-  - Hand-curated ground truth files across 3 sample contracts: `rental_agreement.pdf` (`rental_agreement_gold.json`), `clean_nda.pdf` (`clean_nda_gold.json`), and deliberately one-sided contract `one_sided_agreement.pdf` (`one_sided_agreement_gold.json` featuring uncapped indemnification, unilateral termination, and 180-day auto-renewal trap).
-  - Executed benchmark `evaluation/evaluate_phase7.py`:
-    - Total Gold Risks: 10 | Matched (TP): 9
-    - Overall Risk Recall: **90.0%**
-    - Overall Risk Precision: **60.0%**
-    - Overall Risk F1: **0.720**
+  - Hand-curated ground truth files across 4 sample contracts: `rental_agreement.pdf` (`rental_agreement_gold.json`), `clean_nda.pdf` (`clean_nda_gold.json`), `employment_agreement.pdf` (`employment_agreement_gold.json`), and deliberately one-sided contract `one_sided_agreement.pdf` (`one_sided_agreement_gold.json` featuring uncapped indemnification, unilateral termination, and 180-day auto-renewal trap).
+  - Executed benchmark `evaluation/evaluate_phase7.py` with Gemini (`gemini-3.5-flash-lite`):
+    - Contracts Evaluated: 4 diverse contracts
+    - Total Gold Risks: 13 | Matched (TP): 12
+    - Overall Risk Recall: **92.3%**
+    - Overall Risk Precision: **100.0%**
+    - Overall Risk F1: **0.960**
     - Rule 7 Violations in Results: **0** (Zero allowed - strict pass)
     - Rule 6 "Not specified" Adherence: **100%**
-    - Missing Provisions Standard Label: **100%** ("Possible omission")
-  - PostgreSQL Database Verification: Executed SQL query `WHERE explanation ~* '\y(illegal|void|unenforceable)\y'` yielding exactly 0 rows. Verified SQL `GROUP BY level` counts match UI Recharts chart counts exactly (Medium: 1, Low: 5, Total: 6).
+    - Missing Provisions Standard Label: **100%** ("Possible omission" with statutory disclaimer)
+  - Database & UI Audit:
+    - Executed SQL query `WHERE explanation ~* '\y(illegal|void|unenforceable)\y'` yielding exactly 0 rows across Supabase PostgreSQL.
+    - Verified SQL `GROUP BY level` counts match UI Recharts chart counts exactly (`MEDIUM`: 1, `HIGH`: 0, `LOW`: 0, `INFORMATIONAL`: 0 for test document).
+    - Verified edge cases in pytest: contracts lacking payment deadlines receive the appropriate omission warning, and complete agreements (e.g. NDAs) do not produce absurd non-applicable omissions (e.g., lease evictions or wage schedules).
 
 **What was built:**
 - AI Engine (`ai-engine/`):

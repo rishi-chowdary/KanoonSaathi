@@ -182,7 +182,8 @@ def main():
     test_pairs = [
         ("samples/contracts/rental_agreement.pdf", "samples/gold/rental_agreement_gold.json"),
         ("samples/contracts/clean_nda.pdf", "samples/gold/clean_nda_gold.json"),
-        ("samples/contracts/one_sided_agreement.pdf", "samples/gold/one_sided_agreement_gold.json")
+        ("samples/contracts/one_sided_agreement.pdf", "samples/gold/one_sided_agreement_gold.json"),
+        ("samples/contracts/employment_agreement.pdf", "samples/gold/employment_agreement_gold.json")
     ]
 
     results = []
@@ -220,11 +221,13 @@ def main():
         json.dump(results, f, indent=2)
 
     # Markdown Report
+    llm_provider_display = os.environ.get("LLM_PROVIDER", "gemini")
+    llm_model_display = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
     md_content = f"""# Phase 7 Evaluation: Risk Identification, Key Information & Missing Provisions
 
 **Generated**: {time.strftime('%Y-%m-%d %H:%M:%S')}  
 **Evaluator**: Automated Phase 7 Test Suite  
-**LLM Provider**: Ollama (`qwen2.5:latest`)  
+**LLM Provider**: {llm_provider_display.title()} (`{llm_model_display}`)  
 
 ## 1. Overall Summary
 
