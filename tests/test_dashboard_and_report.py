@@ -1,4 +1,4 @@
-"""Tests for Phase M8: Dashboard SQL Aggregates, ReportLab PDF Dossier & Multi-Tenant Isolation."""
+"""Tests for dashboard SQL aggregates, ReportLab PDF report generation, and tenant isolation."""
 
 from pathlib import Path
 
@@ -17,27 +17,21 @@ from app.services.document_service import (
 from app.services.report_service import generate_pdf_report
 
 
-def test_seed_two_users_dashboard_numbers_no_leak(app):
-    """Seed two users with different contracts and confirm dashboard numbers match manual SQL without leaking."""
+def test_dashboard_counts_stay_isolated_per_user(app):
+    """Dashboard aggregates stay isolated per user and match direct SQL counts."""
     with app.app_context():
         from app.extensions import db
 
-        # 1. Create User 1
-        u1 = User.query.filter_by(email="user_one_m8@example.com").first()
+        u1 = User.query.filter_by(email="user_one@example.com").first()
         if not u1:
-            u1 = User(
-                email="user_one_m8@example.com", full_name="User One", role="USER"
-            )
+            u1 = User(email="user_one@example.com", full_name="User One", role="USER")
             u1.set_password("Password123!")
             db.session.add(u1)
             db.session.commit()
 
-        # 2. Create User 2
-        u2 = User.query.filter_by(email="user_two_m8@example.com").first()
+        u2 = User.query.filter_by(email="user_two@example.com").first()
         if not u2:
-            u2 = User(
-                email="user_two_m8@example.com", full_name="User Two", role="USER"
-            )
+            u2 = User(email="user_two@example.com", full_name="User Two", role="USER")
             u2.set_password("Password123!")
             db.session.add(u2)
             db.session.commit()
@@ -126,10 +120,10 @@ def test_delete_document_dashboard_counts_update(app):
     with app.app_context():
         from app.extensions import db
 
-        u_del = User.query.filter_by(email="delete_user_m8@example.com").first()
+        u_del = User.query.filter_by(email="delete_user@example.com").first()
         if not u_del:
             u_del = User(
-                email="delete_user_m8@example.com",
+                email="delete_user@example.com",
                 full_name="Delete User",
                 role="USER",
             )
@@ -161,11 +155,11 @@ def test_pdf_report_generation_10_sections_and_unicode(app):
     with app.app_context():
         from app.extensions import db
 
-        test_u = User.query.filter_by(email="report_tester_m8@example.com").first()
+        test_u = User.query.filter_by(email="report_tester@example.com").first()
         if not test_u:
             test_u = User(
-                email="report_tester_m8@example.com",
-                full_name="Report Tester M8",
+                email="report_tester@example.com",
+                full_name="Report Tester",
                 role="USER",
             )
             test_u.set_password("SecurePassword123!")
@@ -193,18 +187,16 @@ def test_pdf_report_generation_10_sections_and_unicode(app):
 
             # Inspect rendered PDF structure via PyMuPDF
             pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
-            assert len(pdf) >= 2  # Multi-page dossier
+            assert len(pdf) >= 2
 
             all_text = " ".join([page.get_text() for page in pdf])
 
-            # 1. Running headers & dynamic Page X of Y
             assert f"Page 1 of {len(pdf)}" in all_text
 
-            # 2. Section checks
             assert "1. Executive Summary" in all_text
             assert "2. Important Contractual Provisions" in all_text
-            assert "3. Tri-Tier Plain-Language Explanations" in all_text
-            assert "4. Grounded Contract Risk Assessment" in all_text
+            assert "3. Plain-Language Explanations" in all_text
+            assert "4. Contract Risk Assessment" in all_text
             assert "5. Financial Terms & Payment Structure" in all_text
             assert "6. Critical Dates & Timelines" in all_text
             assert "7. Standard Provisions Checklist" in all_text
@@ -319,8 +311,8 @@ def test_report_endpoint_authorization(client, app):
     assert len(resp_owner.data) > 10000
 
 
-def test_empty_state_dashboard_brand_new_user(client, app):
-    """Empty-state dashboard for a brand-new user returns 0s and displays clean onboarding UI."""
+def test_empty_dashboard_for_new_user(client, app):
+    """Brand-new user sees zero metrics and an empty-state prompt."""
     with app.app_context():
         from app.extensions import db
 
@@ -355,9 +347,8 @@ def test_empty_state_dashboard_brand_new_user(client, app):
     resp_html = client.get("/dashboard")
     assert resp_html.status_code == 200
     html_text = resp_html.get_data(as_text=True)
-    assert "Welcome to LexiLegal AI" in html_text
-    assert "Upload your first contract to extract important clauses" in html_text
-    assert "Upload Your First Contract" in html_text
+    assert "No documents yet. Upload a contract to get started." in html_text
+    assert "Upload" in html_text
 
     # Check API stats endpoint
     resp_api = client.get("/api/dashboard/stats")

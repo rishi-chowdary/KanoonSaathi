@@ -131,18 +131,13 @@ def profile():
     return render_template("auth/profile.html", form=form, stats=stats)
 
 
-# -----------------------------------------------------------------------------
-# REST API endpoints for backwards compatibility and automated testing
-# -----------------------------------------------------------------------------
-
-
 @auth_bp.route("/api/auth/register", methods=["POST"])
 @csrf.exempt
 def api_register():
-    data = request.get_json() or {}
-    email = data.get("email", "").lower().strip()
-    password = data.get("password", "")
-    full_name = data.get("fullName") or data.get("full_name") or ""
+    payload = request.get_json() or {}
+    email = payload.get("email", "").lower().strip()
+    password = payload.get("password", "")
+    full_name = payload.get("fullName") or payload.get("full_name") or ""
 
     if not email or "@" not in email:
         return jsonify({"error": "A valid email address is required"}), 400
@@ -169,9 +164,9 @@ def api_register():
 @auth_bp.route("/api/auth/login", methods=["POST"])
 @csrf.exempt
 def api_login():
-    data = request.get_json() or {}
-    email = data.get("email", "").lower().strip()
-    password = data.get("password", "")
+    payload = request.get_json() or {}
+    email = payload.get("email", "").lower().strip()
+    password = payload.get("password", "")
 
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
@@ -210,8 +205,8 @@ def api_profile():
     if request.method == "GET":
         return jsonify(current_user.to_dict()), 200
 
-    data = request.get_json() or {}
-    full_name = data.get("fullName") or data.get("full_name")
+    payload = request.get_json() or {}
+    full_name = payload.get("fullName") or payload.get("full_name")
     if full_name:
         current_user.full_name = full_name.strip()
         db.session.commit()

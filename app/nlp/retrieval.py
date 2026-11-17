@@ -231,7 +231,6 @@ def hybrid_retrieve_chunks(
             for idx, c in enumerate(sorted_chunks)
         ]
 
-    # 1. Dense Semantic Ranking (SBERT)
     sbert = get_sentence_transformer()
     q_emb = sbert.encode([query], normalize_embeddings=True)[0]
 
@@ -243,12 +242,12 @@ def hybrid_retrieve_chunks(
     dense_indices = np.argsort(-dense_similarities)
     dense_ranks = {chunks[idx]: rank + 1 for rank, idx in enumerate(dense_indices)}
 
-    # 2. Sparse Lexical Ranking (BM25)
     bm25_scores = bm25_score_chunks(query, chunks)
     bm25_scores.sort(key=lambda x: x[1], reverse=True)
-    sparse_ranks = {item[0]: rank + 1 for rank, item in enumerate(bm25_scores)}
+    sparse_ranks = {
+        chunk_score[0]: rank + 1 for rank, chunk_score in enumerate(bm25_scores)
+    }
 
-    # 3. Reciprocal Rank Fusion (RRF)
     # RRF_score(d) = 1/(rrf_k + dense_rank) + 1/(rrf_k + sparse_rank)
     fused_results: list[dict[str, Any]] = []
 
@@ -269,6 +268,5 @@ def hybrid_retrieve_chunks(
             }
         )
 
-    # Sort descending by fused score
     fused_results.sort(key=lambda x: x["score"], reverse=True)
     return fused_results[:top_k]

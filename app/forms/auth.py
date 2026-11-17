@@ -4,7 +4,6 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 
 class LoginForm(FlaskForm):
-    """User login form with email and password."""
 
     email = StringField(
         "Email Address",
@@ -22,7 +21,6 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-    """New user registration form."""
 
     full_name = StringField(
         "Full Name",
@@ -56,7 +54,6 @@ class RegisterForm(FlaskForm):
 
 
 class ProfileForm(FlaskForm):
-    """User profile update form."""
 
     full_name = StringField(
         "Full Name",

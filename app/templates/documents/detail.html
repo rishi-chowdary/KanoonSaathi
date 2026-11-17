@@ -8,15 +8,15 @@
 
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+<div class="doc-header">
   <div>
-    <a href="{{ url_for('documents.list_view') }}" style="font-size: 0.9rem; color: var(--text-muted); display: inline-block; margin-bottom: 0.5rem;">
+    <a href="{{ url_for('documents.list_view') }}" style="font-size: 0.88rem; color: var(--text-muted); display: inline-block; margin-bottom: 0.35rem;">
       &larr; Back to documents
     </a>
-    <h1 style="font-size: 1.85rem; margin: 0 0 0.5rem 0;">{{ document.original_filename }}</h1>
+    <h1 style="margin: 0 0 0.4rem 0;">{{ document.original_filename }}</h1>
     {% if analysis and analysis.document_type %}
       <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-        <span class="badge badge-info">{{ analysis.document_type }}</span>
+        <span class="badge">{{ analysis.document_type }}</span>
         {% if analysis.parties and analysis.parties|length > 0 %}
           <span style="font-size: 0.85rem; color: var(--text-muted);">
             Parties: <strong>{{ analysis.parties|join(", ") }}</strong>
@@ -25,67 +25,61 @@
       </div>
     {% endif %}
   </div>
-  <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+  <div class="doc-header-actions">
     {% if analysis and analysis.verification_rate is not none %}
-      <span class="badge badge-success" title="100% of clause quotes verified directly from source text">
-        &#10003; {{ analysis.verification_rate }}% Quote Verified
-      </span>
+      <span class="badge badge-provenance">Source match: {{ "%.0f"|format(analysis.verification_rate) }}%</span>
     {% endif %}
     {% if analysis %}
-      <a href="{{ url_for('documents.view_document_report', doc_id=document.id) }}" target="_blank" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 0.35rem;">
-        📄 Download PDF Report
+      <a href="{{ url_for('reports.view_document_report', doc_id=document.id) }}" target="_blank" class="btn btn-secondary btn-sm">
+        Download report
       </a>
     {% endif %}
-    <form action="{{ url_for('documents.delete_view', doc_id=document.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this document?');">
+    <form action="{{ url_for('documents.delete_view', doc_id=document.id) }}" method="POST" onsubmit="return confirm('Delete this document and its analysis?');">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-danger);">
-        Delete Document
-      </button>
+      <button type="submit" class="btn btn-danger-outline btn-sm">Delete</button>
     </form>
   </div>
 </div>
 
-<div class="card" style="margin-bottom: 1.5rem;">
+<div class="card">
   <div class="card-header">
-    <h2 class="card-title">Document Details</h2>
+    <h2 class="card-title">Document details</h2>
   </div>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.95rem;">
+  <div class="doc-meta-grid" style="font-size: 0.92rem;">
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Status</span>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">Status</span>
       <strong>
         {% if document.status == 'COMPLETED' %}
           <span class="badge badge-success">Completed</span>
         {% elif document.status == 'ANALYZING' %}
           <span class="badge badge-warning">Analyzing</span>
         {% else %}
-          <span class="badge badge-info">{{ document.status }}</span>
+          <span class="badge">{{ document.status }}</span>
         {% endif %}
       </strong>
     </div>
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Format</span>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">Format</span>
       <strong>{{ document.file_type }}</strong>
       {% if document.is_scanned %}
         <span class="badge badge-warning" style="margin-left: 0.35rem;">OCR</span>
       {% endif %}
     </div>
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Page Count</span>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">Pages</span>
       <strong>{{ document.page_count }}</strong>
     </div>
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Clauses Found</span>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">Clauses</span>
       <strong>{{ clauses|length if clauses else 0 }}</strong>
     </div>
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Uploaded</span>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">Uploaded</span>
       <strong>{{ document.created_at.strftime('%Y-%m-%d %H:%M') if document.created_at else '-' }}</strong>
     </div>
     <div style="grid-column: 1 / -1;">
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">SHA-256 Digest</span>
-      <code style="font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all;">
-        {{ document.file_hash }}
-      </code>
+      <span style="color: var(--text-muted); display: block; font-size: 0.82rem;">SHA-256 Digest</span>
+      <code class="mono-wrap">{{ document.file_hash }}</code>
     </div>
   </div>
 </div>
@@ -134,9 +128,7 @@
             <h3 style="font-size: 0.95rem; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-success); margin: 0;">
               Plain-Language Simplified Summary
             </h3>
-            <span class="badge" style="font-size: 0.72rem; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted);">
-              RULE_BASED
-            </span>
+            <span class="badge badge-provenance">Rule-based</span>
           </div>
           <p style="margin: 0; line-height: 1.65; color: var(--text-main); font-size: 0.98rem;">
             {{ simplified_summary }}
@@ -156,15 +148,13 @@
             <h3 style="font-size: 0.95rem; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0;">
               Verbatim Extractive Executive Summary
             </h3>
-            <span class="badge" style="font-size: 0.72rem; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted);">
-              EXTRACTED
-            </span>
+            <span class="badge badge-provenance">From the document</span>
           </div>
           <p style="margin: 0; line-height: 1.6; color: var(--text-main);">
             {{ analysis.summary_short }}
           </p>
           <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--color-success);">
-            &#10003; 100% grounded — sentences extracted verbatim from source text
+            Sentences extracted directly from the contract text
           </div>
         </div>
       {% endif %}
@@ -182,7 +172,7 @@
     </div>
 
     <!-- Structured Highlights -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
       {% if analysis.obligations_summary and analysis.obligations_summary|length > 0 %}
         <div class="card">
           <div class="card-header">
@@ -227,7 +217,7 @@
   <div class="card" style="margin-bottom: 1.5rem;">
     <div class="card-header">
       <h2 class="card-title">Commercial & Operational Terms</h2>
-      <p class="card-subtitle">Exact extracted facts with strict Rule 6 ("Not specified") ground truth guarantees</p>
+      <p class="card-subtitle">Extracted contract fields; terms not found in the document default to "Not specified"</p>
     </div>
 
     {% if key_info %}
@@ -450,39 +440,30 @@
               <h3 class="clause-title">{{ clause.title }}</h3>
             </div>
             <div class="clause-badges">
-              <span class="badge badge-info">{{ clause.category }}{% if clause.custom_label and clause.category == 'Other' %}: {{ clause.custom_label }}{% endif %}</span>
+              <span class="badge">{{ clause.category }}{% if clause.custom_label and clause.category == 'Other' %}: {{ clause.custom_label }}{% endif %}</span>
               {% if clause.importance == 'HIGH' %}
-                <span class="badge badge-danger">High Impact</span>
+                <span class="badge badge-danger">High</span>
               {% elif clause.importance == 'MEDIUM' %}
-                <span class="badge badge-warning">Medium Impact</span>
+                <span class="badge badge-warning">Medium</span>
               {% else %}
-                <span class="badge badge-info" style="opacity: 0.85;">Low Impact</span>
+                <span class="badge">Low</span>
               {% endif %}
-              <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
-                Page {{ clause.source_page }}
-              </span>
-              <span class="badge badge-success" title="Ground truth exact slice">
-                {{ clause.provenance }}
-              </span>
-              <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 0.15rem 0.45rem; text-decoration: none;" title="Explore in Simplification Studio">
-                ⚡ Studio
-              </a>
+              <span class="badge badge-provenance">From the document &middot; p. {{ clause.source_page }}</span>
             </div>
           </div>
 
-
-          <!-- Evidence Quote Box -->
           <div class="evidence-quote-box">
             &ldquo;{{ clause.evidence_quote }}&rdquo;
             <div>
               <span class="quote-verification-tag">
-                &#10003; Verified exact source quote
+                Matched in source text (Page {{ clause.source_page }})
               </span>
               {% if clause.affected_party %}
                 <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.75rem; font-style: normal;">
-                  Bound Party: <strong>{{ clause.affected_party }}</strong>
+                  Bound party: <strong>{{ clause.affected_party }}</strong>
                 </span>
               {% endif %}
+              <a href="{{ url_for('studio.studio_index') }}" style="font-size: 0.8rem; margin-left: 0.75rem; font-style: normal;">Open in Studio</a>
             </div>
           </div>
 
@@ -510,7 +491,7 @@
             <summary style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">
               View full clause text slice
             </summary>
-            <pre style="margin-top: 0.5rem; padding: 0.75rem; background: var(--bg-surface-alt); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; white-space: pre-wrap; line-height: 1.4; color: var(--text-main);">{{ clause.original_text }}</pre>
+            <pre class="source-pre">{{ clause.original_text }}</pre>
           </details>
         </div>
       {% endfor %}
@@ -522,11 +503,11 @@
   {% endif %}
 </div>
 
-<!-- Tab: Grounded Risk Analysis -->
+<!-- Tab: Risk Analysis -->
 <div id="risks-tab" class="tab-content">
   {% if risks and risks|length > 0 %}
     <!-- Chart.js Visualization Cards -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="risk-charts-grid">
+    <div class="charts-grid risk-charts-grid">
       <div class="card" style="padding: 1.25rem;">
         <h3 style="font-size: 1rem; margin: 0 0 1rem 0; font-family: var(--font-serif); color: var(--color-primary);">
           Risks by Category
@@ -553,7 +534,7 @@
       <button type="button" class="filter-pill risk-filter-pill" data-risk-level="MEDIUM" style="border-color: var(--color-warning); color: var(--color-warning);">Medium</button>
       <button type="button" class="filter-pill risk-filter-pill" data-risk-level="LOW" style="border-color: var(--color-info); color: var(--color-info);">Low</button>
       <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
-        Rule 7 Compliant: Grounded advisory warnings (no definitive legal conclusions)
+        Advisory warnings only (not legal conclusions)
       </div>
     </div>
 
@@ -574,36 +555,29 @@
                 <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
                   {{ risk.category }}
                 </span>
-                <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
-                  Page {{ risk.source_page }}
-                </span>
-                <span class="badge badge-success" title="Exact source quote">
-                  {{ risk.provenance }}
+                <span class="badge badge-provenance">
+                  {% if risk.provenance == 'MODEL_PREDICTION' %}Model prediction{% else %}Rule-based{% endif %} &middot; p. {{ risk.source_page }}
                 </span>
               </div>
-              <h3 style="font-size: 1.15rem; margin: 0; font-family: var(--font-serif); color: var(--text-main);">
+              <h3 style="font-size: 1.1rem; margin: 0; color: var(--text-main);">
                 {{ risk.title }}
               </h3>
             </div>
             {% if risk.jurisdiction_caveat %}
-              <span class="badge" style="background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid var(--color-warning-border); font-size: 0.75rem;">
-                ⚠️ Jurisdiction Dependent
-              </span>
+              <span class="badge badge-warning">Jurisdiction dependent</span>
             {% endif %}
           </div>
 
-          <!-- Evidence Quote -->
           <div class="evidence-quote-box" style="margin-bottom: 1rem;">
             &ldquo;{{ risk.evidence_quote }}&rdquo;
             <div>
               <span class="quote-verification-tag">
-                &#10003; Verified exact contract quote (Page {{ risk.source_page }})
+                From the document (Page {{ risk.source_page }})
               </span>
             </div>
           </div>
 
-          <!-- Explanation & Consequences -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; font-size: 0.92rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.85rem; margin-bottom: 1rem; font-size: 0.9rem;">
             <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
               <strong style="color: var(--color-primary); display: block; margin-bottom: 0.35rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
                 Why This Matters
@@ -637,7 +611,7 @@
   {% else %}
     <div class="card" style="text-align: center; padding: 3rem 1rem;">
       <p style="color: var(--color-success); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.05rem;">
-        ✓ No significant contract risks detected for this document.
+        No elevated contract risks detected for this document.
       </p>
       <span style="font-size: 0.85rem; color: var(--text-muted);">
         All analyzed clauses conform to typical commercial baselines.
@@ -695,7 +669,7 @@
     {% else %}
       <div style="text-align: center; padding: 2rem 1rem;">
         <p style="color: var(--color-success); font-weight: 600; margin-bottom: 0.25rem;">
-          ✓ All expected provisions present
+          All expected provisions appear present
         </p>
         <span style="font-size: 0.85rem; color: var(--text-muted);">
           This agreement contains all customary clauses expected for {{ analysis.document_type or 'its type' }}.
@@ -738,7 +712,7 @@
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
       <div>
         <h2 class="card-title" style="margin-bottom: 0.25rem;">Document Q&A & Semantic Inquiries</h2>
-        <p class="card-subtitle" style="margin: 0;">Extractive, page-grounded question answering powered by Hybrid Retrieval (SBERT + BM25) and MiniLM SQuAD 2.0</p>
+        <p class="card-subtitle" style="margin: 0;">Answers come from the document text with page citations (hybrid SBERT + BM25 search and extractive QA).</p>
       </div>
       <button type="button" id="chat-clear-btn" class="btn btn-secondary btn-sm" style="font-size: 0.8rem;">
         Clear Conversation
@@ -772,9 +746,8 @@
     <!-- Chat Message Feed -->
     <div id="chat-messages-container" style="min-height: 280px; max-height: 480px; overflow-y: auto; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
       <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
-        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
-        <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
-        <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+        <p style="margin: 0; font-size: 0.92rem;">Ask a question about this contract or choose a suggested prompt below.</p>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.84rem; color: var(--text-muted);">Answers come directly from the document with page citations.</p>
       </div>
     </div>
 
@@ -982,7 +955,7 @@
       msgEl.style.cssText = 'align-self: flex-end; max-width: 80%; background: var(--color-primary); color: #ffffff; padding: 0.75rem 1rem; border-radius: var(--radius-sm) var(--radius-sm) 0 var(--radius-sm); font-size: 0.95rem; line-height: 1.5; word-break: break-word;';
       msgEl.textContent = msg.content;
     } else {
-      msgEl.style.cssText = 'align-self: flex-start; max-width: 85%; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.85rem 1.15rem; border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-main); word-break: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.04);';
+      msgEl.style.cssText = 'align-self: flex-start; max-width: 85%; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.85rem 1.15rem; border-radius: var(--radius-sm); font-size: 0.92rem; line-height: 1.6; color: var(--text-main); word-break: break-word;';
       
       let html = `<div style="font-weight: 500;">${escapeHtml(msg.content)}</div>`;
 
@@ -990,7 +963,7 @@
         html += '<div style="margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); font-size: 0.85rem; color: var(--text-muted);">';
         msg.citations.forEach(c => {
           html += `<div style="margin-bottom: 0.35rem; display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap;">
-            <span class="badge badge-success" style="font-size: 0.75rem; font-weight: 600;">&#10003; Page ${c.page}</span>
+            <span class="badge badge-provenance">Page ${c.page}</span>
             <span style="font-style: italic; color: var(--text-main);">${escapeHtml(c.quote || c.text || '')}</span>
           </div>`;
         });
@@ -1106,19 +1079,17 @@
           .then(() => {
             currentConversationId = null;
             chatContainer.innerHTML = `
-              <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
-                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
-                <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
-                <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+              <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+                <p style="margin: 0; font-size: 0.92rem;">Ask a question about this contract or choose a suggested prompt below.</p>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.84rem; color: var(--text-muted);">Answers come directly from the document with page citations.</p>
               </div>`;
           })
           .catch(err => console.log('Clear chat error:', err));
       } else {
         chatContainer.innerHTML = `
-          <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
-            <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
-            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+          <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 2.5rem 1rem;">
+            <p style="margin: 0; font-size: 0.92rem;">Ask a question about this contract or choose a suggested prompt below.</p>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.84rem; color: var(--text-muted);">Answers come directly from the document with page citations.</p>
           </div>`;
       }
     });

@@ -96,7 +96,7 @@ def test_api_get_document_and_text(client, test_user):
     assert len(text_resp.json["pages"]) == 2
 
 
-def test_document_ownership_isolation(client, test_user, app):
+def test_user_b_gets_404_for_user_a_document(client, test_user, app):
     """User B cannot view or delete User A's document (returns 404)."""
     # 1. Create second user
     with app.app_context():

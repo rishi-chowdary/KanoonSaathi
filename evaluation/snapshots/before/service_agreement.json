@@ -1,0 +1,231 @@
+{
+  "filename": "service_agreement.docx",
+  "page_count": 1,
+  "is_scanned": false,
+  "document_type": "Master Services Agreement",
+  "type_confidence": 0.95,
+  "parties": [
+    "Provider",
+    "Client"
+  ],
+  "clauses": [
+    {
+      "clause_index": 0,
+      "title": "Preamble and Recitals",
+      "section_reference": "Preamble",
+      "source_page": 1,
+      "start_offset": 0,
+      "end_offset": 135,
+      "original_text": "MASTER SERVICES AGREEMENT\n\nThis Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\").",
+      "category": "Other",
+      "custom_label": "Preamble and Recitals",
+      "confidence": 0.95,
+      "classification_method": {
+        "Other": 1.0
+      },
+      "importance": "LOW",
+      "affected_party": "Both parties",
+      "evidence_quote": "MASTER SERVICES AGREEMENT\n\nThis Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\").",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "MASTER SERVICES AGREEMENT This Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\").",
+        "detailed": "This Other clause establishes binding terms and requirements that directly apply to Both parties.\n\nCore Terms: MASTER SERVICES AGREEMENT This Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\").",
+        "professional": "• **Obligor / Bound Party**: Both parties\n• **Covenant Type**: Declaratory Covenant / Procedural Condition\n• **Core Duty**: MASTER SERVICES AGREEMENT This Master Services Agreement is made between CloudTech Inc\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 1,
+      "title": "Section 1. Scope of Services",
+      "section_reference": "Section 1",
+      "source_page": 1,
+      "start_offset": 137,
+      "end_offset": 269,
+      "original_text": "Section 1. Scope of Services\n\nProvider will perform software engineering and integration services as detailed in Statements of Work.",
+      "category": "Other",
+      "custom_label": "Scope of Services",
+      "confidence": 0.9,
+      "classification_method": {
+        "Other": 0.9
+      },
+      "importance": "LOW",
+      "affected_party": "Provider",
+      "evidence_quote": "Scope of Services\n\nProvider will perform software engineering and integration services as detailed in Statements of Work.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 1. Scope of Services Provider will perform software engineering and integration services as detailed in Statements of Work.",
+        "detailed": "This Other clause establishes binding terms and requirements that directly apply to Provider.\n\nCore Terms: Section 1. Scope of Services Provider will perform software engineering and integration services as detailed in Statements of Work.",
+        "professional": "• **Obligor / Bound Party**: Provider\n• **Covenant Type**: Declaratory Covenant / Procedural Condition\n• **Core Duty**: Section 1\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 2,
+      "title": "Section 2. Fees and Schedule",
+      "section_reference": "Section 2",
+      "source_page": 1,
+      "start_offset": 271,
+      "end_offset": 367,
+      "original_text": "Section 2. Fees and Schedule\n\nClient agrees to pay Provider according to the fee schedule below:",
+      "category": "Payment Terms",
+      "custom_label": null,
+      "confidence": 1.5,
+      "classification_method": {
+        "Confidentiality": 0.29531747007662357,
+        "Termination": 0.3524983346200154,
+        "Intellectual Property": 0.18314044285741785,
+        "Liability and Indemnification": 0.29742967445162755,
+        "Dispute Resolution": 0.21941738833132668,
+        "Governing Law": 0.3272724711351957,
+        "Payment Terms": 1.5,
+        "Representations and Warranties": 0.31555172461725667,
+        "Non-Compete and Non-Solicitation": 0.2945903486017224,
+        "Force Majeure": 0.23420511252943152,
+        "Assignment": 0.3850390495518711,
+        "Severability": 0.1953175663104589,
+        "Amendment": 0.34008978082209357,
+        "Notices": 0.2360340165222803,
+        "Term and Renewal": 0.37221338890659117,
+        "Data Protection and Privacy": 0.25582272979035997,
+        "Insurance": 0.3777199638160779,
+        "Other": 0.2576303300178995
+      },
+      "importance": "MEDIUM",
+      "affected_party": "Client",
+      "evidence_quote": "Fees and Schedule\n\nClient agrees to pay Provider according to the fee schedule below:",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 2. Fees and Schedule Client agrees to pay Provider according to the fee schedule below:.",
+        "detailed": "This Payment Terms clause establishes binding terms and requirements that directly apply to Client.\n\nCore Terms: Section 2. Fees and Schedule Client agrees to pay Provider according to the fee schedule below:.",
+        "professional": "• **Obligor / Bound Party**: Client\n• **Covenant Type**: Affirmative Covenant (Mandatory Performance)\n• **Core Duty**: Section 2\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 3,
+      "title": "Section 3. Intellectual Property",
+      "section_reference": "Section 3",
+      "source_page": 1,
+      "start_offset": 369,
+      "end_offset": 609,
+      "original_text": "Section 3. Intellectual Property\n\nAll deliverables developed under this Agreement shall be deemed works made for hire.\n\nMilestone | Deliverable | Amount (USD)\n\nPhase 1 | Architecture Design | $15,000\n\nPhase 2 | Core Implementation | $35,000",
+      "category": "Intellectual Property",
+      "custom_label": null,
+      "confidence": 1.5,
+      "classification_method": {
+        "Confidentiality": 0.34588612833023136,
+        "Termination": 0.48408931089876445,
+        "Intellectual Property": 1.5,
+        "Liability and Indemnification": 0.41195226620511205,
+        "Dispute Resolution": 0.376061152560361,
+        "Governing Law": 0.3131551618120986,
+        "Payment Terms": 0.3913688031959024,
+        "Representations and Warranties": 0.5095795999820953,
+        "Non-Compete and Non-Solicitation": 0.38153979211380445,
+        "Force Majeure": 0.19457292427203793,
+        "Assignment": 0.30692075486573595,
+        "Severability": 0.33418938907617723,
+        "Amendment": 0.3756536015770174,
+        "Notices": 0.37457516641267913,
+        "Term and Renewal": 0.38757659689299895,
+        "Data Protection and Privacy": 0.28470229058061575,
+        "Insurance": 0.3770208441997594,
+        "Other": 0.443169615370104
+      },
+      "importance": "HIGH",
+      "affected_party": "Both parties",
+      "evidence_quote": "Intellectual Property\n\nAll deliverables developed under this Agreement shall be deemed works made for hire.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 3. Intellectual Property All deliverables developed under this Agreement will be considered works made for hire. Milestone | Deliverable | Amount (USD) Phase 1 | Architecture Design | $15,000 Phase 2 | Core Implementation | $35,000.",
+        "detailed": "This Intellectual Property clause establishes binding terms and requirements that directly apply to Both parties.\n\nCore Terms: Section 3. Intellectual Property All deliverables developed under this Agreement will be considered works made for hire. Milestone | Deliverable | Amount (USD) Phase 1 | Architecture Design | $15,000 Phase 2 | Core Implementation | $35,000. Financial commitments or caps noted in the text include $15,000, $35,000.",
+        "professional": "• **Obligor / Bound Party**: Both parties\n• **Covenant Type**: Affirmative Covenant (Mandatory Performance)\n• **Core Duty**: Section 3\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    }
+  ],
+  "risks": [],
+  "missing_provisions": [
+    {
+      "provision_id": "service_sow_acceptance",
+      "clause_name": "Detailed Scope of Work (SOW) and Acceptance Criteria",
+      "category": "Operational",
+      "why_it_matters": "Vague deliverables without formal testing and acceptance procedures result in endless scope disputes and withheld payments.",
+      "typical_provision": "Services shall conform to the attached Statement of Work; client has 10 business days to inspect and notify defects.",
+      "risk_level": "HIGH",
+      "label": "Possible omission"
+    },
+    {
+      "provision_id": "service_sla_uptime",
+      "clause_name": "Service Level Agreement (SLA) and Uptime Commitment",
+      "category": "Operational",
+      "why_it_matters": "Without an uptime guarantee and service credit remedy, clients have no recourse if cloud software suffers frequent outages.",
+      "typical_provision": "Vendor commits to 99.9% service availability, excluding scheduled maintenance, with service fee credits for downtime.",
+      "risk_level": "MEDIUM",
+      "label": "Possible omission"
+    },
+    {
+      "provision_id": "service_force_majeure",
+      "clause_name": "Force Majeure and Uncontrollable Delays",
+      "category": "Contractual",
+      "why_it_matters": "Excuses performance delays caused by natural disasters, telecommunications outages, or government orders.",
+      "typical_provision": "Neither party is liable for performance delays caused by events beyond reasonable control.",
+      "risk_level": "LOW",
+      "label": "Possible omission"
+    }
+  ],
+  "key_info": {
+    "contract_amount": {
+      "value": "$35,000",
+      "source_page": 1,
+      "evidence_quote": "Milestone | Deliverable | Amount (USD)\n\nPhase 1 | Architecture Design | $15,000\n\nPhase 2 | Core Implementation | $35,000"
+    },
+    "payment_deadlines": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "penalties": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "start_date": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "end_date": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "renewal_date": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "notice_period": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "termination_conditions": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "important_dates": []
+  },
+  "summary": {
+    "purpose": "Establishes a legally binding master services agreement defining rights, obligations, and operational conditions between Provider and Client.",
+    "summary_short": "MASTER SERVICES AGREEMENT\n\nThis Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\"). Scope of Services\n\nProvider will perform software engineering and integration services as detailed in Statements of Work. Intellectual Property\n\nAll deliverables developed under this Agreement shall be deemed works made for hire.",
+    "summary_detailed": "MASTER SERVICES AGREEMENT\n\nThis Master Services Agreement is made between CloudTech Inc. (\"Provider\") and Global Retail LLC (\"Client\").\n\nScope of Services\n\nProvider will perform software engineering and integration services as detailed in Statements of Work.\n\nFees and Schedule\n\nClient agrees to pay Provider according to the fee schedule below:\n\nSection 3.\n\nIntellectual Property\n\nAll deliverables developed under this Agreement shall be deemed works made for hire.\n\nMilestone | Deliverable | Amount (USD)\n\nPhase 1 | Architecture Design | $15,000\n\nPhase 2 | Core Implementation | $35,000",
+    "main_conditions": [],
+    "obligations_summary": [],
+    "financial_terms_summary": [
+      {
+        "text": "Fees and Schedule\n\nClient agrees to pay Provider according to the fee schedule below:\n\nSection 3.",
+        "source_page": 1,
+        "evidence_quote": "Fees and Schedule\n\nClient agrees to pay Provider according to the fee schedule below:\n\nSection 3.",
+        "quote_verified": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,207 @@
+[
+  {
+    "id": "q1_rental_rent",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "What is the monthly rent amount and when is it due?",
+    "answer": "400.00",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 1,
+        "sectionRef": "Page 1",
+        "quote": "400.00",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.89
+  },
+  {
+    "id": "q2_rental_deposit",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "How much security deposit must the tenant provide?",
+    "answer": "400.00",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 1,
+        "sectionRef": "Page 1",
+        "quote": "400.00",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.92
+  },
+  {
+    "id": "q3_rental_sublet",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "Can the tenant sublet the premises without the landlord's consent?",
+    "answer": "shall not make structural alterations, painting, or modifications without prior written approval",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "shall not make structural alterations, painting, or modifications without prior written approval",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.8
+  },
+  {
+    "id": "q4_rental_cure",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "What is the cure period if the tenant defaults before eviction can occur?",
+    "answer": "The cure period before eviction or termination is fourteen (14) days.",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "uncured for fourteen (14) days",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "id": "q5_rental_governing_law",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "Which state's laws govern this residential lease?",
+    "answer": "This agreement is governed by the laws of the State of Illinois.",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "laws of the State of Illinois.",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "id": "q6_nda_term",
+    "contract_file": "samples/contracts/clean_nda.pdf",
+    "question": "How long do the confidentiality obligations remain in effect?",
+    "answer": "The confidentiality obligations remain in effect for three (3) years from the Effective Date.",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "remain in effect for a term of three (3) years from the Effective Date",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "id": "q7_nda_governing_law",
+    "contract_file": "samples/contracts/clean_nda.pdf",
+    "question": "What governing law applies to this non-disclosure agreement?",
+    "answer": "This agreement is governed by the laws of the State of Delaware.",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "laws of the State of Delaware,",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 1.0
+  },
+  {
+    "id": "q8_one_sided_renewal",
+    "contract_file": "samples/contracts/one_sided_agreement.pdf",
+    "question": "How many days notice are required to prevent automatic renewal of the agreement?",
+    "answer": "one hundred eighty (180) days",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 1,
+        "sectionRef": "Page 1",
+        "quote": "one hundred eighty (180) days",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.62
+  },
+  {
+    "id": "q9_one_sided_liability_cap",
+    "contract_file": "samples/contracts/one_sided_agreement.pdf",
+    "question": "What is the vendor's total aggregate liability limit under the contract?",
+    "answer": "one hundred dollars",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 2,
+        "sectionRef": "Page 2",
+        "quote": "one hundred dollars",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.62
+  },
+  {
+    "id": "q10_one_sided_late_charges",
+    "contract_file": "samples/contracts/one_sided_agreement.pdf",
+    "question": "What late fee and interest rate apply to overdue payments?",
+    "answer": "2.5% per month",
+    "addressedInDocument": true,
+    "citations": [
+      {
+        "page": 1,
+        "sectionRef": "Page 1",
+        "quote": "2.5% per month",
+        "quoteVerified": true
+      }
+    ],
+    "confidence": 0.77
+  },
+  {
+    "id": "q11_rental_non_compete",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "What post-employment non-compete restrictions are placed on the tenant?",
+    "answer": "The document does not appear to address this.",
+    "addressedInDocument": false,
+    "citations": [],
+    "confidence": 0.0
+  },
+  {
+    "id": "q12_rental_pet_policy",
+    "contract_file": "samples/contracts/rental_agreement.pdf",
+    "question": "What is the specific fee and pet deposit for keeping exotic reptiles?",
+    "answer": "The document does not appear to address this.",
+    "addressedInDocument": false,
+    "citations": [],
+    "confidence": 0.0
+  },
+  {
+    "id": "q13_nda_payment_terms",
+    "contract_file": "samples/contracts/clean_nda.pdf",
+    "question": "What late interest rate is charged if payment is delayed under this agreement?",
+    "answer": "The document does not appear to address this.",
+    "addressedInDocument": false,
+    "citations": [],
+    "confidence": 0.0
+  },
+  {
+    "id": "q14_nda_solicitation",
+    "contract_file": "samples/contracts/clean_nda.pdf",
+    "question": "Are there non-solicitation restrictions preventing the hiring of technical staff?",
+    "answer": "The document does not appear to address this.",
+    "addressedInDocument": false,
+    "citations": [],
+    "confidence": 0.0
+  },
+  {
+    "id": "q15_one_sided_health_benefits",
+    "contract_file": "samples/contracts/one_sided_agreement.pdf",
+    "question": "What medical and dental insurance benefits are provided to customer personnel?",
+    "answer": "The document does not appear to address this.",
+    "addressedInDocument": false,
+    "citations": [],
+    "confidence": 0.0
+  }
+]

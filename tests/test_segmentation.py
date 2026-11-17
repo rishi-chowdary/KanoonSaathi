@@ -19,8 +19,8 @@ SAMPLE_FILES = [
 ]
 
 
-def test_gate_100_percent_extracted_clauses_are_exact_slices():
-    """GATE CRITERIA: 100% of extracted clauses must exactly equal the full_text slice."""
+def test_all_extracted_clauses_are_exact_slices():
+    """Every extracted clause must match full_text[start_offset:end_offset]."""
     total_clauses = 0
 
     for filename in SAMPLE_FILES:

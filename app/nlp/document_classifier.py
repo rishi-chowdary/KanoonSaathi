@@ -38,7 +38,6 @@ _doc_prototypes: dict[str, np.ndarray] | None = None
 
 
 def _load_doc_prototypes() -> dict[str, np.ndarray]:
-    """Load and embed document type prototypes from clause_prototypes.yaml."""
     global _doc_prototypes
     if _doc_prototypes is not None:
         return _doc_prototypes
@@ -78,7 +77,6 @@ def classify_document_type(full_text: str, filename: str = "") -> tuple[str, flo
     if not full_text:
         return "General Contract", 0.0
 
-    # 1. Check title/preamble text (first 1000 characters) against known patterns
     header_sample = full_text[:1200]
     for pattern, doc_type in DOCUMENT_TYPE_PATTERNS:
         if re.search(pattern, header_sample, re.IGNORECASE):

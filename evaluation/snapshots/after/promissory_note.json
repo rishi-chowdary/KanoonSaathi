@@ -1,0 +1,312 @@
+{
+  "filename": "promissory_note.txt",
+  "page_count": 1,
+  "is_scanned": false,
+  "document_type": "Promissory Note",
+  "type_confidence": 0.95,
+  "parties": [
+    "Lender",
+    "Borrower"
+  ],
+  "clauses": [
+    {
+      "clause_index": 0,
+      "title": "Preamble and Recitals",
+      "section_reference": "Preamble",
+      "source_page": 1,
+      "start_offset": 0,
+      "end_offset": 274,
+      "original_text": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum.",
+      "category": "Other",
+      "custom_label": "Preamble and Recitals",
+      "confidence": 0.95,
+      "classification_method": {
+        "Other": 1.0
+      },
+      "importance": "LOW",
+      "affected_party": "Borrower",
+      "evidence_quote": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "PROMISSORY NOTE Principal Amount: $50,000.00 Date: March 1, 2026 Maturity Date: March 1, 2027 FOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum.",
+        "detailed": "This Other clause establishes binding terms and requirements that directly apply to Borrower.\n\nCore Terms: PROMISSORY NOTE Principal Amount: $50,000.00 Date: March 1, 2026 Maturity Date: March 1, 2027 FOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum. Financial commitments or caps noted in the text include $50,000.00.",
+        "professional": "• **Obligor / Bound Party**: Borrower\n• **Covenant Type**: Declaratory Covenant / Procedural Condition\n• **Core Duty**: PROMISSORY NOTE Principal Amount: $50,000\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 1,
+      "title": "Section 1. Payment Schedule",
+      "section_reference": "Section 1",
+      "source_page": 1,
+      "start_offset": 276,
+      "end_offset": 410,
+      "original_text": "Section 1. Payment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month.",
+      "category": "Payment Terms",
+      "custom_label": null,
+      "confidence": 1.5,
+      "classification_method": {
+        "Confidentiality": 0.0,
+        "Termination": 0.1597765915916269,
+        "Intellectual Property": 0.0,
+        "Liability and Indemnification": 0.13056406228319994,
+        "Dispute Resolution": 0.12794547045169666,
+        "Governing Law": 0.1280232068651683,
+        "Payment Terms": 1.5,
+        "Representations and Warranties": 0.020278731003906224,
+        "Non-Compete and Non-Solicitation": 0.08332298253958549,
+        "Force Majeure": 0.0,
+        "Assignment": 0.07202859952753758,
+        "Severability": 0.11710276866156029,
+        "Amendment": 0.13313279965735303,
+        "Notices": 0.09741948193166346,
+        "Term and Renewal": 0.2653929886717198,
+        "Data Protection and Privacy": 0.0,
+        "Insurance": 0.11646596224533712,
+        "Other": 0.13912150268449908
+      },
+      "importance": "MEDIUM",
+      "affected_party": "Both parties",
+      "evidence_quote": "Payment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 1. Payment Schedule Payments must be made in equal monthly installments of $4,315.00 on the first day of each calendar month.",
+        "detailed": "This Payment Terms clause establishes binding terms and requirements that directly apply to Both parties.\n\nCore Terms: Section 1. Payment Schedule Payments must be made in equal monthly installments of $4,315.00 on the first day of each calendar month. Financial commitments or caps noted in the text include $4,315.00.",
+        "professional": "• **Obligor / Bound Party**: Both parties\n• **Covenant Type**: Affirmative Covenant (Mandatory Performance)\n• **Core Duty**: Section 1\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 2,
+      "title": "Section 2. Prepayment",
+      "section_reference": "Section 2",
+      "source_page": 1,
+      "start_offset": 412,
+      "end_offset": 523,
+      "original_text": "Section 2. Prepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium.",
+      "category": "Payment Terms",
+      "custom_label": null,
+      "confidence": 1.5,
+      "classification_method": {
+        "Confidentiality": 0.25256323753226056,
+        "Termination": 0.4665146294313629,
+        "Intellectual Property": 0.23401177615603883,
+        "Liability and Indemnification": 0.38887727271602696,
+        "Dispute Resolution": 0.22631163596476234,
+        "Governing Law": 0.3305587484171467,
+        "Payment Terms": 1.5,
+        "Representations and Warranties": 0.3046661383986501,
+        "Non-Compete and Non-Solicitation": 0.3022643247870091,
+        "Force Majeure": 0.20783820788617324,
+        "Assignment": 0.3652404233765132,
+        "Severability": 0.41012867223401356,
+        "Amendment": 0.42463222389648775,
+        "Notices": 0.3338501381327187,
+        "Term and Renewal": 0.4727618290473356,
+        "Data Protection and Privacy": 0.18419291497052392,
+        "Insurance": 0.3101810496843238,
+        "Other": 0.4381631244352843
+      },
+      "importance": "MEDIUM",
+      "affected_party": "Borrower",
+      "evidence_quote": "Prepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 2. Prepayment Borrower may prepay this Note in whole or in part at any time without penalty or premium.",
+        "detailed": "This Payment Terms clause establishes binding terms and requirements that directly apply to Borrower.\n\nCore Terms: Section 2. Prepayment Borrower may prepay this Note in whole or in part at any time without penalty or premium.",
+        "professional": "• **Obligor / Bound Party**: Borrower\n• **Covenant Type**: Declaratory Covenant / Procedural Condition\n• **Core Duty**: Section 2\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 3,
+      "title": "Section 3. Default and Acceleration",
+      "section_reference": "Section 3",
+      "source_page": 1,
+      "start_offset": 525,
+      "end_offset": 738,
+      "original_text": "Section 3. Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+      "category": "Termination",
+      "custom_label": null,
+      "confidence": 0.9407,
+      "classification_method": {
+        "Confidentiality": 0.15387337770905415,
+        "Termination": 0.9407189236837706,
+        "Intellectual Property": 0.19034019555614484,
+        "Liability and Indemnification": 0.41009901738714655,
+        "Dispute Resolution": 0.2565450544153683,
+        "Governing Law": 0.218473274064537,
+        "Payment Terms": 0.6528571428571429,
+        "Representations and Warranties": 0.2754970870113426,
+        "Non-Compete and Non-Solicitation": 0.17364604864929337,
+        "Force Majeure": 0.4082994518528222,
+        "Assignment": 0.254815884221114,
+        "Severability": 0.43563400266978486,
+        "Amendment": 0.2871999919863859,
+        "Notices": 0.20495667323729777,
+        "Term and Renewal": 0.3757845654331558,
+        "Data Protection and Privacy": 0.2164628885804136,
+        "Insurance": 0.2696674706238479,
+        "Other": 0.3074775472377259
+      },
+      "importance": "HIGH",
+      "affected_party": "Both parties",
+      "evidence_quote": "Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 3. Default and Acceleration If Borrower fails to make any payment when due. Such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+        "detailed": "This clause establishes the formal exit procedures for ending this contract. It specifies the conditions required to cancel the agreement, required advance notice, and whether a cure period is granted to fix contract defaults.\n\nCore Terms: Section 3. Default and Acceleration If Borrower fails to make any payment when due. Such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+        "professional": "• **Obligor / Bound Party**: Both parties\n• **Covenant Type**: Declaratory Covenant / Procedural Condition\n• **Core Duty**: Section 3\n• **Conditions & Triggers**: If Borrower fails to make any payment when due\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    },
+    {
+      "clause_index": 4,
+      "title": "Section 4. Governing Law",
+      "section_reference": "Section 4",
+      "source_page": 1,
+      "start_offset": 740,
+      "end_offset": 830,
+      "original_text": "Section 4. Governing Law\nThis Note shall be governed by the laws of the State of New York.",
+      "category": "Governing Law",
+      "custom_label": null,
+      "confidence": 1.5,
+      "classification_method": {
+        "Confidentiality": 0.2563939277644914,
+        "Termination": 0.2476788589411667,
+        "Intellectual Property": 0.30918436029808977,
+        "Liability and Indemnification": 0.24097676921556196,
+        "Dispute Resolution": 0.2452601892319578,
+        "Governing Law": 1.5,
+        "Payment Terms": 0.17835265254692964,
+        "Representations and Warranties": 0.33993920065191596,
+        "Non-Compete and Non-Solicitation": 0.23387529244465077,
+        "Force Majeure": 0.20940229255756548,
+        "Assignment": 0.22224536826830946,
+        "Severability": 0.30995380985342064,
+        "Amendment": 0.3785995765008328,
+        "Notices": 0.40518888216089827,
+        "Term and Renewal": 0.21434326951204152,
+        "Data Protection and Privacy": 0.34173190033413453,
+        "Insurance": 0.24338628580127292,
+        "Other": 0.3848261873657883
+      },
+      "importance": "LOW",
+      "affected_party": "Both parties",
+      "evidence_quote": "Governing Law\nThis Note shall be governed by the laws of the State of New York.",
+      "quote_verified": true,
+      "simplifications": {
+        "simple": "Section 4. Governing Law This Note must be governed by the laws of the State of New York.",
+        "detailed": "This Governing Law clause establishes binding terms and requirements that directly apply to Both parties.\n\nCore Terms: Section 4. Governing Law This Note must be governed by the laws of the State of New York.",
+        "professional": "• **Obligor / Bound Party**: Both parties\n• **Covenant Type**: Affirmative Covenant (Mandatory Performance)\n• **Core Duty**: Section 4\n• **Conditions & Triggers**: Immediate upon execution / standard operation\n• **Exceptions & Carve-Outs**: None explicitly stated in this clause\n• **Timeline / Cure Period**: Standard business practice / Not specified\n• **Remedies & Liabilities**: Breach of contract damages and statutory remedies"
+      }
+    }
+  ],
+  "risks": [
+    {
+      "rule_id": "FIN_ACCELERATION_DEFAULT",
+      "category": "Financial",
+      "level": "MEDIUM",
+      "title": "Principal Acceleration Upon Default",
+      "original_clause": "Section 3. Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+      "explanation": "A single missed payment or technical default allows the lender to demand immediate lump-sum repayment of the full loan balance.",
+      "why_it_matters": "Temporary cash flow interruptions could trigger immediate full balance payoff demands and financial distress.",
+      "possible_consequences": "Immediate demand for full payoff, potential foreclosure, or legal collection proceedings.",
+      "suggested_questions": [
+        "Can a 15-day written notice and grace period be required before acceleration can be declared?",
+        "Can acceleration be restricted only to material payment defaults exceeding 60 days?"
+      ],
+      "source_page": 1,
+      "evidence_quote": "Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+      "quote_verified": true,
+      "jurisdiction_caveat": null,
+      "provenance": "MODEL_PREDICTION",
+      "similarity_score": 0.686
+    }
+  ],
+  "missing_provisions": [],
+  "key_info": {
+    "contract_amount": {
+      "value": "$50,000.00",
+      "source_page": 1,
+      "evidence_quote": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum."
+    },
+    "payment_deadlines": {
+      "value": "first day of each calendar month",
+      "source_page": 1,
+      "evidence_quote": "Payment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month."
+    },
+    "penalties": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "start_date": {
+      "value": "March 1, 2026",
+      "source_page": 1,
+      "evidence_quote": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum."
+    },
+    "end_date": {
+      "value": "March 1, 2026",
+      "source_page": 1,
+      "evidence_quote": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum."
+    },
+    "renewal_date": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "notice_period": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "termination_conditions": {
+      "value": "Not specified",
+      "source_page": null,
+      "evidence_quote": null
+    },
+    "important_dates": [
+      {
+        "date": "March 1, 2026",
+        "context": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Len",
+        "page": 1
+      },
+      {
+        "date": "March 1, 2027",
+        "context": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Len",
+        "page": 1
+      }
+    ]
+  },
+  "summary": {
+    "purpose": "Establishes a legally binding promissory note defining rights, obligations, and operational conditions between Lender and Borrower.",
+    "summary_short": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum. Prepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium. Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+    "summary_detailed": "PROMISSORY NOTE\n\nPrincipal Amount: $50,000.00\nDate: March 1, 2026\nMaturity Date: March 1, 2027\n\nFOR VALUE RECEIVED, Borrower promises to pay to the order of Lender the principal sum of Fifty Thousand Dollars ($50,000.00) together with interest at the rate of 6.5% per annum.\n\nPayment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month.\n\nPrepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium.\n\nDefault and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.\n\nGoverning Law\nThis Note shall be governed by the laws of the State of New York.",
+    "main_conditions": [
+      {
+        "text": "Governing Law\nThis Note shall be governed by the laws of the State of New York.",
+        "source_page": 1,
+        "evidence_quote": "Governing Law\nThis Note shall be governed by the laws of the State of New York.",
+        "quote_verified": true
+      }
+    ],
+    "obligations_summary": [],
+    "financial_terms_summary": [
+      {
+        "text": "Payment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month.",
+        "source_page": 1,
+        "evidence_quote": "Payment Schedule\nPayments shall be made in equal monthly installments of $4,315.00 on the first day of each calendar month.",
+        "quote_verified": true
+      },
+      {
+        "text": "Prepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium.",
+        "source_page": 1,
+        "evidence_quote": "Prepayment\nBorrower may prepay this Note in whole or in part at any time without penalty or premium.",
+        "quote_verified": true
+      },
+      {
+        "text": "Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+        "source_page": 1,
+        "evidence_quote": "Default and Acceleration\nIf Borrower fails to make any payment when due, and such failure continues for ten (10) days, Lender may declare the entire unpaid principal balance immediately due and payable.",
+        "quote_verified": true
+      }
+    ]
+  }
+}

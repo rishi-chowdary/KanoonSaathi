@@ -11,7 +11,7 @@ from app.nlp.evidence import extract_evidence_quote
 from app.nlp.importance import calculate_clause_importance
 from app.nlp.parties import detect_affected_party, extract_document_parties
 from app.nlp.segmentation import SegmentedClause
-from app.nlp.simplifier import simplify_clause
+from app.nlp.simplification import simplify_clause
 
 logger = logging.getLogger("lexilegal.services.clause_service")
 
@@ -31,14 +31,11 @@ def process_document_clauses(
     doc.status = "ANALYZING"
     db.session.commit()
 
-    # 1. Classify overall document type
     doc_type, _ = classify_document_type(full_text, doc.original_filename)
 
-    # 2. Extract contracting parties from the preamble / first section
     preamble_sample = full_text[:1500]
     parties = extract_document_parties(preamble_sample)
 
-    # 3. Create or update DocumentAnalysis record
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     if not analysis:
         analysis = DocumentAnalysis(
@@ -62,7 +59,6 @@ def process_document_clauses(
         analysis.document_type = doc_type
         analysis.parties = parties
 
-    # 4. Clear any existing clauses for this analysis to prevent duplication
     ExtractedClause.query.filter_by(analysis_id=analysis.id).delete()
 
     created_clauses: list[ExtractedClause] = []
@@ -99,15 +95,14 @@ def process_document_clauses(
         if is_verified:
             verified_count += 1
 
-        # Deterministic 3-tier simplifications (Phase M5: Simple, Detailed, Professional)
-        simplification_result = simplify_clause(
+        simplification_output = simplify_clause(
             original_text=clause.original_text,
             category=category,
             affected_party=affected_party,
         )
-        simple_expl = simplification_result["simple_english"]
-        detailed_expl = simplification_result["detailed"]
-        prof_expl = simplification_result["professional"]
+        simple_expl = simplification_output["simple_english"]
+        detailed_expl = simplification_output["detailed"]
+        prof_expl = simplification_output["professional"]
 
         model_clause = ExtractedClause(
             id=str(uuid.uuid4()),
@@ -130,7 +125,6 @@ def process_document_clauses(
         db.session.add(model_clause)
         created_clauses.append(model_clause)
 
-    # 5. Calculate verified quote rate
     total_clauses = len(created_clauses)
     verification_rate = (
         (verified_count / total_clauses * 100.0) if total_clauses > 0 else 100.0
@@ -141,7 +135,7 @@ def process_document_clauses(
     db.session.commit()
 
     logger.info(
-        "Successfully extracted and classified %d clauses for document %s (verification rate: %.1f%%).",
+        "classified %d clauses for document %s (offset match %.1f%%)",
         total_clauses,
         doc.id,
         verification_rate,

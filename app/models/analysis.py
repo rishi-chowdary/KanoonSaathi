@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class DocumentAnalysis(db.Model, TimestampMixin):
-    """High-level analysis record synthesizing extracted document semantics."""
 
     __tablename__ = "document_analyses"
 

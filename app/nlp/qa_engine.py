@@ -125,16 +125,124 @@ FACT_INTENTS = [
 ]
 
 
-def _get_val_and_page(obj: Any, field_name: str) -> tuple[str, int]:
-    """Safely extract string value and 1-indexed page from model or dataclass."""
-    raw_val = getattr(obj, field_name, "Not specified")
+def _get_val_and_page(fact_record: Any, field_name: str) -> tuple[str, int]:
+    raw_val = getattr(fact_record, field_name, "Not specified")
     val = getattr(raw_val, "value", raw_val) if raw_val is not None else "Not specified"
     if hasattr(raw_val, "source_page") and raw_val.source_page:
         page = raw_val.source_page
     else:
-        page = getattr(obj, f"{field_name}_page", 1) or 1
+        page = getattr(fact_record, f"{field_name}_page", 1) or 1
     val_str = str(val).strip() if val is not None else "Not specified"
     return val_str, int(page)
+
+
+def _fact_response(answer: str, page: int, quote: str) -> dict[str, Any]:
+    return {
+        "answer": answer,
+        "citations": [
+            {
+                "page": page,
+                "sectionRef": f"Page {page}",
+                "quote": quote,
+                "quoteVerified": True,
+            }
+        ],
+        "addressedInDocument": True,
+        "confidence": 1.0,
+    }
+
+
+def _absent_response(answer: str) -> dict[str, Any]:
+    return {
+        "answer": answer,
+        "citations": [],
+        "addressedInDocument": False,
+        "confidence": 0.0,
+    }
+
+
+_CHUNK_INTENT_PATTERNS = {
+    "governing_law": (
+        r"laws\s+of\s+the\s+State\s+of\s+([A-Za-z\s]+?)(?:,|\.|\bwithout\b)",
+        "This agreement is governed by the laws of the State of {val}.",
+    ),
+    "cure_period": (
+        r"(?:uncured\s+for|cure\s+period\s+of)\s+([a-z0-9\(\)\s]+?days)",
+        "The cure period before eviction or termination is {val}.",
+    ),
+    "confidentiality_term": (
+        r"remain\s+in\s+effect\s+for\s+a\s+term\s+of\s+([^.]+)",
+        "The confidentiality obligations remain in effect for {val}.",
+    ),
+}
+
+_KEY_INFO_TEMPLATES = {
+    "contract_amount": (
+        "The specified contract/payment amount is {val}.",
+        "The document does not specify the contract or payment amount.",
+    ),
+    "payment_deadlines": (
+        "Payment schedule/deadline: {val}.",
+        "The document does not specify payment deadlines.",
+    ),
+    "penalties": (
+        "Penalties and late terms: {val}.",
+        "The document does not specify any penalty or late fee provisions.",
+    ),
+    "start_date": (
+        "The effective/start date is {val}.",
+        "The document does not specify an effective or start date.",
+    ),
+    "end_date": (
+        "The contract end/expiration date is {val}.",
+        None,  # fall through to extractive QA for term durations
+    ),
+    "renewal_date": (
+        "Renewal terms: {val}.",
+        "The document does not specify renewal terms or dates.",
+    ),
+    "notice_period": (
+        "The required notice period is {val}.",
+        "The document does not specify a required notice period.",
+    ),
+    "termination_conditions": (
+        "Termination terms: {val}.",
+        "The document does not specify explicit termination conditions.",
+    ),
+}
+
+
+def _match_chunk_intent(intent: str, chunks: list[Any]) -> dict[str, Any] | None:
+    pattern, template = _CHUNK_INTENT_PATTERNS[intent]
+    for chunk in chunks:
+        match = re.search(pattern, getattr(chunk, "content", ""), re.IGNORECASE)
+        if match:
+            page = getattr(chunk, "page_number", 1)
+            answer = template.format(val=match.group(1).strip())
+            return _fact_response(answer, page, match.group(0).strip())
+    return None
+
+
+def _match_analysis_intent(intent: str, analysis: Any) -> dict[str, Any] | None:
+    if intent == "parties":
+        parties = getattr(analysis, "parties", [])
+        if parties and isinstance(parties, list):
+            ans = f"The identified parties to this agreement are: {', '.join(str(p) for p in parties)}."
+            return _fact_response(ans, 1, ans)
+        return _absent_response(
+            "The document does not explicitly identify named parties."
+        )
+
+    if intent == "document_type":
+        doc_type = getattr(analysis, "document_type", None) or "Agreement"
+        purpose = getattr(analysis, "purpose", None)
+        ans = (
+            f"This document is classified as a {doc_type}. Purpose: {purpose}."
+            if purpose
+            else f"This document is classified as a {doc_type}."
+        )
+        return _fact_response(ans, 1, ans)
+    return None
 
 
 def match_fact_intent(
@@ -142,7 +250,7 @@ def match_fact_intent(
     analysis: Any | None,
     chunks: list[Any] | None = None,
 ) -> dict[str, Any] | None:
-    """Route factual query directly to verified pre-extracted metadata."""
+    """Route a factual question to pre-extracted metadata or chunk regexes."""
     if not analysis:
         return None
 
@@ -153,327 +261,27 @@ def match_fact_intent(
         if not pattern.search(clean_q):
             continue
 
-        if intent == "parties":
-            parties = getattr(analysis, "parties", [])
-            if parties and isinstance(parties, list):
-                party_names = [str(p) for p in parties]
-                ans = f"The identified parties to this agreement are: {', '.join(party_names)}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": 1,
-                            "sectionRef": "Page 1",
-                            "quote": ans,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not explicitly identify named parties.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
+        if intent in ("parties", "document_type"):
+            return _match_analysis_intent(intent, analysis)
 
-        if intent == "document_type":
-            doc_type = getattr(analysis, "document_type", None) or "Agreement"
-            purpose = getattr(analysis, "purpose", None)
-            if purpose:
-                ans = (
-                    f"This document is classified as a {doc_type}. Purpose: {purpose}."
-                )
-            else:
-                ans = f"This document is classified as a {doc_type}."
-            return {
-                "answer": ans,
-                "citations": [
-                    {
-                        "page": 1,
-                        "sectionRef": "Page 1",
-                        "quote": ans,
-                        "quoteVerified": True,
-                    }
-                ],
-                "addressedInDocument": True,
-                "confidence": 1.0,
-            }
+        if intent in _CHUNK_INTENT_PATTERNS and chunks:
+            chunk_hit = _match_chunk_intent(intent, chunks)
+            if chunk_hit:
+                return chunk_hit
 
-        if intent == "governing_law" and chunks:
-            for c in chunks:
-                c_text = getattr(c, "content", "")
-                m = re.search(
-                    r"laws\s+of\s+the\s+State\s+of\s+([A-Za-z\s]+?)(?:,|\.|\bwithout\b)",
-                    c_text,
-                    re.IGNORECASE,
-                )
-                if m:
-                    state = m.group(1).strip()
-                    p_num = getattr(c, "page_number", 1)
-                    ans = f"This agreement is governed by the laws of the State of {state}."
-                    return {
-                        "answer": ans,
-                        "citations": [
-                            {
-                                "page": p_num,
-                                "sectionRef": f"Page {p_num}",
-                                "quote": m.group(0).strip(),
-                                "quoteVerified": True,
-                            }
-                        ],
-                        "addressedInDocument": True,
-                        "confidence": 1.0,
-                    }
-
-        if intent == "cure_period" and chunks:
-            for c in chunks:
-                c_text = getattr(c, "content", "")
-                m = re.search(
-                    r"(?:uncured\s+for|cure\s+period\s+of)\s+([a-z0-9\(\)\s]+?days)",
-                    c_text,
-                    re.IGNORECASE,
-                )
-                if m:
-                    period = m.group(1).strip()
-                    p_num = getattr(c, "page_number", 1)
-                    ans = f"The cure period before eviction or termination is {period}."
-                    return {
-                        "answer": ans,
-                        "citations": [
-                            {
-                                "page": p_num,
-                                "sectionRef": f"Page {p_num}",
-                                "quote": m.group(0).strip(),
-                                "quoteVerified": True,
-                            }
-                        ],
-                        "addressedInDocument": True,
-                        "confidence": 1.0,
-                    }
-
-        if intent == "confidentiality_term" and chunks:
-            for c in chunks:
-                c_text = getattr(c, "content", "")
-                m = re.search(
-                    r"remain\s+in\s+effect\s+for\s+a\s+term\s+of\s+([^.]+)",
-                    c_text,
-                    re.IGNORECASE,
-                )
-                if m:
-                    term = m.group(1).strip()
-                    p_num = getattr(c, "page_number", 1)
-                    ans = (
-                        f"The confidentiality obligations remain in effect for {term}."
-                    )
-                    return {
-                        "answer": ans,
-                        "citations": [
-                            {
-                                "page": p_num,
-                                "sectionRef": f"Page {p_num}",
-                                "quote": m.group(0).strip(),
-                                "quoteVerified": True,
-                            }
-                        ],
-                        "addressedInDocument": True,
-                        "confidence": 1.0,
-                    }
-
-        if key_info is None:
+        if key_info is None or intent not in _KEY_INFO_TEMPLATES:
             continue
 
-        if intent == "contract_amount":
-            val, page = _get_val_and_page(key_info, "contract_amount")
-            if val and val != "Not specified":
-                ans = f"The specified contract/payment amount is {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify the contract or payment amount.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "payment_deadlines":
-            val, page = _get_val_and_page(key_info, "payment_deadlines")
-            if val and val != "Not specified":
-                ans = f"Payment schedule/deadline: {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify payment deadlines.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "penalties":
-            val, page = _get_val_and_page(key_info, "penalties")
-            if val and val != "Not specified":
-                ans = f"Penalties and late terms: {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify any penalty or late fee provisions.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "start_date":
-            val, page = _get_val_and_page(key_info, "start_date")
-            if val and val != "Not specified":
-                ans = f"The effective/start date is {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify an effective or start date.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "end_date":
-            val, page = _get_val_and_page(key_info, "end_date")
-            if val and val != "Not specified":
-                ans = f"The contract end/expiration date is {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            # Fall through to extractive QA for duration/term if end_date not explicitly formatted
-
-        if intent == "renewal_date":
-            val, page = _get_val_and_page(key_info, "renewal_date")
-            if val and val != "Not specified":
-                ans = f"Renewal terms: {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            if re.search(
-                r"\b(?:how many|days|notice|prior to)\b", clean_q, re.IGNORECASE
-            ):
-                continue
-            return {
-                "answer": "The document does not specify renewal terms or dates.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "notice_period":
-            val, page = _get_val_and_page(key_info, "notice_period")
-            if val and val != "Not specified":
-                ans = f"The required notice period is {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify a required notice period.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
-
-        if intent == "termination_conditions":
-            val, page = _get_val_and_page(key_info, "termination_conditions")
-            if val and val != "Not specified":
-                ans = f"Termination terms: {val}."
-                return {
-                    "answer": ans,
-                    "citations": [
-                        {
-                            "page": page,
-                            "sectionRef": f"Page {page}",
-                            "quote": val,
-                            "quoteVerified": True,
-                        }
-                    ],
-                    "addressedInDocument": True,
-                    "confidence": 1.0,
-                }
-            return {
-                "answer": "The document does not specify explicit termination conditions.",
-                "citations": [],
-                "addressedInDocument": False,
-                "confidence": 0.0,
-            }
+        val, page = _get_val_and_page(key_info, intent)
+        present_tpl, absent_msg = _KEY_INFO_TEMPLATES[intent]
+        if val and val != "Not specified":
+            return _fact_response(present_tpl.format(val=val), page, val)
+        if intent == "renewal_date" and re.search(
+            r"\b(?:how many|days|notice|prior to)\b", clean_q, re.IGNORECASE
+        ):
+            continue
+        if absent_msg:
+            return _absent_response(absent_msg)
 
     return None
 
@@ -570,12 +378,10 @@ def answer_document_query(
             "confidence": 0.0,
         }
 
-    # 1. Check Fact Intent Router for 100% verified metadata
     fact_result = match_fact_intent(clean_q, analysis, chunks=chunks)
     if fact_result is not None:
         return fact_result
 
-    # 2. Retrieve Top-4 Candidate Chunks via Hybrid Retrieval (SBERT + BM25 RRF)
     retrieved_chunks = hybrid_retrieve_chunks(clean_q, chunks, top_k=4)
     if not retrieved_chunks:
         return {
@@ -585,7 +391,6 @@ def answer_document_query(
             "confidence": 0.0,
         }
 
-    # 3. Run Extractive QA over Candidate Chunks
     best_candidate: dict[str, Any] | None = None
     best_chunk_page = 1
     best_diff = -float("inf")

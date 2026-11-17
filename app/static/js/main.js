@@ -1,28 +1,24 @@
-/**
- * LexiLegal AI — Vanilla Frontend Support
- * Theme toggle persistence & CSRF-aware fetch wrapper
- */
-
 (function () {
   "use strict";
 
-  // 1. Theme Toggle Persistence
   const THEME_STORAGE_KEY = "lexilegal_theme";
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     const themeBtn = document.getElementById("theme-toggle");
     if (themeBtn) {
-      themeBtn.innerHTML = theme === "dark" ? "☀️ Light" : "🌙 Dark";
-      themeBtn.setAttribute("aria-label", `Switch to ${theme === "dark" ? "light" : "dark"} mode`);
+      themeBtn.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+      themeBtn.setAttribute(
+        "aria-label",
+        "Switch to " + (theme === "dark" ? "light" : "dark") + " mode"
+      );
     }
   }
 
   function initTheme() {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    applyTheme(initialTheme);
+    applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
 
     const themeBtn = document.getElementById("theme-toggle");
     if (themeBtn) {
@@ -35,13 +31,11 @@
     }
   }
 
-  // 2. CSRF Token Retrieval Helper
   function getCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
     return meta ? meta.getAttribute("content") : "";
   }
 
-  // Expose global helper for future AJAX calls
   window.LexiLegal = {
     getCsrfToken: getCsrfToken,
     fetchWithCsrf: function (url, options) {
@@ -55,8 +49,5 @@
     },
   };
 
-  document.addEventListener("DOMContentLoaded", function () {
-    initTheme();
-  });
+  document.addEventListener("DOMContentLoaded", initTheme);
 })();
-

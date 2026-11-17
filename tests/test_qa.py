@@ -1,4 +1,4 @@
-"""Tests for Phase M7: Hybrid Retrieval & Extractive QA Document Chat."""
+"""Tests for hybrid retrieval and extractive QA document chat."""
 
 import json
 from pathlib import Path
@@ -179,7 +179,7 @@ def test_fact_intent_routing_financials_and_dates():
     assert "60 days" in res_notice["answer"]
 
 
-def test_fact_intent_absent_fields_rule_6():
+def test_fact_intent_absent_fields_not_specified():
     mock_analysis = MagicMock()
     mock_info = MagicMock()
     mock_info.contract_amount = "Not specified"

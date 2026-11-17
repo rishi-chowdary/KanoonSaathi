@@ -170,8 +170,8 @@ def test_model_fallback_without_crashing():
     assert conf > 0.0
 
 
-def test_gate_clause_recall_and_precision_on_gold_contracts():
-    """Hard Gate: Verify Clause Recall >= 80% and Precision >= 75% across gold test contracts."""
+def test_clause_recall_and_precision_on_gold_contracts():
+    """Clause recall >= 80% and precision >= 75% across gold test contracts."""
     gold_files = [
         "samples/gold/clean_nda_gold.json",
         "samples/gold/employment_agreement_gold.json",
@@ -293,8 +293,8 @@ def test_api_clauses_retrieval_and_filtering(app, client):
         assert search_data["total"] >= 1
 
 
-def test_api_clauses_tenant_isolation(app, client):
-    """Verify that User B cannot access User A's clauses (returns 404)."""
+def test_user_b_gets_404_for_user_a_clauses(app, client):
+    """User B cannot access User A's clauses (returns 404)."""
     with app.app_context():
         from app.extensions import db
         from app.models.user import User

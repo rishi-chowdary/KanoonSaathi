@@ -7,99 +7,80 @@
 {% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+<div class="doc-header">
   <div>
-    <h1 style="font-size: 2rem; margin: 0;">Contract Dashboard</h1>
-    <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">
-      Logged in as <strong>{{ current_user.full_name }}</strong> ({{ current_user.email }})
+    <h1>Contract Dashboard</h1>
+    <p class="card-subtitle">
+      Signed in as <strong>{{ current_user.full_name }}</strong> ({{ current_user.email }})
     </p>
   </div>
-  <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
-    + Upload Document
-  </a>
+  <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload</a>
 </div>
 
-<!-- Metrics Overview Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-  <div class="card" style="padding: 1.25rem;">
-    <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Total Documents</span>
-    <div style="font-size: 1.85rem; font-weight: 700; color: var(--color-primary);">
-      {{ stats.totalDocuments if stats else 0 }}
-    </div>
-    <span style="font-size: 0.8rem; color: var(--text-muted);">Uploaded contracts</span>
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Documents</span>
+    <span class="stat-value">{{ stats.totalDocuments if stats else 0 }}</span>
+    <span class="stat-note">Uploaded contracts</span>
   </div>
 
-  <div class="card" style="padding: 1.25rem;">
-    <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Analyzed Contracts</span>
-    <div style="font-size: 1.85rem; font-weight: 700; color: var(--color-secondary);">
-      {{ stats.analyzedDocuments if stats else 0 }}
-    </div>
-    <span style="font-size: 0.8rem; color: var(--text-muted);">Processing complete</span>
+  <div class="stat-card">
+    <span class="stat-label">Analyzed</span>
+    <span class="stat-value">{{ stats.analyzedDocuments if stats else 0 }}</span>
+    <span class="stat-note">Ready to review</span>
   </div>
 
-  <div class="card" style="padding: 1.25rem;">
-    <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Extracted Clauses</span>
-    <div style="font-size: 1.85rem; font-weight: 700; color: var(--color-primary);">
-      {{ stats.totalClauses if stats else 0 }}
-    </div>
-    <span style="font-size: 0.8rem; color: var(--text-muted);">Segmented provisions</span>
+  <div class="stat-card">
+    <span class="stat-label">Clauses</span>
+    <span class="stat-value">{{ stats.totalClauses if stats else 0 }}</span>
+    <span class="stat-note">Extracted sections</span>
   </div>
 
-  <div class="card" style="padding: 1.25rem;">
-    <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Risks Identified</span>
-    <div style="font-size: 1.85rem; font-weight: 700; color: var(--color-danger);">
-      {{ stats.totalRisks if stats else 0 }}
-    </div>
-    <span style="font-size: 0.8rem; color: var(--text-muted);">Grounded findings</span>
+  <div class="stat-card">
+    <span class="stat-label">Risk flags</span>
+    <span class="stat-value" style="color: var(--color-danger);">{{ stats.totalRisks if stats else 0 }}</span>
+    <span class="stat-note">Clauses to review</span>
   </div>
 
-  <div class="card" style="padding: 1.25rem;">
-    <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Quote Verification</span>
-    <div style="font-size: 1.85rem; font-weight: 700; color: var(--color-success);">
-      {{ stats.averageVerificationRate if stats else 0.0 }}%
-    </div>
-    <span style="font-size: 0.8rem; color: var(--text-muted);">Exact source slices</span>
+  <div class="stat-card">
+    <span class="stat-label">Source offset match</span>
+    <span class="stat-value" style="color: var(--color-success);">{{ stats.averageVerificationRate if stats else 0.0 }}%</span>
+    <span class="stat-note">Exact text slices</span>
   </div>
 </div>
 
 {% if stats and stats.totalDocuments > 0 %}
-  <!-- Analytics & Distribution Charts -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-    <!-- Risk Category Doughnut Chart -->
+  <div class="charts-grid">
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size: 1.15rem;">Risk Distribution by Category</h2>
-        <p class="card-subtitle">Breakdown across your uploaded legal agreements</p>
+        <h2 class="card-title">Risks by category</h2>
+        <p class="card-subtitle">Across your uploaded contracts</p>
       </div>
-      <div style="height: 220px; position: relative; padding: 0.5rem 0;">
+      <div class="chart-wrap">
         <canvas id="dashCategoryChart"></canvas>
       </div>
     </div>
 
-    <!-- Risk Severity Level Bar Chart -->
     <div class="card">
       <div class="card-header">
-        <h2 class="card-title" style="font-size: 1.15rem;">Risk Severity Levels</h2>
-        <p class="card-subtitle">Identified high, medium, and low severity findings</p>
+        <h2 class="card-title">Risks by severity</h2>
+        <p class="card-subtitle">High, medium, and low risk flags</p>
       </div>
-      <div style="height: 220px; position: relative; padding: 0.5rem 0;">
+      <div class="chart-wrap">
         <canvas id="dashLevelChart"></canvas>
       </div>
     </div>
   </div>
 {% endif %}
 
-<!-- Recent Documents Table -->
 <div class="card">
   <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
     <div>
-      <h2 class="card-title">Recent Documents</h2>
-      <p class="card-subtitle">Your uploaded and analyzed agreements</p>
+      <h2 class="card-title">Recent documents</h2>
+      <p class="card-subtitle">Latest uploaded contracts</p>
     </div>
     {% if documents and documents|length > 0 %}
-      <a href="{{ url_for('documents.list_view') }}" style="font-size: 0.9rem; color: var(--color-secondary); font-weight: 500;">
-        View all documents &rarr;
-      </a>
+      <a href="{{ url_for('documents.list_view') }}" style="font-size: 0.88rem; font-weight: 500;">View all</a>
     {% endif %}
   </div>
 
@@ -109,7 +90,7 @@
         <thead>
           <tr>
             <th>Document</th>
-            <th>Type</th>
+            <th>Format</th>
             <th>Pages</th>
             <th>Status</th>
             <th>Uploaded</th>
@@ -135,7 +116,7 @@
                 {% elif st == 'FAILED' %}
                   <span class="badge badge-danger">Failed</span>
                 {% else %}
-                  <span class="badge badge-info">{{ st }}</span>
+                  <span class="badge">{{ st }}</span>
                 {% endif %}
               </td>
               <td>
@@ -148,13 +129,9 @@
                 {% endif %}
               </td>
               <td>
-                <div style="display: flex; gap: 0.5rem;">
-                  <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">
-                    View Analysis
-                  </a>
-                  <a href="{{ url_for('documents.view_document_report', doc_id=doc.id) }}" target="_blank" class="btn btn-secondary btn-sm" title="Download publication-quality PDF report">
-                    PDF
-                  </a>
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                  <a href="{{ url_for('documents.detail', doc_id=doc.id) }}" class="btn btn-secondary btn-sm">Open</a>
+                  <a href="{{ url_for('reports.view_document_report', doc_id=doc.id) }}" target="_blank" class="btn btn-secondary btn-sm">Report</a>
                 </div>
               </td>
             </tr>
@@ -163,27 +140,28 @@
       </table>
     </div>
   {% else %}
-    <!-- Clean Empty State for New Users -->
-    <div style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
-      <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
-      <h3 style="font-size: 1.35rem; color: var(--text-main); margin-bottom: 0.5rem;">Welcome to LexiLegal AI</h3>
-      <p style="max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.6; font-size: 0.95rem;">
-        Upload your first contract to extract important clauses, simplify complex legalese into plain English, and detect predatory risks.
+    <div style="padding: 2rem 0.5rem;">
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        No documents yet. Upload a contract to get started.
       </p>
-      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-size: 1rem;">
-        + Upload Your First Contract
-      </a>
+      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload</a>
     </div>
   {% endif %}
 </div>
 
 {% if stats and stats.totalDocuments > 0 %}
 <script>
-  // Render Dashboard Charts
   document.addEventListener('DOMContentLoaded', () => {
     if (typeof Chart === 'undefined') return;
+    const cs = getComputedStyle(document.documentElement);
+    const textColor = cs.getPropertyValue('--text-muted').trim() || '#526071';
+    const gridColor = cs.getPropertyValue('--border-color').trim() || '#d8e0ea';
+    const highColor = '#b91c1c';
+    const medColor = '#b45309';
+    const lowColor = '#166534';
+    const navyColor = '#1e4273';
+    const slateColor = '#64748b';
 
-    // Category Doughnut Chart
     const catCanvas = document.getElementById('dashCategoryChart');
     if (catCanvas) {
       const catData = {{ stats.riskDistributionByCategory | tojson }};
@@ -193,24 +171,26 @@
       new Chart(catCanvas, {
         type: 'doughnut',
         data: {
-          labels: catLabels.length > 0 ? catLabels : ['None Detected'],
+          labels: catLabels.length > 0 ? catLabels : ['None'],
           datasets: [{
             data: catValues.length > 0 ? catValues : [1],
-            backgroundColor: catValues.length > 0 ? 
-              ['#b91c1c', '#b45309', '#2c5282', '#15803d', '#7c3aed', '#0891b2'] :
-              ['#e2e8f0'],
-            borderWidth: 1
+            backgroundColor: catValues.length > 0
+              ? [highColor, medColor, navyColor, lowColor, slateColor, '#9a6714']
+              : [gridColor],
+            borderWidth: 1,
+            borderColor: cs.getPropertyValue('--bg-surface').trim() || '#ffffff'
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'right' } }
+          plugins: {
+            legend: { position: 'right', labels: { color: textColor } }
+          }
         }
       });
     }
 
-    // Severity Level Bar Chart
     const levelCanvas = document.getElementById('dashLevelChart');
     if (levelCanvas) {
       const levelData = {{ stats.riskDistributionByLevel | tojson }};
@@ -220,12 +200,8 @@
           labels: ['High', 'Medium', 'Low'],
           datasets: [{
             label: 'Risks',
-            data: [
-              levelData.HIGH || 0,
-              levelData.MEDIUM || 0,
-              levelData.LOW || 0
-            ],
-            backgroundColor: ['#b91c1c', '#b45309', '#2c5282'],
+            data: [levelData.HIGH || 0, levelData.MEDIUM || 0, levelData.LOW || 0],
+            backgroundColor: [highColor, medColor, lowColor],
             borderRadius: 4
           }]
         },
@@ -233,7 +209,8 @@
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            x: { ticks: { color: textColor }, grid: { display: false } },
+            y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } }
           },
           plugins: { legend: { display: false } }
         }

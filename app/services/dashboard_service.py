@@ -22,10 +22,8 @@ logger = logging.getLogger("lexilegal.dashboard_service")
 
 def get_dashboard_stats(user_id: str) -> dict[str, Any]:
     """Retrieve full dashboard statistics for the specified user via direct SQL queries."""
-    # 1. Total Documents owned by user
     total_docs = Document.query.filter_by(user_id=user_id).count()
 
-    # 2. Analyzed Documents (completed or extracted)
     analyzed_docs = Document.query.filter(
         Document.user_id == user_id,
         Document.status.in_(
@@ -33,10 +31,8 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
         ),
     ).count()
 
-    # 3. Failed Documents
     failed_docs = Document.query.filter_by(user_id=user_id, status="FAILED").count()
 
-    # 4. Total Clauses extracted across user's documents
     total_clauses = (
         db.session.query(func.count(ExtractedClause.id))
         .join(DocumentAnalysis, ExtractedClause.analysis_id == DocumentAnalysis.id)
@@ -46,7 +42,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
         or 0
     )
 
-    # 5. Total Risks identified across user's documents
     total_risks = (
         db.session.query(func.count(RiskFinding.id))
         .join(DocumentAnalysis, RiskFinding.analysis_id == DocumentAnalysis.id)
@@ -56,7 +51,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
         or 0
     )
 
-    # 6. Average Quote Verification Rate across user's analyzed contracts
     avg_verif = (
         db.session.query(func.avg(DocumentAnalysis.verification_rate))
         .join(Document, DocumentAnalysis.document_id == Document.id)
@@ -65,7 +59,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
     )
     avg_verification_rate = round(float(avg_verif), 1) if avg_verif is not None else 0.0
 
-    # 7. Risk Distribution by Severity Level
     level_counts = (
         db.session.query(RiskFinding.level, func.count(RiskFinding.id))
         .join(DocumentAnalysis, RiskFinding.analysis_id == DocumentAnalysis.id)
@@ -79,7 +72,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
         if lvl and str(lvl).upper() in risk_level_map:
             risk_level_map[str(lvl).upper()] = int(count)
 
-    # 8. Risk Distribution by Category
     category_counts = (
         db.session.query(RiskFinding.category, func.count(RiskFinding.id))
         .join(DocumentAnalysis, RiskFinding.analysis_id == DocumentAnalysis.id)
@@ -90,7 +82,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
     )
     risk_category_map = {str(cat): int(count) for cat, count in category_counts if cat}
 
-    # 9. Top 5 Recent Documents
     recent_docs = (
         Document.query.filter_by(user_id=user_id)
         .order_by(Document.created_at.desc())
@@ -110,7 +101,6 @@ def get_dashboard_stats(user_id: str) -> dict[str, Any]:
         for d in recent_docs
     ]
 
-    # 10. Top 5 Recent Analyses
     recent_analyses = (
         db.session.query(DocumentAnalysis)
         .join(Document, DocumentAnalysis.document_id == Document.id)

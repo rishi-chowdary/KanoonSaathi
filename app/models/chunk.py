@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class DocumentChunk(db.Model, TimestampMixin):
-    """Segmented contract text chunk for retrieval and page-level attribution."""
 
     __tablename__ = "document_chunks"
 

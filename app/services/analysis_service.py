@@ -17,13 +17,7 @@ def process_key_info_and_summaries(
     full_text: str,
     pages: list[PageData] | None = None,
 ) -> tuple[DocumentAnalysis, ExtractedInformation]:
-    """Extract key facts, dates, deadlines, and extractive summaries, persisting to database.
-
-    Guarantees:
-    - 100% of summary sentences exist verbatim in full_text
-    - Strict Rule 6 ('Not specified') defaults for absent information
-    - Atomic database update
-    """
+    """Extract key facts, dates, deadlines, and extractive summaries for a document."""
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     if not analysis:
         # Should normally be created during clause processing
@@ -45,7 +39,6 @@ def process_key_info_and_summaries(
         )
         db.session.add(analysis)
 
-    # 1. Extractive Summarization (SBERT TextRank + MMR)
     summary_res = generate_extractive_summary(
         full_text=full_text,
         pages=pages,
@@ -60,7 +53,6 @@ def process_key_info_and_summaries(
     analysis.obligations_summary = summary_res.obligations_summary
     analysis.financial_terms_summary = summary_res.financial_terms_summary
 
-    # 2. Key Facts Extraction with Rule 6 Defaults
     key_info_res = extract_contract_key_info(full_text=full_text, pages=pages)
 
     key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
@@ -93,8 +85,68 @@ def process_key_info_and_summaries(
     key_info.important_dates = key_info_res.important_dates
 
     db.session.commit()
-    logger.info(
-        "Extracted key info and generated extractive summaries for document %s.",
-        doc.id,
-    )
+    logger.info("extracted key info and summary for document %s", doc.id)
     return analysis, key_info
+
+
+def get_document_detail_context(doc: Document) -> dict:
+    """Load chunks, analysis, clauses, risks, key facts, and plain-language summary for a document."""
+    from app.models.chunk import DocumentChunk
+    from app.models.clause import ExtractedClause
+    from app.models.missing_warning import MissingClauseWarning
+    from app.models.risk import RiskFinding
+    from app.nlp.readability import calculate_readability
+    from app.nlp.simplification import simplify_simple_english
+
+    chunks = (
+        DocumentChunk.query.filter_by(document_id=doc.id)
+        .order_by(DocumentChunk.chunk_index.asc())
+        .all()
+    )
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    clauses = []
+    key_info = None
+    risks = []
+    missing_warnings = []
+    if analysis:
+        clauses = (
+            ExtractedClause.query.filter_by(analysis_id=analysis.id)
+            .order_by(
+                ExtractedClause.source_page.asc(), ExtractedClause.created_at.asc()
+            )
+            .all()
+        )
+        key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
+        risks = (
+            RiskFinding.query.filter_by(analysis_id=analysis.id)
+            .order_by(RiskFinding.source_page.asc(), RiskFinding.created_at.asc())
+            .all()
+        )
+        missing_warnings = MissingClauseWarning.query.filter_by(
+            analysis_id=analysis.id
+        ).all()
+
+    simplified_summary = None
+    summary_readability = None
+    if analysis and analysis.summary_short:
+        simplified_summary = simplify_simple_english(analysis.summary_short)
+        orig_metrics = calculate_readability(analysis.summary_short)
+        simp_metrics = calculate_readability(simplified_summary)
+        summary_readability = {
+            "original_fre": orig_metrics["flesch_reading_ease"],
+            "simplified_fre": simp_metrics["flesch_reading_ease"],
+            "original_grade": orig_metrics["flesch_kincaid_grade"],
+            "simplified_grade": simp_metrics["flesch_kincaid_grade"],
+        }
+
+    return {
+        "document": doc,
+        "chunks": chunks,
+        "analysis": analysis,
+        "clauses": clauses,
+        "key_info": key_info,
+        "risks": risks,
+        "missing_warnings": missing_warnings,
+        "simplified_summary": simplified_summary,
+        "summary_readability": summary_readability,
+    }

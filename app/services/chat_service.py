@@ -110,7 +110,6 @@ def send_chat_message(
         if not conv:
             return None
     else:
-        # Create new conversation with title derived from question
         conv_title = clean_msg if len(clean_msg) <= 60 else clean_msg[:57] + "..."
         conv = ChatConversation(
             id=str(uuid.uuid4()),
@@ -121,7 +120,6 @@ def send_chat_message(
         db.session.add(conv)
         db.session.flush()
 
-    # 1. Persist user message
     user_msg = ChatMessage(
         id=str(uuid.uuid4()),
         conversation_id=conv.id,
@@ -132,7 +130,6 @@ def send_chat_message(
     )
     db.session.add(user_msg)
 
-    # 2. Retrieve document chunks and analysis
     chunks = (
         DocumentChunk.query.filter_by(document_id=doc.id)
         .order_by(DocumentChunk.chunk_index.asc())
@@ -140,10 +137,8 @@ def send_chat_message(
     )
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
 
-    # 3. Answer query with factual routing + hybrid retrieval + extractive QA
     qa_result = answer_document_query(clean_msg, analysis, chunks)
 
-    # 4. Persist assistant response
     asst_msg = ChatMessage(
         id=str(uuid.uuid4()),
         conversation_id=conv.id,

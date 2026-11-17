@@ -8,7 +8,7 @@ from app.nlp.summarizer import generate_extractive_summary
 
 
 def test_extractive_summary_verbatim_in_source():
-    """Hard Gate: Every sentence in extractive summary must exist verbatim in full_text."""
+    """Every sentence in an extractive summary must appear verbatim in full_text."""
     sample_files = [
         "clean_nda.pdf",
         "employment_agreement.pdf",
@@ -48,8 +48,8 @@ def test_extractive_summary_verbatim_in_source():
                 ), f"Sentence '{p_clean}' in detailed summary of {fname} not found verbatim in source text!"
 
 
-def test_rule6_not_specified_consistency():
-    """Verify strict Rule 6 consistency: unstated fields default strictly to 'Not specified'."""
+def test_absent_fields_default_to_not_specified():
+    """Unstated fields should default to 'Not specified' with source_page=None."""
     path = Path("samples/contracts/clean_nda.pdf")
     doc = extract_document(path.read_bytes(), "clean_nda.pdf")
     info = extract_contract_key_info(doc.full_text, doc.pages)
@@ -166,8 +166,8 @@ def test_api_key_info_and_summary_endpoints(app, client):
         assert "purpose" in sum_data
 
 
-def test_api_key_info_tenant_isolation(app, client):
-    """Verify tenant isolation: User B cannot access User A's key-info or summary (404)."""
+def test_user_b_gets_404_for_user_a_key_info(app, client):
+    """User B cannot access User A's key-info or summary (returns 404)."""
     with app.app_context():
         from app.extensions import db
         from app.models.user import User

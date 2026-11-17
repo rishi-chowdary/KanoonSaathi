@@ -1,11 +1,4 @@
-"""LexiLegal AI — Risk & Missing Provisions Service.
-
-Orchestrates:
-1. Grounded risk detection across contractual clauses
-2. Evidence quote extraction with 100% exact slice verification
-3. Document-type expected checklist evaluation for missing provisions
-4. Persistence into RiskFinding and MissingClauseWarning database tables
-"""
+"""Risk detection and missing-provision checklist persistence."""
 
 from __future__ import annotations
 
@@ -32,13 +25,11 @@ def process_document_risks_and_missing(
     full_text: str,
 ) -> tuple[list[RiskFinding], list[MissingClauseWarning]]:
     """Evaluate contract risks and missing provisions, persisting findings to database."""
-    # 1. Determine if governing law is explicitly established
     governing_law_stated = any(
         c.category == "GOVERNING_LAW" or "governing law" in c.title.lower()
         for c in clauses
     )
 
-    # 2. Detect contractual risks
     risk_dicts = detect_clause_risks(
         clauses=clauses,
         full_text=full_text,
@@ -70,14 +61,12 @@ def process_document_risks_and_missing(
         db.session.add(risk_model)
         created_risks.append(risk_model)
 
-    # 3. Detect missing expected provisions
     missing_dicts = detect_missing_provisions(
         clauses=clauses,
         document_type=analysis.document_type or "",
         full_text=full_text,
     )
 
-    # Clear previous missing warnings
     MissingClauseWarning.query.filter_by(analysis_id=analysis.id).delete()
 
     created_missing: list[MissingClauseWarning] = []
@@ -98,7 +87,7 @@ def process_document_risks_and_missing(
     db.session.commit()
 
     logger.info(
-        "Successfully identified %d risks and %d missing provisions for document %s.",
+        "identified %d risks and %d missing provisions for document %s",
         len(created_risks),
         len(created_missing),
         doc.id,

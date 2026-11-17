@@ -1,9 +1,8 @@
-"""LexiLegal AI — Expected Provisions Checklist & Missing Clauses Detector.
+"""Expected-provisions checklist and missing-clause detector.
 
-Compares extracted document clauses against industry-standard contract checklists:
-- SBERT prototype cosine similarity + keyword presence rules
-- Identifies omitted protections (carve-outs, deposit return timelines, cure periods)
-- Strictly applies Rule 7 disclaimer and "Possible omission" label
+Compares extracted document clauses against document-type checklists using
+keyword rules and SBERT prototype similarity, tagging omissions as
+"Possible omission" and filtering out definitive legal claims.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ import numpy as np
 import yaml
 
 from app.nlp.registry import get_sbert
-from app.nlp.risk_engine import enforce_rule7_language
+from app.nlp.risk_engine import soften_legal_claims
 
 _CHECKLIST_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -48,16 +47,14 @@ DOC_TYPE_MAPPING = {
 
 @lru_cache(maxsize=1)
 def load_expected_provisions() -> dict[str, Any]:
-    """Load expected contract provision checklists from data/expected_provisions.yaml."""
     if not os.path.exists(_CHECKLIST_PATH):
         return {}
     with open(_CHECKLIST_PATH, encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    return data.get("document_types", {})
+        raw_checklists = yaml.safe_load(f) or {}
+    return raw_checklists.get("document_types", {})
 
 
 def normalize_document_type(doc_type_str: str) -> str:
-    """Normalize freeform document type to standard checklist key."""
     if not doc_type_str:
         return "GENERAL_CONTRACT"
     clean = doc_type_str.lower().strip()
@@ -134,12 +131,7 @@ def detect_missing_provisions(
     document_type: str = "",
     full_text: str = "",
 ) -> list[dict[str, Any]]:
-    """Determine which standard contractual provisions are omitted.
-
-    Strict Invariant:
-    - Every missing provision record has label: 'Possible omission'
-    - Text strictly passes Rule 7 legal conclusion filter
-    """
+    """Return expected provisions missing from the document, labeled 'Possible omission'."""
     checklists = load_expected_provisions()
     checklist_key = normalize_document_type(document_type)
 
@@ -160,7 +152,6 @@ def detect_missing_provisions(
     ]
     combined_corpus = full_text or " ".join(clause_texts)
 
-    # Pre-embed clauses if present
     clause_embs = None
     if clause_texts:
         clause_embs = sbert.encode(clause_texts, normalize_embeddings=True)
@@ -176,15 +167,12 @@ def detect_missing_provisions(
         typical_provision = provision["typical_provision"]
         prototypes = provision.get("prototype_phrases", [])
 
-        # 1. Keyword check
         if check_keyword_presence(prov_id, combined_corpus):
             continue
 
-        # 2. Semantic similarity check against prototype phrases
         is_present_semantically = False
         if clause_embs is not None and len(clause_embs) > 0 and prototypes:
             proto_embs = sbert.encode(prototypes, normalize_embeddings=True)
-            # Compute cross similarity matrix
             sim_matrix = np.dot(proto_embs, clause_embs.T)
             max_sim = float(np.max(sim_matrix))
 
@@ -195,16 +183,15 @@ def detect_missing_provisions(
             missing_findings.append(
                 {
                     "provision_id": prov_id,
-                    "clause_name": enforce_rule7_language(clause_name),
+                    "clause_name": soften_legal_claims(clause_name),
                     "category": category,
-                    "why_it_matters": enforce_rule7_language(why_it_matters),
-                    "typical_provision": enforce_rule7_language(typical_provision),
+                    "why_it_matters": soften_legal_claims(why_it_matters),
+                    "typical_provision": soften_legal_claims(typical_provision),
                     "risk_level": risk_level,
                     "label": "Possible omission",
                 }
             )
 
-    # Sort: HIGH > MEDIUM > LOW
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
     missing_findings.sort(key=lambda x: severity_order.get(x["risk_level"], 3))
 

@@ -30,10 +30,11 @@ def get_spacy():
 
             try:
                 _spacy_nlp = spacy.load("en_core_web_md")
-                logger.info("Loaded spaCy model: en_core_web_md")
-            except Exception as e:  # noqa: BLE001 - graceful fallback to small model
+                logger.info("loaded spacy model: en_core_web_md")
+            except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    "en_core_web_md not found (%s). Falling back to en_core_web_sm", e
+                    "en_core_web_md not found (%s); falling back to en_core_web_sm",
+                    exc,
                 )
                 _spacy_nlp = spacy.load("en_core_web_sm")
     return _spacy_nlp
@@ -53,9 +54,9 @@ def get_sentence_transformer():
         if _sentence_model is None:
             from sentence_transformers import SentenceTransformer
 
-            logger.info("Loading SentenceTransformer: all-MiniLM-L6-v2")
+            logger.info("loading sentence-transformer: all-MiniLM-L6-v2")
             _sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
-            logger.info("SentenceTransformer loaded successfully.")
+            logger.info("sentence-transformer ready")
     return _sentence_model
 
 
@@ -84,7 +85,7 @@ def get_clause_hf_classifier() -> tuple[Any | None, Any | None]:
                     AutoTokenizer,
                 )
 
-                logger.info("Loading fine-tuned clause classifier from %s", model_dir)
+                logger.info("loading clause classifier from %s", model_dir)
                 _clause_hf_tokenizer = AutoTokenizer.from_pretrained(str(model_dir))
                 _clause_hf_model = AutoModelForSequenceClassification.from_pretrained(
                     str(model_dir)
@@ -92,7 +93,7 @@ def get_clause_hf_classifier() -> tuple[Any | None, Any | None]:
                 _clause_hf_model.eval()
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    "Failed to load fine-tuned clause classifier (%s). Using SBERT fallback.",
+                    "could not load clause classifier (%s); using sbert + rules fallback",
                     exc,
                 )
                 return None, None
@@ -115,10 +116,10 @@ def get_qa_model() -> tuple[Any, Any]:
             from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
             model_name = "deepset/minilm-uncased-squad2"
-            logger.info("Loading QA model: %s", model_name)
+            logger.info("loading qa model: %s", model_name)
             _qa_tokenizer = AutoTokenizer.from_pretrained(model_name)
             _qa_model = AutoModelForQuestionAnswering.from_pretrained(model_name)
             _qa_model.eval()
-            logger.info("QA model loaded successfully.")
+            logger.info("qa model ready")
 
     return _qa_model, _qa_tokenizer

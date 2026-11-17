@@ -1,54 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}LexiLegal AI — Interpretable Legal Document Simplification{% endblock %}
+{% block title %}LexiLegal AI — Local Contract Analysis & Simplification{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <h1>Demystify Legal Contracts with Transparent NLP</h1>
-  <p class="lead">
-    Extract clauses, inspect multi-tier plain-language simplifications, identify contractual traps,
-    and verify all findings with exact source text spans. Powered entirely by auditable, local NLP.
+<section class="landing-intro">
+  <h1>Read legal contracts in plain English, locally.</h1>
+  <p class="landing-lead">
+    Upload a PDF, DOCX, or text contract to extract its clauses, key dates and amounts, risk flags, and plain-language summaries with exact page references.
   </p>
-  <div class="hero-actions">
-    <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">
-      Get Started
-    </a>
-    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary" style="padding: 0.85rem 1.75rem; font-size: 1.05rem;">
-      Sign In
-    </a>
+  <div class="landing-actions">
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create account</a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Sign in</a>
+    <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary">Try simplification studio</a>
   </div>
 </section>
 
-<section class="features-grid">
+<figure class="landing-preview">
+  <img
+    src="{{ url_for('static', filename='img/analysis-preview.png') }}"
+    alt="LexiLegal AI clause analysis screen showing extracted contract clauses, source quotes, and plain-language simplification tabs"
+  >
+  <figcaption>
+    Document analysis view on a sample services agreement: extracted clauses, page-cited source text, and three explanation modes.
+  </figcaption>
+</figure>
+
+<section class="landing-columns">
   <div class="card">
-    <div class="card-header">
-      <h3 class="card-title">Traceable Clause Extraction</h3>
-    </div>
-    <p>
-      Identifies 17 standard clause categories with exact character offsets and source page coordinates.
-      Every extracted clause maps strictly to its original contract sentence.
-    </p>
+    <h2>How it works</h2>
+    <ol class="steps-list">
+      <li>
+        <strong>Upload a contract.</strong>
+        PDF, DOCX, and plain text files up to 10 MB are accepted. Scanned PDF pages fall back to Tesseract OCR.
+      </li>
+      <li>
+        <strong>Extract and analyze locally.</strong>
+        The app segments clauses by exact character offsets, classifies them with local models and keyword rules, pulls out dates and payment figures, and flags common one-sided terms.
+      </li>
+      <li>
+        <strong>Review, ask questions, or export.</strong>
+        Switch between simple, detailed, and structured clause explanations, ask page-cited questions in document Q&amp;A, or download a 10-section PDF report.
+      </li>
+    </ol>
   </div>
 
   <div class="card">
-    <div class="card-header">
-      <h3 class="card-title">Tri-Tier Simplification</h3>
-    </div>
-    <p>
-      Switch smoothly between three distinct explanation modes: Everyday Language (grade 8 readability),
-      Detailed Operational Analysis, and Professional Summary with legal terms defined in context.
-    </p>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h3 class="card-title">Grounded Risk Analysis</h3>
-    </div>
-    <p>
-      Detect uncapped indemnities, unilateral termination rights, non-compete traps, and auto-renewal traps
-      using transparent rule engines and local semantic prototype embeddings.
-    </p>
+    <h2>Limits to keep in mind</h2>
+    <ul class="limits-list">
+      <li><strong>Not legal advice.</strong> Risk warnings and missing-clause notes are informational only and do not replace a lawyer.</li>
+      <li><strong>Extractive summaries.</strong> Summaries select verbatim sentences from the contract rather than rewriting from scratch, so wording stays close to the source.</li>
+      <li><strong>Rule-based simplification.</strong> Plain-language rewrites rely on a glossary and sentence-splitting rules, which can read less smoothly than human paraphrasing.</li>
+      <li><strong>Runs on your machine.</strong> No contract text is sent to any external API; English documents only, and DOCX page numbers are approximate.</li>
+    </ul>
   </div>
 </section>
 {% endblock %}
-

@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class RiskFinding(db.Model, TimestampMixin):
-    """Identified contractual risk finding, severity rating, and advisory details."""
 
     __tablename__ = "risk_findings"
 

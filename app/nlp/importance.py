@@ -55,12 +55,10 @@ def calculate_clause_importance(
     title_lower = title.lower()
     combined = f"{title_lower} {text_lower}"
 
-    # 1. Any critical predatory or restrictive trigger immediately flags HIGH
     for trigger in CRITICAL_HIGH_TRIGGERS:
         if re.search(trigger, combined):
             return "HIGH"
 
-    # 2. Category-based base assignments
     if category in HIGH_PRIORITY_CATEGORIES:
         return "HIGH"
 
@@ -70,7 +68,6 @@ def calculate_clause_importance(
             k in combined
             for k in ["rent", "salary", "principal", "fee", "compensation", "interest"]
         ):
-            # Check monetary amount
             matches = MONEY_REGEX.findall(original_text)
             if matches:
                 return "HIGH"
