@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, render_template, request
 
 from app.extensions import csrf
 from app.nlp.indian_law import search_indian_statutes
+from app.nlp.issue_matcher import match_legal_issue
 from app.nlp.simplification import (
     get_sorted_glossary_terms,
     simplify_clause,
@@ -180,3 +181,58 @@ def api_statutes():
     statute_type = request.args.get("type", "all").strip()
     entries = search_indian_statutes(query=query, statute_type=statute_type)
     return jsonify({"count": len(entries), "statutes": entries}), 200
+
+
+EXAMPLE_ISSUES = [
+    {
+        "label": "Online / UPI job scam",
+        "text": "Someone promised me a job online, took Rs. 50,000 through UPI, and blocked my number.",
+    },
+    {
+        "label": "Landlord holding deposit",
+        "text": "My landlord is refusing to return my Rs. 1,50,000 security deposit after I vacated the flat and is threatening me.",
+    },
+    {
+        "label": "Cheque bounced",
+        "text": "A client gave me a cheque for Rs. 2,00,000 for completed work and the bank returned it due to insufficient funds.",
+    },
+    {
+        "label": "Unpaid salary",
+        "text": "My employer fired me suddenly and is withholding my last two months of earned salary and PF.",
+    },
+    {
+        "label": "Police arrest & 24-hour rule",
+        "text": "Police arrested my brother without explaining the reason and have not produced him before a magistrate for 2 days.",
+    },
+    {
+        "label": "Phone snatched",
+        "text": "Two people on a motorbike snatched my phone from my hand on the road.",
+    },
+]
+
+
+@studio_bp.route("/helper", methods=["GET"])
+def legal_helper():
+    """Render the plain-English Indian Legal Issue Helper for non-lawyers."""
+    return render_template("studio/helper.html", example_issues=EXAMPLE_ISSUES)
+
+
+@studio_bp.route("/api/issue-helper", methods=["POST"])
+@csrf.exempt
+def api_issue_helper():
+    """Match an everyday description of a legal problem to possible Indian sections and remedies."""
+    payload = request.get_json(silent=True) or {}
+    issue_text = str(payload.get("issue") or payload.get("query") or "").strip()
+    if not issue_text:
+        return (
+            jsonify(
+                {
+                    "error": "Field 'issue' is required and cannot be empty.",
+                    "status": 400,
+                }
+            ),
+            400,
+        )
+
+    matched = match_legal_issue(issue_text)
+    return jsonify(matched), 200

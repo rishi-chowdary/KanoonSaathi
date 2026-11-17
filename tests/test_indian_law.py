@@ -166,3 +166,68 @@ def test_upload_bns_pdf_full_pipeline_and_detail_view(client, test_user):
     assert "BNS 103" in html
     assert "IPC 302" in html
     assert "BNS 318" in html
+
+
+def test_issue_matcher_everyday_indian_scenarios():
+    from app.nlp.issue_matcher import match_legal_issue
+
+    scam = match_legal_issue(
+        "Someone promised me a job online, took Rs. 50,000 via UPI, and blocked my number."
+    )
+    assert scam["matched"] is True
+    ids = {s["id"] for s in scam["suggestions"]}
+    assert ids & {"BNS_318", "IT_66D"}
+
+    cheque = match_legal_issue(
+        "A client gave me a cheque for Rs. 2,00,000 and the bank returned it for insufficient funds."
+    )
+    assert cheque["matched"] is True
+    assert any(s["id"] == "NI_138" for s in cheque["suggestions"])
+
+    arrest = match_legal_issue(
+        "Police arrested my brother without telling the reason and have not taken him to a magistrate for 2 days."
+    )
+    assert arrest["matched"] is True
+    assert any(s["id"] == "ART_22" for s in arrest["suggestions"])
+
+    snatch = match_legal_issue("Two men on a bike snatched my phone from my hand.")
+    assert snatch["matched"] is True
+    assert any(s["id"] in ("BNS_304", "BNS_303") for s in snatch["suggestions"])
+
+    salary = match_legal_issue(
+        "My employer fired me suddenly and is withholding my last two months of unpaid salary and PF."
+    )
+    assert salary["matched"] is True
+    assert any(s["id"] == "LABOUR_WAGES" for s in salary["suggestions"])
+
+    landlord = match_legal_issue(
+        "My landlord refused to return my security deposit after I vacated the house and threatened me."
+    )
+    assert landlord["matched"] is True
+    assert {s["id"] for s in landlord["suggestions"]} & {"RENT_TENANCY", "BNS_351"}
+
+
+def test_issue_matcher_honest_refusal_for_non_legal_text():
+    from app.nlp.issue_matcher import match_legal_issue
+
+    res = match_legal_issue("How do I bake a soft chocolate cake with vanilla icing?")
+    assert res["matched"] is False
+    assert res["suggestions"] == []
+
+
+def test_helper_web_view_and_api(client):
+    page = client.get("/helper")
+    assert page.status_code == 200
+    assert "Indian Legal Issue Helper" in page.get_data(as_text=True)
+
+    bad = client.post("/api/issue-helper", json={"issue": "   "})
+    assert bad.status_code == 400
+
+    ok = client.post(
+        "/api/issue-helper",
+        json={"issue": "Someone forged my signature on a property document."},
+    )
+    assert ok.status_code == 200
+    data = ok.get_json()
+    assert data["matched"] is True
+    assert any(s["id"] == "BNS_336" for s in data["suggestions"])

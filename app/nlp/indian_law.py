@@ -14,14 +14,19 @@ STATUTES_PATH = Path("data/indian_statutes.yaml")
 
 @lru_cache(maxsize=1)
 def load_indian_statutes() -> dict[str, list[dict[str, Any]]]:
-    """Load BNS/IPC sections and Constitutional articles from local YAML."""
+    """Load BNS/IPC sections, Constitutional articles, and civil laws from local YAML."""
     if not STATUTES_PATH.exists():
-        return {"criminal_sections": [], "constitutional_articles": []}
+        return {
+            "criminal_sections": [],
+            "constitutional_articles": [],
+            "civil_and_special_laws": [],
+        }
     with open(STATUTES_PATH, encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
     return {
         "criminal_sections": raw.get("criminal_sections", []),
         "constitutional_articles": raw.get("constitutional_articles", []),
+        "civil_and_special_laws": raw.get("civil_and_special_laws", []),
     }
 
 

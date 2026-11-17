@@ -341,6 +341,18 @@ document.addEventListener("DOMContentLoaded", function() {
   let currentMode = "simple_english";
   let lastAnalysis = null;
 
+  const preloadText = sessionStorage.getItem("studio_preload_text");
+  if (preloadText) {
+    clauseInput.value = preloadText;
+    categorySelect.value = sessionStorage.getItem("studio_preload_category") || "";
+    sessionStorage.removeItem("studio_preload_text");
+    sessionStorage.removeItem("studio_preload_category");
+    setTimeout(() => {
+      updateWordCount();
+      triggerSimplify();
+    }, 50);
+  }
+
   function updateWordCount() {
     const text = clauseInput.value.trim();
     if (!text) {

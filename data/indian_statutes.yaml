@@ -447,3 +447,134 @@ constitutional_articles:
     plain_english: "Explains how Parliament can amend the Constitution through a special majority (two-thirds of members present and voting, plus a majority of total membership), with at least half of State legislatures also approving changes affecting federal structure."
     excerpt: "Article 368. Power of Parliament to amend the Constitution and procedure therefor. (1) Notwithstanding anything in this Constitution, Parliament may in exercise of its constituent power amend by way of addition, variation or repeal any provision of this Constitution in accordance with the procedure laid down in this article."
 
+
+civil_and_special_laws:
+  - id: NI_138
+    act: "Negotiable Instruments Act, 1881"
+    section: "Section 138"
+    title: "Dishonour of cheque for insufficiency of funds (Cheque Bounce)"
+    forum: "Judicial Magistrate First Class (JMFC) / Metropolitan Magistrate Court"
+    remedy: "Imprisonment up to 2 years, or fine up to twice the cheque amount, or both."
+    keywords: ["cheque", "check", "bounced", "bounce", "dishonour", "dishonored", "insufficient funds", "bank memo", "payment failed"]
+    plain_english: "If someone gives you a cheque to pay a legally enforceable debt and the bank returns it unpaid due to insufficient funds or account closure, you must send a written legal demand notice within 30 days of receiving the bank return memo. If they do not pay within 15 days of receiving the notice, you may file a complaint in the Magistrate court within the next 30 days."
+    next_steps:
+      - "Keep the original bounced cheque and the bank's signed cheque return memo."
+      - "Send a written statutory demand notice (via Advocate / Registered Post AD) strictly within 30 days of the return memo."
+      - "If unpaid after 15 days from notice delivery, consult an advocate to file a Section 138 complaint within 30 days."
+
+  - id: IT_66D
+    act: "Information Technology Act, 2000 (read with BNS Section 318)"
+    section: "Sections 66C & 66D"
+    title: "Online fraud, UPI scam, OTP theft, and cheating by personation using computer resources"
+    forum: "National Cybercrime Portal (cybercrime.gov.in), Helpline 1930, or local Cyber Police Station"
+    remedy: "Imprisonment up to 3 years and fine up to Rs. 1 lakh (often registered alongside BNS Section 318 for cheating)."
+    keywords: ["upi", "otp", "scam", "cyber", "online fraud", "phishing", "hacked", "fake link", "bank account debited", "impersonation", "instagram", "whatsapp scam", "job scam", "loan app"]
+    plain_english: "Covers financial fraud, fake customer-care calls, OTP/password theft, fake investment or job apps, and pretending to be someone else online to steal money or data."
+    next_steps:
+      - "Call the National Cybercrime Helpline 1930 immediately (within the first few hours) to request a freeze on the defrauded bank transfer."
+      - "File a complaint online at cybercrime.gov.in with transaction IDs, UTR numbers, screenshots, and phone numbers."
+      - "Notify your bank in writing and obtain a complaint acknowledgement number."
+
+  - id: CPA_2019
+    act: "Consumer Protection Act, 2019"
+    section: "Sections 2(11), 2(47) & 35"
+    title: "Defective goods, unfair trade practices, and deficiency in service"
+    forum: "District / State / National Consumer Disputes Redressal Commission (online via e-Daakhil / National Consumer Helpline 1915)"
+    remedy: "Refund, replacement, repair, compensation for mental agony/loss, and litigation costs."
+    keywords: ["defective", "product", "refund", "online shopping", "amazon", "flipkart", "warranty", "hospital", "insurance claim", "builder", "delay", "bank charges", "flight", "airline", "service", "consumer", "overcharged"]
+    plain_english: "Protects buyers and customers against faulty products, refused refunds, misleading advertisements, poor service by e-commerce platforms, banks, insurers, hospitals, airlines, or real-estate builders."
+    next_steps:
+      - "Preserve tax invoices, order IDs, warranty cards, and written customer-support emails or chats."
+      - "Send a written complaint or register on the National Consumer Helpline (1915 / consumerhelpline.gov.in)."
+      - "If unresolved, file a consumer complaint online through e-Daakhil (edaakhil.nic.in) within 2 years of the dispute."
+
+  - id: PWDVA_2005
+    act: "Protection of Women from Domestic Violence Act, 2005 (read with BNS Section 85)"
+    section: "Sections 3, 12 & 18-22"
+    title: "Protection against physical, emotional, verbal, sexual, or economic domestic abuse"
+    forum: "Protection Officer, Magistrate Court, Women's Helpline 181, or Police (112)"
+    remedy: "Protection order, right to reside in the shared household, monetary maintenance, custody, and compensation."
+    keywords: ["domestic violence", "husband", "in-laws", "beating", "dowry", "harassment", "abuse", "kicked out", "maintenance", "cruelty", "wife", "home violence"]
+    plain_english: "Provides civil protection and emergency relief for women facing physical, verbal, emotional, or economic abuse in a domestic relationship—including protection orders, maintenance, and the right to stay in the shared home. Criminal cruelty may also involve BNS Section 85 (formerly IPC 498A)."
+    next_steps:
+      - "In immediate danger, call Emergency 112 or the Women's Helpline 181."
+      - "Keep medical reports, photos of injuries, messages, or witness details safely documented."
+      - "Contact the District Protection Officer, a local lawyer, or free legal aid (NALSA Helpline 15100) to file a Section 12 application."
+
+  - id: ICA_73
+    act: "Indian Contract Act, 1872"
+    section: "Sections 73 & 74"
+    title: "Breach of contract and compensation for financial loss"
+    forum: "Civil Court / Commercial Court (or Arbitration if contract has an arbitration clause)"
+    remedy: "Monetary compensation for direct losses caused by breach, or reasonable compensation up to a pre-agreed amount."
+    keywords: ["breach of contract", "contract", "agreement", "unpaid invoice", "vendor", "contractor", "advance payment", "refund", "client not paying", "service not delivered", "broke agreement"]
+    plain_english: "When a person or company breaks a signed or written agreement—such as taking an advance and failing to deliver work, or refusing to pay agreed invoices—the affected party can claim compensation for actual loss suffered."
+    next_steps:
+      - "Collect the signed agreement, invoices, payment proofs, and all email or WhatsApp communications."
+      - "Send a formal written legal notice through an advocate demanding performance or refund within 15 to 30 days."
+      - "Check whether the agreement requires arbitration before approaching a Civil or Commercial Court."
+
+  - id: ICA_27
+    act: "Indian Contract Act, 1872"
+    section: "Section 27"
+    title: "Agreements in restraint of trade (Non-compete & employment bond disputes)"
+    forum: "Civil Court / Labour Authority"
+    remedy: "Post-employment clauses that broadly stop an employee from joining another job or practising a lawful trade are closely scrutinized and generally unenforceable in India (with narrow exceptions like sale of business goodwill)."
+    keywords: ["non-compete", "bond", "employment bond", "joining competitor", "relieving letter", "resign", "resignation", "notice period", "restraint of trade", "blackmail employer"]
+    plain_english: "Under Section 27, an employer generally cannot stop a former employee from earning a livelihood or joining another company after employment ends, though genuine confidentiality of trade secrets still applies and reasonable training-cost recovery depends on actual expenses."
+    next_steps:
+      - "Review your appointment letter for actual training-cost clauses versus blanket penalty amounts."
+      - "Keep written proof of your resignation email and handover completion."
+      - "Consult a labour or civil advocate before paying disputed bond demands."
+
+  - id: RENT_TENANCY
+    act: "Transfer of Property Act, 1882 & State Rent Control / Model Tenancy Laws"
+    section: "Sections 105-111 (TPA) & Applicable State Rent Act"
+    title: "Landlord-tenant disputes, withheld security deposit, and illegal eviction"
+    forum: "Rent Authority / Rent Control Court or Civil Court (and Police if illegal lock-out or threats occur)"
+    remedy: "Recovery of refundable security deposit, injunction against unlawful eviction without due process, or recovery of rent arrears."
+    keywords: ["landlord", "tenant", "rent", "security deposit", "deposit not returned", "eviction", "evict", "vacate", "house owner", "leave and license", "locked out", "electricity cut"]
+    plain_english: "A landlord cannot forcibly evict a tenant, cut water/electricity, or arbitrarily keep a refundable security deposit without valid itemized dues under the rental or leave-and-license agreement."
+    next_steps:
+      - "Keep the rental/leave-and-license agreement, rent transfer receipts, deposit proof, and move-out photos/videos of the premises."
+      - "Send a written notice demanding return of the security deposit (or citing notice-period terms) within 15 days."
+      - "If threatened with forcible lock-out or utility disconnection, document it and approach the local police station or Rent Court / Civil Court."
+
+  - id: LABOUR_WAGES
+    act: "Payment of Wages Act, 1936 / State Shops and Establishments Act"
+    section: "Unpaid Salary, Full-and-Final Settlement & Wrongful Termination"
+    title: "Employer withholding earned salary, PF, or full-and-final dues"
+    forum: "Labour Commissioner (Samadhan Portal — samadhan.labour.gov.in) / Labour Court / Civil Court"
+    remedy: "Recovery of unpaid earned wages, statutory interest, PF deposits, and penalty on the employer."
+    keywords: ["salary", "wages", "unpaid salary", "not paying salary", "fired", "terminated", "wrongful termination", "full and final", "fnf", "pf", "provident fund", "employer", "company not paying"]
+    plain_english: "An employer is legally required to pay earned salary for days already worked and deposit deducted Provident Fund (EPF) contributions. Withholding earned pay without lawful reason can be challenged before the Labour Commissioner or Civil Court."
+    next_steps:
+      - "Save your offer letter, payslips, bank statements, attendance logs, and emails asking for pending dues."
+      - "Send a polite written demand email followed by a formal legal notice if unpaid."
+      - "File an online grievance on the Ministry of Labour Samadhan portal (samadhan.labour.gov.in) or approach the State Labour Commissioner."
+
+  - id: RTI_2005
+    act: "Right to Information Act, 2005"
+    section: "Section 6 & Section 19"
+    title: "Obtaining official records, status updates, or public documents from government bodies"
+    forum: "Public Information Officer (PIO) / RTI Online Portal (rtionline.gov.in) -> First Appellate Authority -> Information Commission"
+    remedy: "Mandatory written reply within 30 days (48 hours if life or liberty is involved); penalty on PIO for unjustified refusal."
+    keywords: ["rti", "government", "public office", "municipality", "passport delay", "ration card", "pension", "records", "information", "officer not responding", "corruption", "file status"]
+    plain_english: "Any Indian citizen can file a simple RTI application (nominal Rs. 10 fee, waived for BPL) to request official file status, copies of government records, or reasons for administrative decisions from public authorities."
+    next_steps:
+      - "Write clear, specific factual questions asking for documents or file-movement records (avoid vague opinion questions)."
+      - "Submit online at rtionline.gov.in (for Central bodies) or your State RTI portal, or by post with Rs. 10 fee."
+      - "If no reply arrives within 30 days, file a First Appeal under Section 19(1) with the First Appellate Authority."
+
+  - id: MVA_166
+    act: "Motor Vehicles Act, 1988"
+    section: "Section 166 (read with BNS Section 106 / 281)"
+    title: "Road accident injury or fatal crash compensation claim"
+    forum: "Motor Accident Claims Tribunal (MACT) & Local Police Station (FIR)"
+    remedy: "Compensation for medical bills, loss of income, pain and suffering, disability, or fatal loss, typically paid by the vehicle's third-party insurer."
+    keywords: ["accident", "road accident", "car hit", "bike accident", "hit and run", "rash driving", "injured", "insurance", "mact", "compensation", "truck hit", "rash and negligent"]
+    plain_english: "Victims of road accidents caused by rash or negligent driving can claim financial compensation before the Motor Accident Claims Tribunal (MACT), while police investigate rash driving or hit-and-run under BNS Sections 281 and 106."
+    next_steps:
+      - "Get immediate medical treatment and ensure a Medico-Legal Case (MLC) report is recorded at the hospital."
+      - "Lodge an FIR at the local police station with vehicle number, date, time, and witness contacts."
+      - "Preserve all hospital bills, prescriptions, discharge summaries, and income proofs to file a MACT claim through an advocate."

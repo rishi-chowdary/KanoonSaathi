@@ -9,9 +9,10 @@
     Upload a PDF, DOCX, or text document—including Bharatiya Nyaya Sanhita (BNS) sections, IPC sections, Constitution of India articles, or Indian contracts—to extract clauses, BNS/IPC cross-references, key figures, risk flags, and plain-language summaries with exact page citations.
   </p>
   <div class="landing-actions">
-    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create account</a>
+    <a href="{{ url_for('studio.legal_helper') }}" class="btn btn-primary">Describe a legal issue</a>
+    <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary">Studio &amp; BNS/IPC lookup</a>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">Create account to upload docs</a>
     <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">Sign in</a>
-    <a href="{{ url_for('studio.studio_index') }}" class="btn btn-secondary">Open studio &amp; BNS/IPC lookup</a>
   </div>
 </section>
 

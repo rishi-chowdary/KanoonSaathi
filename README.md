@@ -6,6 +6,7 @@ Everything runs locally in Python on your machine. No document text is sent to a
 
 ## What it does
 
+- **Legal Issue Helper (`/helper`)**: Everyday citizens without legal training can describe what happened in plain English (such as a UPI scam, bounced cheque, unpaid salary, landlord holding a deposit, snatched phone, or unlawful detention) and get matching BNS 2023 / IPC 1860 sections, Constitutional articles, or Indian civil/consumer remedies with plain-English explanations, filing forums, and practical steps. Unrelated queries trigger an honest non-match reply.
 - **Indian statute & BNS/IPC reference lookup**: Detects BNS 2023 sections, IPC 1860 sections, and Constitution of India articles inside uploaded documents and pasted Studio text, surfacing offline BNS <-> IPC cross-references, punishment notes, cognizable/bailable status, and constitutional restrictions (`data/indian_statutes.yaml`, `/studio`, `GET /api/statutes`).
 - **Text extraction and OCR**: Reads PDFs with PyMuPDF, Word files with `python-docx`, and plain text files directly. Scanned PDF pages with very little text fall back to Tesseract OCR.
 - **Clause and section extraction**: Splits contracts and Indian statutes on `Section`, `Article` (including `21A`, `300A`, `498A`), and sentence boundaries, then classifies each section across 22 contract and Indian statutory categories.
