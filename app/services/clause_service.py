@@ -135,7 +135,7 @@ def process_document_clauses(
     db.session.commit()
 
     logger.info(
-        "Successfully extracted and classified %d clauses for document %s (verification rate: %.1f%%).",
+        "classified %d clauses for document %s (offset match %.1f%%)",
         total_clauses,
         doc.id,
         verification_rate,

@@ -112,9 +112,14 @@ def save_and_extract_document(
             doc, analysis, extracted_clauses, extraction.full_text
         )
 
-    except Exception as exc:  # noqa: BLE001 - non-blocking clause extraction failure
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 - record failure_reason at pipeline boundary
+        doc.status = "COMPLETED_WITH_WARNINGS"
+        doc.failure_reason = f"analysis failed: {exc}"
+        db.session.commit()
         current_app.logger.warning(
-            "Automatic clause and analysis processing error: %s", exc
+            "analysis pipeline failed for document %s: %s", doc.id, exc
         )
         doc.status = "COMPLETED_WITH_WARNINGS"
         db.session.commit()

@@ -172,8 +172,8 @@ def extract_pdf(file_bytes: bytes) -> ExtractionResult:
                     page_text = ocr_text
                     ocr_used = True
                     is_scanned = True
-            except Exception as ocr_err:  # noqa: BLE001 - non-fatal OCR retry log
-                warnings.append(f"Page {page_num}: OCR attempt failed ({ocr_err})")
+            except Exception as ocr_err:  # noqa: BLE001 - non-fatal OCR fallback
+                warnings.append(f"could not run ocr on page {page_num}: {ocr_err}")
 
         cleaned_text = page_text.strip()
         pages.append(
@@ -246,10 +246,7 @@ def extract_txt(file_bytes: bytes) -> ExtractionResult:
     try:
         text = file_bytes.decode("utf-8")
     except UnicodeDecodeError:
-        try:
-            text = file_bytes.decode("latin-1")
-        except Exception as e:  # noqa: BLE001 - fallback decoding error
-            raise ValueError(f"Unable to decode text file: {e}")
+        text = file_bytes.decode("latin-1")
 
     cleaned = text.strip()
     if not cleaned:

@@ -173,10 +173,7 @@ def _extract_contract_amount(
             r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)", sent
         ):
             raw_matched = match.group(0).strip()
-            try:
-                num_val = float(match.group(1).replace(",", ""))
-            except ValueError:
-                continue
+            num_val = float(match.group(1).replace(",", ""))
 
             # Ignore administrative fees and liability caps when picking primary contract value
             if (

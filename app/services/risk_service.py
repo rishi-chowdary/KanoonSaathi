@@ -87,7 +87,7 @@ def process_document_risks_and_missing(
     db.session.commit()
 
     logger.info(
-        "Successfully identified %d risks and %d missing provisions for document %s.",
+        "identified %d risks and %d missing provisions for document %s",
         len(created_risks),
         len(created_missing),
         doc.id,

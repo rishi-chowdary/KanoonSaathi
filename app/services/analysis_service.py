@@ -85,10 +85,7 @@ def process_key_info_and_summaries(
     key_info.important_dates = key_info_res.important_dates
 
     db.session.commit()
-    logger.info(
-        "Extracted key info and generated extractive summaries for document %s.",
-        doc.id,
-    )
+    logger.info("extracted key info and summary for document %s", doc.id)
     return analysis, key_info
 
 
