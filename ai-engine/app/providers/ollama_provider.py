@@ -51,7 +51,7 @@ class OllamaProvider(LLMProvider):
             "stream": False,
         }
 
-        async with httpx.AsyncClient(timeout=180.0) as client:
+        async with httpx.AsyncClient(timeout=600.0) as client:
             for attempt in range(max_retries + 1):
                 start_time = time.perf_counter()
                 try:

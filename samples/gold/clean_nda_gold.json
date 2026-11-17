@@ -1,0 +1,43 @@
+{
+  "contract_name": "clean_nda.pdf",
+  "contract_type": "Non-Disclosure Agreement (NDA)",
+  "gold_clauses": [
+    {
+      "id": "nda_1",
+      "title": "Definitions",
+      "category": "Other",
+      "alternate_categories": ["Confidentiality"],
+      "section_reference": "1",
+      "key_quote": "\"Confidential Information\" includes all technical, business, and financial information disclosed by Disclosing Party",
+      "importance": "MEDIUM"
+    },
+    {
+      "id": "nda_2",
+      "title": "Non-Disclosure Obligations",
+      "category": "Confidentiality",
+      "alternate_categories": [],
+      "section_reference": "2",
+      "key_quote": "Receiving Party shall hold and maintain the Confidential Information in strictest confidence",
+      "importance": "HIGH"
+    },
+    {
+      "id": "nda_3",
+      "title": "Term and Termination",
+      "category": "Term and Renewal",
+      "alternate_categories": ["Termination"],
+      "section_reference": "3",
+      "key_quote": "This Agreement shall remain in effect for a term of three (3) years from the Effective Date",
+      "importance": "MEDIUM"
+    },
+    {
+      "id": "nda_4",
+      "title": "Governing Law and Jurisdiction",
+      "category": "Governing Law",
+      "alternate_categories": ["Dispute Resolution"],
+      "section_reference": "4",
+      "key_quote": "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware",
+      "importance": "LOW"
+    }
+  ]
+}
+

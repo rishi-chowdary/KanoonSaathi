@@ -177,3 +177,4 @@ public class ClauseItemDto {
         this.warnings = warnings;
     }
 }
+

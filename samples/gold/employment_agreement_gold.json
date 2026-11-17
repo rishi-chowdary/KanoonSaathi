@@ -1,0 +1,70 @@
+{
+  "contract_name": "employment_agreement.pdf",
+  "contract_type": "Executive Employment Agreement",
+  "gold_clauses": [
+    {
+      "id": "emp_1",
+      "title": "Position and Scope of Duties",
+      "category": "Other",
+      "alternate_categories": [],
+      "section_reference": "Section 1",
+      "key_quote": "employ Employee as Chief Technology Officer",
+      "importance": "LOW"
+    },
+    {
+      "id": "emp_2",
+      "title": "Base Compensation and Benefits",
+      "category": "Payment Terms",
+      "alternate_categories": ["Other"],
+      "section_reference": "Section 2",
+      "key_quote": "annual base salary of $185,000.00",
+      "importance": "HIGH"
+    },
+    {
+      "id": "emp_3",
+      "title": "Confidentiality and Trade Secrets",
+      "category": "Confidentiality",
+      "alternate_categories": [],
+      "section_reference": "Section 3",
+      "key_quote": "hold all such confidential information in strict secrecy",
+      "importance": "HIGH"
+    },
+    {
+      "id": "emp_4",
+      "title": "Non-Compete and Non-Solicitation",
+      "category": "Non-Compete and Non-Solicitation",
+      "alternate_categories": [],
+      "section_reference": "Section 4",
+      "key_quote": "period of twelve (12) months following termination of employment, Employee shall not directly or indirectly engage in or assist any business that directly competes",
+      "importance": "HIGH"
+    },
+    {
+      "id": "emp_5",
+      "title": "Intellectual Property Assignment",
+      "category": "Intellectual Property",
+      "alternate_categories": [],
+      "section_reference": "Section 5",
+      "key_quote": "assigns to Company all right, title, and interest in and to any and all inventions",
+      "importance": "HIGH"
+    },
+    {
+      "id": "emp_6",
+      "title": "Termination Provisions",
+      "category": "Termination",
+      "alternate_categories": [],
+      "section_reference": "Section 6",
+      "key_quote": "terminate Employee employment at any time without cause upon thirty (30) days prior written notice",
+      "importance": "HIGH"
+    },
+    {
+      "id": "emp_7",
+      "title": "Governing Law and Dispute Resolution",
+      "category": "Governing Law",
+      "alternate_categories": ["Dispute Resolution"],
+      "section_reference": "Section 7",
+      "key_quote": "laws of the State of California",
+      "importance": "LOW"
+    }
+  ]
+}
+

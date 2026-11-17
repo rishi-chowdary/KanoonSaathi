@@ -174,3 +174,4 @@ public class ClauseResponse {
         this.createdAt = createdAt;
     }
 }
+

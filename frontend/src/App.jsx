@@ -13,6 +13,7 @@ import UploadPage from "./pages/UploadPage";
 import AnalysisPage from "./pages/AnalysisPage";
 import HistoryPage from "./pages/HistoryPage";
 import ProfilePage from "./pages/ProfilePage";
+import SimplifyPage from "./pages/SimplifyPage";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/upload" element={<UploadPage />} />
+                <Route path="/simplify" element={<SimplifyPage />} />
                 <Route path="/documents/:id" element={<AnalysisPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

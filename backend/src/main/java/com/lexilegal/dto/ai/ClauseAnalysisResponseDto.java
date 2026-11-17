@@ -83,3 +83,4 @@ public class ClauseAnalysisResponseDto {
         this.warnings = warnings;
     }
 }
+

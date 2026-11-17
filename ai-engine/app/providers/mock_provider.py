@@ -17,6 +17,10 @@ from app.schemas.clause import (
     BatchExplanationsResponse,
     ClauseExplanations,
 )
+from app.schemas.simplify import (
+    LLMSimplifyResult,
+    GlossaryTerm,
+)
 
 logger = logging.getLogger("ai_engine.mock_provider")
 T = TypeVar("T", bound=BaseModel)
@@ -186,6 +190,26 @@ class MockProvider(LLMProvider):
                         simplified_professional="Mandates strict adherence to security and data isolation protocols for contractor personnel.",
                     ),
                 ]
+            )
+            return obj  # type: ignore
+
+        if schema is LLMSimplifyResult:
+            obj = LLMSimplifyResult(
+                explanation="The contractor must defend and protect the company against all legal claims and losses resulting from negligence, unless caused by the company's sole fault.",
+                glossary=[
+                    GlossaryTerm(
+                        term="Indemnify",
+                        definition="An obligation to compensate or protect another party against legal liability, loss, or damage.",
+                    ),
+                    GlossaryTerm(
+                        term="Severability",
+                        definition="A provision stating that if one part of the contract is found invalid, the remainder remains in full effect.",
+                    ),
+                ],
+                what_could_be_missed=[
+                    "The indemnity obligation does not cover claims arising from the company's own negligence.",
+                    "Written notice of any claim must be provided promptly.",
+                ],
             )
             return obj  # type: ignore
 

@@ -365,6 +365,7 @@ export default function ClausesTab({ documentId, onSelectPage = null }) {
             <ClauseCard
               key={clause.id}
               clause={clause}
+              documentId={documentId}
               globalMode={globalMode}
               onViewPage={(pageNum) => setSidePanelPage(pageNum)}
             />
@@ -448,3 +449,4 @@ export default function ClausesTab({ documentId, onSelectPage = null }) {
     </div>
   );
 }
+

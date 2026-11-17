@@ -1,5 +1,6 @@
 import os
 import pytest
+from pydantic import ValidationError
 from fastapi.testclient import TestClient
 
 # Ensure mock LLM is used for tests
@@ -9,8 +10,12 @@ from app.main import app
 from app.config import settings
 from app.providers.mock_provider import MockProvider
 from app.schemas.clause import (
+    BatchExplanationsResponse,
+    ChunkClauseExtraction,
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
+    ClauseExplanations,
+    ClauseItem,
     RawClauseItem,
 )
 from app.schemas.extraction import ChunkExtraction, PageExtraction
@@ -50,7 +55,7 @@ def test_is_duplicate_clause_and_merge():
         section_reference="Section 5.1",
     )
 
-    # Same section reference and category
+    # Same section reference and category -> duplicate
     assert is_duplicate_clause(clause1, clause2) is True
 
     # Merge keeps longer original text, higher importance, earlier page
@@ -61,36 +66,160 @@ def test_is_duplicate_clause_and_merge():
     assert merged.section_reference == "Section 5.1"
 
 
-def test_validate_numbers_and_dates():
+def test_dedupe_overlap_and_distinct_clauses():
+    # Text overlap / substring match
+    full_clause = RawClauseItem(
+        title="Confidential Information Protection",
+        category="Confidentiality",
+        original_text="The receiving party agrees to safeguard and protect all confidential information and trade secrets.",
+        evidence_quote="safeguard and protect all confidential information",
+        importance="HIGH",
+        affected_party="Receiving Party",
+        source_page=1,
+    )
+    partial_clause = RawClauseItem(
+        title="Confidentiality Obligations",
+        category="Confidentiality",
+        original_text="The receiving party agrees to safeguard and protect all confidential information",
+        evidence_quote="safeguard and protect all confidential information",
+        importance="MEDIUM",
+        affected_party="Receiving Party",
+        source_page=1,
+    )
+    assert is_duplicate_clause(full_clause, partial_clause) is True
+
+    # Distinct clauses must NOT be deduplicated
+    distinct_clause = RawClauseItem(
+        title="Governing Law",
+        category="Governing Law",
+        original_text="This agreement is governed by the laws of the State of New York.",
+        evidence_quote="laws of the State of New York",
+        importance="LOW",
+        affected_party="Both parties",
+        source_page=4,
+        section_reference="Section 12",
+    )
+    assert is_duplicate_clause(full_clause, distinct_clause) is False
+
+
+def test_validate_numbers_and_dates_consistency():
     original_text = (
-        "The Recipient shall pay a fee of $5,000 within thirty (30) days of invoice date, ending in October."
+        "The Recipient shall pay a fee of $5,000 within thirty (30) days of invoice date, ending in October. Royalty rate is 15%."
     )
 
-    # Valid explanations with matching numbers and months
+    # Valid explanations matching original figures
     valid_explanations = {
-        "simple": "You have to pay $5,000 within 30 days of the invoice, before October.",
-        "detailed": "Requires full settlement of the $5,000 payment obligation within thirty (30) days.",
-        "professional": "Imposes a $5,000 payment deadline within 30 days of billing.",
+        "simple": "You must pay $5,000 within 30 days of the invoice, before October. The rate is 15%.",
+        "detailed": "Requires full settlement of the $5,000 payment obligation within thirty (30) days, ending in October, at a 15% rate.",
+        "professional": "Imposes a $5,000 payment deadline within 30 days of billing at a 15% rate.",
     }
     is_ok, warnings = validate_numbers_and_dates(original_text, valid_explanations)
     assert is_ok is True
     assert len(warnings) == 0
 
-    # Hallucinated number (e.g. 90 days or $15,000)
-    hallucinated_num = {
-        "simple": "You must pay $15,000 within 90 days.",
-    }
-    is_ok2, warnings2 = validate_numbers_and_dates(original_text, hallucinated_num)
-    assert is_ok2 is False
-    assert any("15,000" in w or "90" in w for w in warnings2)
+    # Hallucinated dollar amount ($15,000 instead of $5,000)
+    hallucinated_dollar = {"simple": "Payment of $15,000 is required."}
+    is_ok, warnings = validate_numbers_and_dates(original_text, hallucinated_dollar)
+    assert is_ok is False
+    assert any("15,000" in w for w in warnings)
 
-    # Hallucinated month (e.g. December)
-    hallucinated_date = {
-        "detailed": "Payment must be completed by December.",
+    # Hallucinated timeframe (60 days instead of 30 days)
+    hallucinated_days = {"detailed": "Must be paid within 60 days."}
+    is_ok, warnings = validate_numbers_and_dates(original_text, hallucinated_days)
+    assert is_ok is False
+    assert any("60" in w for w in warnings)
+
+    # Hallucinated percentage (25% instead of 15%)
+    hallucinated_pct = {"detailed": "Royalty is set at 25%."}
+    is_ok, warnings = validate_numbers_and_dates(original_text, hallucinated_pct)
+    assert is_ok is False
+    assert any("25%" in w or "25" in w for w in warnings)
+
+    # Hallucinated calendar month (December instead of October)
+    hallucinated_month = {"professional": "Agreement lapses in December."}
+    is_ok, warnings = validate_numbers_and_dates(original_text, hallucinated_month)
+    assert is_ok is False
+    assert any("December" in w for w in warnings)
+
+    # Single digits in numbering/steps are permitted without false-positive alarms
+    formatting_digits = {
+        "simple": "Step 1: Review invoice. Step 2: Pay $5,000 within 30 days."
     }
-    is_ok3, warnings3 = validate_numbers_and_dates(original_text, hallucinated_date)
-    assert is_ok3 is False
-    assert any("December" in w for w in warnings3)
+    is_ok, warnings = validate_numbers_and_dates(original_text, formatting_digits)
+    assert is_ok is True
+
+
+def test_clause_schema_validation():
+    # Valid RawClauseItem
+    valid_raw = RawClauseItem(
+        title="Mutual Non-Disclosure",
+        category="Confidentiality",
+        original_text="Both parties agree not to disclose confidential information.",
+        evidence_quote="not to disclose confidential information",
+        importance="HIGH",
+        affected_party="Both parties",
+        source_page=1,
+    )
+    assert valid_raw.importance == "HIGH"
+    assert valid_raw.category == "Confidentiality"
+
+    # Invalid importance value raises ValidationError
+    with pytest.raises(ValidationError):
+        RawClauseItem(
+            title="Invalid Clause",
+            category="Termination",
+            original_text="Text",
+            evidence_quote="Text",
+            importance="SUPER_HIGH",  # Not in Literal["HIGH", "MEDIUM", "LOW"]
+        )
+
+    # Missing required original_text raises ValidationError
+    with pytest.raises(ValidationError):
+        RawClauseItem(
+            title="Missing Text Clause",
+            category="Termination",
+            evidence_quote="Quote",
+        )
+
+    # Valid BatchExplanationsResponse
+    batch_resp = BatchExplanationsResponse(
+        explanations=[
+            ClauseExplanations(
+                clause_index=0,
+                simplified_simple="Simple version",
+                simplified_detailed="Detailed version preserving exceptions",
+                simplified_professional="Executive business version",
+            )
+        ]
+    )
+    assert len(batch_resp.explanations) == 1
+    assert batch_resp.explanations[0].clause_index == 0
+
+    # Valid ClauseAnalysisResponse
+    full_resp = ClauseAnalysisResponse(
+        document_id="doc-999",
+        clauses=[
+            ClauseItem(
+                title="Governing Law",
+                category="Governing Law",
+                original_text="Delaware law applies.",
+                simplified_simple="Delaware law applies to this deal.",
+                simplified_detailed="Any dispute arising out of this agreement will be decided under Delaware law.",
+                simplified_professional="Designates State of Delaware as governing legal jurisdiction.",
+                importance="LOW",
+                affected_party="Both parties",
+                source_page=1,
+                evidence_quote="Delaware law applies",
+                quote_verified=True,
+                provenance="EXTRACTED",
+                numbers_dates_verified=True,
+            )
+        ],
+        total_clauses=1,
+        verification_rate=100.0,
+    )
+    assert full_resp.verification_rate == 100.0
+    assert full_resp.clauses[0].quote_verified is True
 
 
 @pytest.mark.anyio

@@ -1,5 +1,6 @@
 package com.lexilegal.service;
 
+import com.lexilegal.dto.ai.SimplifyResponseDto;
 import com.lexilegal.dto.response.*;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.DocumentAnalysis;
@@ -12,6 +13,7 @@ import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.ExtractedClauseRepository;
 import com.lexilegal.repository.UserRepository;
+import com.lexilegal.service.client.AiEngineClient;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ public class DocumentService {
     private final UserRepository userRepository;
     private final DocumentStorageService storageService;
     private final DocumentAsyncPipeline asyncPipeline;
+    private final AiEngineClient aiEngineClient;
 
     public DocumentService(
             DocumentRepository documentRepository,
@@ -44,7 +47,8 @@ public class DocumentService {
             ExtractedClauseRepository extractedClauseRepository,
             UserRepository userRepository,
             DocumentStorageService storageService,
-            DocumentAsyncPipeline asyncPipeline) {
+            DocumentAsyncPipeline asyncPipeline,
+            AiEngineClient aiEngineClient) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
         this.documentAnalysisRepository = documentAnalysisRepository;
@@ -52,6 +56,7 @@ public class DocumentService {
         this.userRepository = userRepository;
         this.storageService = storageService;
         this.asyncPipeline = asyncPipeline;
+        this.aiEngineClient = aiEngineClient;
     }
 
     public DocumentUploadResponse upload(UUID userId, MultipartFile file) {
@@ -284,6 +289,53 @@ public class DocumentService {
                 pageResult.getSize(),
                 pageResult.getTotalElements(),
                 pageResult.getTotalPages()
+        );
+    }
+
+    @Transactional
+    public ReExplainClauseResponse reExplainClause(UUID userId, UUID documentId, UUID clauseId, String mode) {
+        Document doc = documentRepository.findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("analysis not found for this document"));
+
+        ExtractedClause clause = extractedClauseRepository.findById(clauseId)
+                .orElseThrow(() -> new ResourceNotFoundException("clause not found"));
+
+        if (!clause.getAnalysis().getId().equals(analysis.getId())) {
+            throw new ResourceNotFoundException("clause does not belong to this document");
+        }
+
+        String validMode = (mode != null && (mode.equals("detailed") || mode.equals("professional")))
+                ? mode : "simple_english";
+
+        String context = "Document: " + (analysis.getTitle() != null ? analysis.getTitle() : doc.getOriginalFilename())
+                + " (" + (analysis.getDocumentType() != null ? analysis.getDocumentType() : "Legal Agreement") + "). "
+                + "Clause: " + clause.getTitle() + " [" + clause.getCategory() + "]";
+
+        SimplifyResponseDto simplifyResult = aiEngineClient.simplify(clause.getOriginalText(), validMode, context);
+
+        if (simplifyResult != null && simplifyResult.getExplanation() != null && !simplifyResult.getExplanation().isBlank()) {
+            if ("detailed".equalsIgnoreCase(validMode)) {
+                clause.setSimplifiedDetailed(simplifyResult.getExplanation());
+            } else if ("professional".equalsIgnoreCase(validMode)) {
+                clause.setSimplifiedProfessional(simplifyResult.getExplanation());
+            } else {
+                clause.setSimplifiedSimple(simplifyResult.getExplanation());
+            }
+            clause = extractedClauseRepository.save(clause);
+        }
+
+        ClauseResponse clauseResponse = ClauseResponse.fromEntity(clause);
+        return new ReExplainClauseResponse(
+                clauseResponse,
+                validMode,
+                simplifyResult != null ? simplifyResult.getExplanation() : "",
+                simplifyResult != null ? simplifyResult.getGlossary() : Collections.emptyList(),
+                simplifyResult != null ? simplifyResult.getWhatCouldBeMissed() : Collections.emptyList(),
+                simplifyResult != null ? simplifyResult.getWarnings() : Collections.emptyList(),
+                simplifyResult != null ? simplifyResult.getIsGrounded() : true
         );
     }
 

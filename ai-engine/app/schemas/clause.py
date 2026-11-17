@@ -84,3 +84,4 @@ class ClauseAnalysisResponse(BaseModel):
     llm_provider: str = "gemini"
     llm_model: str = "gemini-1.5-flash"
     warnings: list[str] = Field(default_factory=list)
+

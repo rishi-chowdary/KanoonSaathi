@@ -4,9 +4,11 @@ from app.config import settings
 from app.schemas.extraction import ExtractionResponse, ExtractionErrorResponse
 from app.schemas.summary import DocumentSummaryRequest, DocumentSummaryResponse
 from app.schemas.clause import ClauseAnalysisRequest, ClauseAnalysisResponse
+from app.schemas.simplify import SimplifyRequest, SimplifyResponse
 from app.services.extractor import process_document, ExtractionException
 from app.services.summary_service import analyze_document_summary
 from app.services.clause_service import analyze_document_clauses
+from app.services.simplify_service import simplify_text
 from app.providers import get_llm_provider
 
 router = APIRouter()
@@ -104,4 +106,30 @@ async def analyze_clauses(request: ClauseAnalysisRequest):
             status_code=500,
             content={"code": "CLAUSE_EXTRACTION_FAILED", "detail": str(e)},
         )
+
+
+@router.post(
+    "/internal/simplify",
+    response_model=SimplifyResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+@router.post(
+    "/simplify",
+    response_model=SimplifyResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+async def simplify(request: SimplifyRequest):
+    provider = get_llm_provider()
+    try:
+        response = await simplify_text(
+            request=request,
+            provider=provider,
+        )
+        return response
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"code": "SIMPLIFICATION_FAILED", "detail": str(e)},
+        )
+
 

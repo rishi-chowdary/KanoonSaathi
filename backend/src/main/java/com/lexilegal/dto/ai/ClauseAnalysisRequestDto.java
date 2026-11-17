@@ -43,3 +43,4 @@ public class ClauseAnalysisRequestDto {
         this.chunks = chunks;
     }
 }
+

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
-  timeout: 30000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -36,5 +36,19 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const simplifyLegalText = async (payload) => {
+  const response = await api.post("/simplify", payload, { timeout: 180000 });
+  return response.data;
+};
+
+export const reExplainDocumentClause = async (documentId, clauseId, mode = "simple_english") => {
+  const response = await api.post(
+    `/documents/${documentId}/clauses/${clauseId}/re-explain?mode=${encodeURIComponent(mode)}`,
+    {},
+    { timeout: 180000 }
+  );
+  return response.data;
+};
 
 export default api;

@@ -90,6 +90,16 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{id}/clauses/{clauseId}/re-explain")
+    public ResponseEntity<ReExplainClauseResponse> reExplainClause(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id,
+            @PathVariable("clauseId") UUID clauseId,
+            @RequestParam(name = "mode", defaultValue = "simple_english") String mode) {
+        ReExplainClauseResponse response = documentService.reExplainClause(principal.getId(), id, clauseId, mode);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{id}/reanalyze")
     public ResponseEntity<Map<String, String>> reanalyze(
             @AuthenticationPrincipal UserPrincipal principal,

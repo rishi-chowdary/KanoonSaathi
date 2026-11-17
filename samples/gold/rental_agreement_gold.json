@@ -1,0 +1,70 @@
+{
+  "contract_name": "rental_agreement.pdf",
+  "contract_type": "Residential Lease Agreement",
+  "gold_clauses": [
+    {
+      "id": "lease_1",
+      "title": "Premises and Term",
+      "category": "Term and Renewal",
+      "alternate_categories": ["Other"],
+      "section_reference": "Section 1",
+      "key_quote": "continue for a fixed term of twelve (12) months",
+      "importance": "MEDIUM"
+    },
+    {
+      "id": "lease_2",
+      "title": "Monthly Rent and Payment Terms",
+      "category": "Payment Terms",
+      "alternate_categories": [],
+      "section_reference": "Section 2",
+      "key_quote": "monthly rent of $2,400.00, payable in advance on or before the first",
+      "importance": "HIGH"
+    },
+    {
+      "id": "lease_3",
+      "title": "Security Deposit",
+      "category": "Payment Terms",
+      "alternate_categories": ["Other"],
+      "section_reference": "Section 3",
+      "key_quote": "sum of $2,400.00 as a security deposit",
+      "importance": "MEDIUM"
+    },
+    {
+      "id": "lease_4",
+      "title": "Use of Premises and Assignment",
+      "category": "Assignment",
+      "alternate_categories": ["Other"],
+      "section_reference": "Section 4",
+      "key_quote": "Tenant shall not assign this lease, sublet the premises",
+      "importance": "HIGH"
+    },
+    {
+      "id": "lease_5",
+      "title": "Maintenance and Alterations",
+      "category": "Other",
+      "alternate_categories": ["Representations and Warranties"],
+      "section_reference": "Section 5",
+      "key_quote": "maintain electrical, plumbing, heating, and structural fixtures",
+      "importance": "LOW"
+    },
+    {
+      "id": "lease_6",
+      "title": "Termination and Default",
+      "category": "Termination",
+      "alternate_categories": [],
+      "section_reference": "Section 6",
+      "key_quote": "Landlord may terminate this lease and commence eviction proceedings",
+      "importance": "HIGH"
+    },
+    {
+      "id": "lease_7",
+      "title": "Governing Law",
+      "category": "Governing Law",
+      "alternate_categories": [],
+      "section_reference": "Section 7",
+      "key_quote": "laws of the State of Illinois",
+      "importance": "LOW"
+    }
+  ]
+}
+

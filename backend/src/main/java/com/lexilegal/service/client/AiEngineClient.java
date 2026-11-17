@@ -7,6 +7,7 @@ import com.lexilegal.dto.ai.DocumentSummaryRequestDto;
 import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
 import com.lexilegal.dto.ai.PageDto;
+import com.lexilegal.dto.ai.SimplifyResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -33,8 +34,8 @@ public class AiEngineClient {
             @Value("${app.ai-engine.internal-key:lexilegal_internal_service_key_secret_2026}") String internalApiKey) {
         this.internalApiKey = internalApiKey;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(15000);
-        factory.setReadTimeout(180000);
+        factory.setConnectTimeout(30000);
+        factory.setReadTimeout(600000);
         this.restClient = RestClient.builder()
                 .requestFactory(factory)
                 .baseUrl(aiEngineUrl)
@@ -94,6 +95,22 @@ public class AiEngineClient {
                 .body(req)
                 .retrieve()
                 .body(ClauseAnalysisResponseDto.class);
+    }
+
+    public SimplifyResponseDto simplify(String text, String mode, String documentContext) {
+        java.util.Map<String, Object> req = new java.util.HashMap<>();
+        req.put("text", text);
+        req.put("mode", mode != null ? mode : "simple_english");
+        if (documentContext != null) {
+            req.put("document_context", documentContext);
+        }
+        return restClient.post()
+                .uri("/internal/simplify")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(SimplifyResponseDto.class);
     }
 }
 
