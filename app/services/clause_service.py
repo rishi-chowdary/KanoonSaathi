@@ -99,15 +99,15 @@ def process_document_clauses(
         if is_verified:
             verified_count += 1
 
-        # Deterministic 3-tier simplifications (Phase M5: Simple, Detailed, Professional)
-        simplification_result = simplify_clause(
+        # Build simple, detailed, and professional explanations
+        simplification_output = simplify_clause(
             original_text=clause.original_text,
             category=category,
             affected_party=affected_party,
         )
-        simple_expl = simplification_result["simple_english"]
-        detailed_expl = simplification_result["detailed"]
-        prof_expl = simplification_result["professional"]
+        simple_expl = simplification_output["simple_english"]
+        detailed_expl = simplification_output["detailed"]
+        prof_expl = simplification_output["professional"]
 
         model_clause = ExtractedClause(
             id=str(uuid.uuid4()),

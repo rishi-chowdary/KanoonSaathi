@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-17 18:37:39 UTC",
+  "timestamp": "2026-11-17 19:01:05 UTC",
   "engine": "Local Python NLP Stack (DistilBERT + SBERT + spaCy + Minilm-SQuAD2)",
   "clauses": {
     "clause_recall": 1.0,
@@ -42,7 +42,7 @@
     "risk_recall": 1.0,
     "risk_precision": 0.9090909090909091,
     "risk_f1": 0.9523809523809523,
-    "rule7_violations": 0,
+    "disallowed_legal_claim_count": 0,
     "predatory_traps_detected": 3,
     "predatory_traps_total": 3,
     "total_gold_risks": 10,
@@ -74,7 +74,7 @@
   },
   "key_info": {
     "key_info_accuracy": 1.0,
-    "rule6_violations": 0,
+    "invented_field_count": 0,
     "total_fields": 22,
     "correct_fields": 22,
     "per_contract": {
@@ -154,7 +154,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 1.924
+        "latency_sec": 1.962
       },
       {
         "id": "q4_rental_cure",
@@ -239,7 +239,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.361
+        "latency_sec": 0.426
       },
       {
         "id": "q9_one_sided_liability_cap",
@@ -256,7 +256,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.37
+        "latency_sec": 0.436
       },
       {
         "id": "q10_one_sided_late_charges",
@@ -282,7 +282,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.276
+        "latency_sec": 0.555
       },
       {
         "id": "q12_rental_pet_policy",
@@ -291,7 +291,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.293
+        "latency_sec": 0.364
       },
       {
         "id": "q13_nda_payment_terms",
@@ -300,7 +300,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.154
+        "latency_sec": 0.181
       },
       {
         "id": "q14_nda_solicitation",
@@ -309,7 +309,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.153
+        "latency_sec": 0.159
       },
       {
         "id": "q15_one_sided_health_benefits",
@@ -318,18 +318,18 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.347
+        "latency_sec": 0.4
       }
     ]
   },
   "latency": {
     "extraction": 0.004,
     "segmentation": 0.0,
-    "classification": 0.181,
-    "summarization": 0.153,
-    "key_info": 0.002,
-    "risk_detection": 0.212,
+    "classification": 0.251,
+    "summarization": 0.166,
+    "key_info": 0.003,
+    "risk_detection": 0.313,
     "missing_provisions": 0.008,
-    "total_pipeline": 0.56
+    "total_pipeline": 0.745
   }
 }

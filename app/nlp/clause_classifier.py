@@ -61,9 +61,9 @@ def _load_prototypes() -> dict[str, np.ndarray]:
         return {}
 
     with open(path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+        raw_prototypes = yaml.safe_load(f)
 
-    categories = data.get("categories", {})
+    categories = raw_prototypes.get("categories", {})
     model = get_sentence_transformer()
 
     embedded: dict[str, np.ndarray] = {}

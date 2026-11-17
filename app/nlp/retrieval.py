@@ -246,7 +246,9 @@ def hybrid_retrieve_chunks(
     # 2. Sparse Lexical Ranking (BM25)
     bm25_scores = bm25_score_chunks(query, chunks)
     bm25_scores.sort(key=lambda x: x[1], reverse=True)
-    sparse_ranks = {item[0]: rank + 1 for rank, item in enumerate(bm25_scores)}
+    sparse_ranks = {
+        chunk_score[0]: rank + 1 for rank, chunk_score in enumerate(bm25_scores)
+    }
 
     # 3. Reciprocal Rank Fusion (RRF)
     # RRF_score(d) = 1/(rrf_k + dense_rank) + 1/(rrf_k + sparse_rank)

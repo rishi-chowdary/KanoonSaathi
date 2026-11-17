@@ -1,11 +1,4 @@
-"""LexiLegal AI — Grounded Contract Risk Detection Engine.
-
-Rule-based + SBERT prototype semantic similarity risk detector:
-- Identifies contractual, financial, liability, employment, privacy, and legal risks
-- Extracts exact, verified evidence quotes anchored to source page
-- Strictly complies with Rule 7: zero legal conclusions ("illegal", "void", "unenforceable")
-- Adds jurisdiction caveat when governing law is unknown or non-specific
-"""
+"""Contract risk detection using regex rules and SBERT prototype similarity."""
 
 from __future__ import annotations
 
@@ -26,8 +19,7 @@ _RULES_PATH = os.path.join(
     "risk_rules.yaml",
 )
 
-# Rule 7: Forbidden legal conclusions and safe non-definitive replacements
-RULE7_FORBIDDEN_REPLACEMENTS = [
+DISALLOWED_LEGAL_CLAIM_REPLACEMENTS = [
     (re.compile(r"\bnull\s+and\s+void\b", re.IGNORECASE), "invalid"),
     (re.compile(r"\billegal\b", re.IGNORECASE), "potentially unfavorable"),
     (re.compile(r"\billegality\b", re.IGNORECASE), "potential unenforceability"),
@@ -44,34 +36,33 @@ RULE7_FORBIDDEN_REPLACEMENTS = [
 ]
 
 
-def enforce_rule7_language(text: str) -> str:
-    """Ensure text strictly avoids definitive legal conclusions per Rule 7."""
+def soften_legal_claims(text: str) -> str:
+    """Replace definitive legal-validity claims with non-advisory phrasing."""
     if not text:
         return ""
     out = text
-    for pattern, repl in RULE7_FORBIDDEN_REPLACEMENTS:
+    for pattern, repl in DISALLOWED_LEGAL_CLAIM_REPLACEMENTS:
         out = pattern.sub(repl, out)
     return out
 
 
-def count_rule7_violations(text: str) -> int:
-    """Return count of forbidden legal conclusion words (must be 0 in all outputs)."""
+def count_disallowed_legal_claims(text: str) -> int:
+    """Count definitive legal conclusion terms that should not appear in outputs."""
     if not text:
         return 0
-    forbidden = re.findall(
+    matches = re.findall(
         r"\b(illegal|illegality|unlawful|void|unenforceable)\b", text, re.IGNORECASE
     )
-    return len(forbidden)
+    return len(matches)
 
 
 @lru_cache(maxsize=1)
 def load_risk_rules() -> list[dict[str, Any]]:
-    """Load risk detection rules from data/risk_rules.yaml."""
     if not os.path.exists(_RULES_PATH):
         return []
     with open(_RULES_PATH, encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    return data.get("rules", [])
+        raw_rules = yaml.safe_load(f) or {}
+    return raw_rules.get("rules", [])
 
 
 @lru_cache(maxsize=1)
@@ -162,15 +153,15 @@ def detect_clause_risks(
                     "rule_id": rule_id,
                     "category": rule["category"],
                     "level": rule["level"],
-                    "title": enforce_rule7_language(rule["title"]),
+                    "title": soften_legal_claims(rule["title"]),
                     "original_clause": c_text,
-                    "explanation": enforce_rule7_language(rule["explanation"]),
-                    "why_it_matters": enforce_rule7_language(rule["why_it_matters"]),
-                    "possible_consequences": enforce_rule7_language(
+                    "explanation": soften_legal_claims(rule["explanation"]),
+                    "why_it_matters": soften_legal_claims(rule["why_it_matters"]),
+                    "possible_consequences": soften_legal_claims(
                         rule["possible_consequences"]
                     ),
                     "suggested_questions": [
-                        enforce_rule7_language(q)
+                        soften_legal_claims(q)
                         for q in rule.get("suggested_questions", [])
                     ],
                     "source_page": c_page,

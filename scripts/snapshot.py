@@ -27,7 +27,9 @@ SKIP_FILES = {
 
 VOLATILE_KEYS = {
     "timestamp",
+    "latency",
     "latency_ms",
+    "latency_sec",
     "avg_latency_sec",
     "total_latency_sec",
     "stage_latencies",
@@ -235,7 +237,7 @@ def capture_snapshot(out_dir: Path) -> None:
         benchmark_pipeline_latencies,
         evaluate_clauses_and_quotes,
         evaluate_document_chat,
-        evaluate_key_info_and_rule6,
+        evaluate_key_info_defaults,
         evaluate_risks_and_guardrails,
     )
 
@@ -304,7 +306,7 @@ def capture_snapshot(out_dir: Path) -> None:
     eval_summary = {
         "clauses": evaluate_clauses_and_quotes(gold_files),
         "risks": evaluate_risks_and_guardrails(risk_contracts),
-        "key_info": evaluate_key_info_and_rule6(risk_contracts),
+        "key_info": evaluate_key_info_defaults(risk_contracts),
         "chat": evaluate_document_chat("evaluation/chat_questions.json"),
         "latency": benchmark_pipeline_latencies(sample_contracts),
     }

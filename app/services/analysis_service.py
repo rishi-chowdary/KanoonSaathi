@@ -17,13 +17,7 @@ def process_key_info_and_summaries(
     full_text: str,
     pages: list[PageData] | None = None,
 ) -> tuple[DocumentAnalysis, ExtractedInformation]:
-    """Extract key facts, dates, deadlines, and extractive summaries, persisting to database.
-
-    Guarantees:
-    - 100% of summary sentences exist verbatim in full_text
-    - Strict Rule 6 ('Not specified') defaults for absent information
-    - Atomic database update
-    """
+    """Extract key facts, dates, deadlines, and extractive summaries for a document."""
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     if not analysis:
         # Should normally be created during clause processing
@@ -60,7 +54,7 @@ def process_key_info_and_summaries(
     analysis.obligations_summary = summary_res.obligations_summary
     analysis.financial_terms_summary = summary_res.financial_terms_summary
 
-    # 2. Key Facts Extraction with Rule 6 Defaults
+    # Extract key facts, defaulting absent fields to "Not specified"
     key_info_res = extract_contract_key_info(full_text=full_text, pages=pages)
 
     key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()

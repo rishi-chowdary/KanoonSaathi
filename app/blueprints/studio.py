@@ -94,8 +94,8 @@ def api_simplify():
 
     Returns JSON with 3 modes, before/after Flesch readability, glossary terms, and traps.
     """
-    data = request.get_json(silent=True) or {}
-    text = data.get("text", "").strip()
+    payload = request.get_json(silent=True) or {}
+    text = payload.get("text", "").strip()
 
     if not text:
         return (
@@ -108,42 +108,43 @@ def api_simplify():
             400,
         )
 
-    mode = data.get("mode", "simple_english").lower()
-    category = data.get("category", "")
-    affected_party = data.get("affected_party", "") or data.get("affectedParty", "")
+    mode = payload.get("mode", "simple_english").lower()
+    category = payload.get("category", "")
+    affected_party = payload.get("affected_party", "") or payload.get(
+        "affectedParty", ""
+    )
 
-    result = simplify_clause(
+    simplified = simplify_clause(
         original_text=text,
         category=category,
         affected_party=affected_party,
     )
 
-    # Determine explanation for selected mode
     if mode == "detailed":
-        selected_explanation = result["detailed"]
+        selected_explanation = simplified["detailed"]
     elif mode == "professional":
-        selected_explanation = result["professional"]
+        selected_explanation = simplified["professional"]
     else:
         mode = "simple_english"
-        selected_explanation = result["simple_english"]
+        selected_explanation = simplified["simple_english"]
 
-    warning_points = [t["explanation"] for t in result["traps_and_nuances"]]
+    warning_points = [t["explanation"] for t in simplified["traps_and_nuances"]]
 
     return (
         jsonify(
             {
                 "mode": mode,
                 "explanation": selected_explanation,
-                "simpleEnglish": result["simple_english"],
-                "detailed": result["detailed"],
-                "professional": result["professional"],
-                "readabilityOriginal": result["readability_original"],
-                "readabilitySimple": result["readability_simple"],
-                "readabilityDetailed": result["readability_detailed"],
-                "glossary": result["glossary_terms"],
+                "simpleEnglish": simplified["simple_english"],
+                "detailed": simplified["detailed"],
+                "professional": simplified["professional"],
+                "readabilityOriginal": simplified["readability_original"],
+                "readabilitySimple": simplified["readability_simple"],
+                "readabilityDetailed": simplified["readability_detailed"],
+                "glossary": simplified["glossary_terms"],
                 "warningPoints": warning_points,
-                "traps": result["traps_and_nuances"],
-                "preservationVerified": result["preservation_verified"],
+                "traps": simplified["traps_and_nuances"],
+                "preservationVerified": simplified["preservation_verified"],
             }
         ),
         200,

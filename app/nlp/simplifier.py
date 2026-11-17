@@ -1,14 +1,4 @@
-"""LexiLegal AI — Tri-Tier Rule-Based Legal Simplifier.
-
-Provides deterministic, offline simplification without generative LLMs:
-1. Simple English (6th–8th grade plain language, glossary substitutions, short sentences)
-2. Detailed (contextual explanation of duties, background rationale, and risks)
-3. Professional (structured legal breakdown: Obligor, Obligation, Conditions, Exceptions, Timeline, Remedies)
-
-Hard Invariant:
-- Condition and Negation Preservation: Ensures 'shall not', 'unless', 'except', and conditions
-  are never inverted. If a rule template fails verification, falls back to safe lexical replacement.
-"""
+"""Rule-based clause simplification in three modes: simple, detailed, and professional."""
 
 from __future__ import annotations
 
@@ -338,8 +328,8 @@ def get_glossary() -> dict[str, dict[str, str]]:
     if not os.path.exists(_GLOSSARY_PATH):
         return {}
     with open(_GLOSSARY_PATH, encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    return data.get("terms", {})
+        raw_glossary = yaml.safe_load(f) or {}
+    return raw_glossary.get("terms", {})
 
 
 @lru_cache(maxsize=1)
@@ -652,18 +642,15 @@ def simplify_simple_english(
 
     # 2. Sentence splitting and restructuring
     sentences = split_into_plain_sentences(simplified)
-    result = " ".join(sentences)
+    simplified_text = " ".join(sentences)
+    simplified_text = re.sub(r"\s+", " ", simplified_text)
+    simplified_text = re.sub(r"\s+([.,;:!?])", r"\1", simplified_text)
+    simplified_text = re.sub(r"\.{2,}", ".", simplified_text).strip()
 
-    # 3. Clean up spacing and punctuation
-    result = re.sub(r"\s+", " ", result)
-    result = re.sub(r"\s+([.,;:!?])", r"\1", result)
-    result = re.sub(r"\.{2,}", ".", result).strip()
+    if not verify_preservation(original_text, simplified_text):
+        simplified_text = lexical_simplify(original_text)
 
-    # 4. Invariant Verification: if preservation failed, return safe lexical simplify
-    if not verify_preservation(original_text, result):
-        result = lexical_simplify(original_text)
-
-    return result
+    return simplified_text
 
 
 def simplify_detailed(
@@ -856,7 +843,7 @@ def simplify_clause(
     category: str = "",
     affected_party: str = "",
 ) -> dict[str, Any]:
-    """Execute complete tri-tier simplification pipeline on a clause with readability scoring."""
+    """Simplify a clause into simple, detailed, and professional modes with readability scores."""
     if not original_text or not original_text.strip():
         empty_readability = calculate_readability("")
         return {

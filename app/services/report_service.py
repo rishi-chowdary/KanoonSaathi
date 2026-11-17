@@ -1,9 +1,4 @@
-"""LexiLegal AI — ReportLab PDF Dossier Generator.
-
-Generates an authoritative, publication-quality 10-section legal analysis report
-with TrueType Unicode fonts (₹, §, curly quotes), running headers, dynamic "Page X of Y"
-numbering, and 100% verifiable extractive provenance markers.
-"""
+"""ReportLab PDF generator for the 10-section contract analysis report."""
 
 from __future__ import annotations
 
@@ -140,7 +135,7 @@ class NumberedCanvas(canvas.Canvas):
 
         # Header (Pages > 1)
         if self._pageNumber > 1:
-            self.drawString(36, 804, "LexiLegal AI — Legal Contract Dossier")
+            self.drawString(36, 804, "LexiLegal AI — Contract Analysis Report")
             self.setStrokeColor(COLOR_BORDER)
             self.setLineWidth(0.5)
             self.line(36, 798, 559, 798)
@@ -164,7 +159,7 @@ class NumberedCanvas(canvas.Canvas):
 # Report Generation Builder
 # -----------------------------------------------------------------------------
 def generate_pdf_report(document: Any, analysis: Any) -> bytes:
-    """Build a comprehensive 10-section PDF report dossier for the analyzed document."""
+    """Build a 10-section PDF report for an analyzed contract."""
     reg_font, bold_font, italic_font = init_truetype_fonts()
 
     buf = io.BytesIO()
@@ -258,7 +253,7 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     # Section 1: Cover / Overview
     # -------------------------------------------------------------------------
     badge_p = Paragraph(
-        "<b>LEXILEGAL AI</b> &bull; COMPREHENSIVE CONTRACT ANALYSIS DOSSIER",
+        "<b>LEXILEGAL AI</b> &bull; CONTRACT ANALYSIS REPORT",
         style_badge,
     )
     story.append(badge_p)
@@ -464,9 +459,7 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     # -------------------------------------------------------------------------
     # Section 4: Plain-Language Explanations (3 Modes)
     # -------------------------------------------------------------------------
-    story.append(
-        Paragraph("3. Tri-Tier Plain-Language Explanations", style_sec_heading)
-    )
+    story.append(Paragraph("3. Plain-Language Explanations", style_sec_heading))
     story.append(
         Paragraph(
             "Rule-based simplification with Flesch Reading Ease optimization and negation preservation.",
@@ -545,7 +538,7 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     # -------------------------------------------------------------------------
     # Section 5: Risk Analysis (Color Coded)
     # -------------------------------------------------------------------------
-    story.append(Paragraph("4. Grounded Contract Risk Assessment", style_sec_heading))
+    story.append(Paragraph("4. Contract Risk Assessment", style_sec_heading))
     story.append(
         Paragraph(
             "Pattern-matched against predatory legal terms with verifiable source quotes.",

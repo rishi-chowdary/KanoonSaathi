@@ -1,4 +1,4 @@
-"""Tests for Phase M8: Dashboard SQL Aggregates, ReportLab PDF Dossier & Multi-Tenant Isolation."""
+"""Tests for dashboard SQL aggregates, ReportLab PDF report generation, and tenant isolation."""
 
 from pathlib import Path
 
@@ -193,18 +193,16 @@ def test_pdf_report_generation_10_sections_and_unicode(app):
 
             # Inspect rendered PDF structure via PyMuPDF
             pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
-            assert len(pdf) >= 2  # Multi-page dossier
+            assert len(pdf) >= 2
 
             all_text = " ".join([page.get_text() for page in pdf])
 
-            # 1. Running headers & dynamic Page X of Y
             assert f"Page 1 of {len(pdf)}" in all_text
 
-            # 2. Section checks
             assert "1. Executive Summary" in all_text
             assert "2. Important Contractual Provisions" in all_text
-            assert "3. Tri-Tier Plain-Language Explanations" in all_text
-            assert "4. Grounded Contract Risk Assessment" in all_text
+            assert "3. Plain-Language Explanations" in all_text
+            assert "4. Contract Risk Assessment" in all_text
             assert "5. Financial Terms & Payment Structure" in all_text
             assert "6. Critical Dates & Timelines" in all_text
             assert "7. Standard Provisions Checklist" in all_text

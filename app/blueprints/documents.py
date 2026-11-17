@@ -350,9 +350,9 @@ def api_analysis(doc_id: str):
         .all()
     )
 
-    data = analysis.to_dict()
-    data["clauses"] = [c.to_dict() for c in clauses]
-    return jsonify(data), 200
+    analysis_payload = analysis.to_dict()
+    analysis_payload["clauses"] = [c.to_dict() for c in clauses]
+    return jsonify(analysis_payload), 200
 
 
 @documents_bp.route("/api/documents/<doc_id>/key-info", methods=["GET"])
@@ -488,14 +488,14 @@ def api_chat_send(doc_id: str):
     if not doc:
         return jsonify({"error": "Document not found"}), 404
 
-    data = request.get_json(silent=True) or {}
-    message = data.get("message") or data.get("question")
+    payload = request.get_json(silent=True) or {}
+    message = payload.get("message") or payload.get("question")
     if not message or not str(message).strip():
         return jsonify({"error": "question message must not be blank"}), 400
 
     from app.services.chat_service import send_chat_message
 
-    conversation_id = data.get("conversationId")
+    conversation_id = payload.get("conversationId")
     response_msg = send_chat_message(
         document_id=doc.id,
         user_id=current_user.id,

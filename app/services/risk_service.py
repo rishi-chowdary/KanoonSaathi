@@ -1,11 +1,4 @@
-"""LexiLegal AI — Risk & Missing Provisions Service.
-
-Orchestrates:
-1. Grounded risk detection across contractual clauses
-2. Evidence quote extraction with 100% exact slice verification
-3. Document-type expected checklist evaluation for missing provisions
-4. Persistence into RiskFinding and MissingClauseWarning database tables
-"""
+"""Risk detection and missing-provision checklist persistence."""
 
 from __future__ import annotations
 

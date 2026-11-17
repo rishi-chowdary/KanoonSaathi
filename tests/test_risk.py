@@ -1,16 +1,4 @@
-"""Phase M6 Tests: Grounded Risk Detection & Missing Expected Provisions.
-
-Verifies:
-1. Rule 7 legal conclusion guard (zero instances of 'illegal', 'void', 'unenforceable')
-2. Risk rules configuration and SBERT prototype integrity
-3. Expected provisions checklist configuration across 5 standard contract types
-4. Detection of predatory terms in one_sided_agreement.pdf (uncapped indemnity, unilateral changes, etc.)
-5. Exact evidence quote verification (100% exact substring match)
-6. Missing provision detection with strict 'Possible omission' label
-7. Risk service database persistence and risk distribution calculation
-8. REST API endpoints (GET /api/documents/<id>/risks, missing-provisions, risk-distribution)
-9. Tenant isolation (404 on cross-user queries)
-"""
+"""Tests for contract risk detection, non-advisory language filter, and missing provisions."""
 
 from pathlib import Path
 
@@ -21,36 +9,34 @@ from app.nlp.missing_provisions import (
     normalize_document_type,
 )
 from app.nlp.risk_engine import (
-    count_rule7_violations,
+    count_disallowed_legal_claims,
     detect_clause_risks,
-    enforce_rule7_language,
     load_risk_rules,
+    soften_legal_claims,
 )
 from app.nlp.segmentation import segment_clauses
 
 SAMPLES_DIR = Path(__file__).resolve().parent.parent / "samples" / "contracts"
 
 
-class TestRule7LegalAdviceGuard:
-    """Verify Rule 7 strict prohibition on definitive legal conclusions."""
-
-    def test_forbidden_words_sanitization(self):
+class TestLegalClaimFilter:
+    def test_softens_definitive_legal_claims(self):
         raw_text = (
             "This clause is completely illegal, void, and unenforceable under state law. "
             "Such unlawful terms are null and void."
         )
-        cleaned = enforce_rule7_language(raw_text)
+        cleaned = soften_legal_claims(raw_text)
 
         assert "illegal" not in cleaned.lower()
         assert "void" not in cleaned.lower()
         assert "unenforceable" not in cleaned.lower()
         assert "unlawful" not in cleaned.lower()
-        assert count_rule7_violations(cleaned) == 0
+        assert count_disallowed_legal_claims(cleaned) == 0
 
     def test_clean_text_unchanged(self):
         clean_text = "This clause presents substantial financial exposure and may be unfavorable."
-        assert enforce_rule7_language(clean_text) == clean_text
-        assert count_rule7_violations(clean_text) == 0
+        assert soften_legal_claims(clean_text) == clean_text
+        assert count_disallowed_legal_claims(clean_text) == 0
 
 
 class TestConfigurationIntegrity:
@@ -81,7 +67,7 @@ class TestConfigurationIntegrity:
             assert len(r.get("patterns", [])) > 0
             assert len(r.get("prototypes", [])) > 0
             assert len(r.get("explanation", "")) > 10
-            assert count_rule7_violations(r["explanation"]) == 0
+            assert count_disallowed_legal_claims(r["explanation"]) == 0
 
     def test_expected_provisions_yaml_covers_standard_document_types(self):
         checklists = load_expected_provisions()
@@ -104,7 +90,7 @@ class TestConfigurationIntegrity:
                 assert "clause_name" in p
                 assert "risk_level" in p
                 assert "why_it_matters" in p
-                assert count_rule7_violations(p["why_it_matters"]) == 0
+                assert count_disallowed_legal_claims(p["why_it_matters"]) == 0
 
     def test_document_type_normalization(self):
         assert (
@@ -160,9 +146,9 @@ class TestPredatoryTermsAndRiskDetection:
 
         # 5. Check Rule 7 across all outputs
         for r in risks:
-            assert count_rule7_violations(r["explanation"]) == 0
-            assert count_rule7_violations(r["why_it_matters"]) == 0
-            assert count_rule7_violations(r["possible_consequences"]) == 0
+            assert count_disallowed_legal_claims(r["explanation"]) == 0
+            assert count_disallowed_legal_claims(r["why_it_matters"]) == 0
+            assert count_disallowed_legal_claims(r["possible_consequences"]) == 0
             # Evidence quote exact slice check
             assert r["quote_verified"] is True
             assert r["evidence_quote"] in doc_res.full_text
@@ -191,8 +177,8 @@ class TestMissingProvisionsDetection:
         # Verify strict "Possible omission" labeling and Rule 7 compliance
         for m in missing:
             assert m["label"] == "Possible omission"
-            assert count_rule7_violations(m["why_it_matters"]) == 0
-            assert count_rule7_violations(m["typical_provision"]) == 0
+            assert count_disallowed_legal_claims(m["why_it_matters"]) == 0
+            assert count_disallowed_legal_claims(m["typical_provision"]) == 0
 
     def test_rental_agreement_missing_security_deposit_timeline(self):
         pdf_path = SAMPLES_DIR / "rental_agreement.pdf"

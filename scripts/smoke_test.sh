@@ -94,8 +94,8 @@ CHAT_RESP=$(curl -s -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
 ANSWER=$(echo "$CHAT_RESP" | grep -o '"answer":"[^"]*' | cut -d'"' -f4 || echo "")
 echo "      Assistant Answer: '$ANSWER'"
 
-# 7. Download PDF Report Dossier
-echo "[7/7] Generating and downloading 10-section ReportLab PDF Dossier..."
+# 7. Download PDF report
+echo "[7/7] Generating and downloading 10-section PDF report..."
 REPORT_TEMP=$(mktemp /tmp/lexilegal_report_XXXXXX.pdf)
 curl -s -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
     "${BASE_URL}/api/documents/${DOC_ID}/report" -o "$REPORT_TEMP"

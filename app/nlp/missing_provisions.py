@@ -17,7 +17,7 @@ import numpy as np
 import yaml
 
 from app.nlp.registry import get_sbert
-from app.nlp.risk_engine import enforce_rule7_language
+from app.nlp.risk_engine import soften_legal_claims
 
 _CHECKLIST_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
@@ -52,8 +52,8 @@ def load_expected_provisions() -> dict[str, Any]:
     if not os.path.exists(_CHECKLIST_PATH):
         return {}
     with open(_CHECKLIST_PATH, encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
-    return data.get("document_types", {})
+        raw_checklists = yaml.safe_load(f) or {}
+    return raw_checklists.get("document_types", {})
 
 
 def normalize_document_type(doc_type_str: str) -> str:
@@ -195,10 +195,10 @@ def detect_missing_provisions(
             missing_findings.append(
                 {
                     "provision_id": prov_id,
-                    "clause_name": enforce_rule7_language(clause_name),
+                    "clause_name": soften_legal_claims(clause_name),
                     "category": category,
-                    "why_it_matters": enforce_rule7_language(why_it_matters),
-                    "typical_provision": enforce_rule7_language(typical_provision),
+                    "why_it_matters": soften_legal_claims(why_it_matters),
+                    "typical_provision": soften_legal_claims(typical_provision),
                     "risk_level": risk_level,
                     "label": "Possible omission",
                 }

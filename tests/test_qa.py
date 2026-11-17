@@ -179,7 +179,7 @@ def test_fact_intent_routing_financials_and_dates():
     assert "60 days" in res_notice["answer"]
 
 
-def test_fact_intent_absent_fields_rule_6():
+def test_fact_intent_absent_fields_not_specified():
     mock_analysis = MagicMock()
     mock_info = MagicMock()
     mock_info.contract_amount = "Not specified"

@@ -164,7 +164,7 @@
             {{ analysis.summary_short }}
           </p>
           <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--color-success);">
-            &#10003; 100% grounded — sentences extracted verbatim from source text
+            Sentences extracted directly from the contract text
           </div>
         </div>
       {% endif %}
@@ -522,7 +522,7 @@
   {% endif %}
 </div>
 
-<!-- Tab: Grounded Risk Analysis -->
+<!-- Tab: Risk Analysis -->
 <div id="risks-tab" class="tab-content">
   {% if risks and risks|length > 0 %}
     <!-- Chart.js Visualization Cards -->
@@ -553,7 +553,7 @@
       <button type="button" class="filter-pill risk-filter-pill" data-risk-level="MEDIUM" style="border-color: var(--color-warning); color: var(--color-warning);">Medium</button>
       <button type="button" class="filter-pill risk-filter-pill" data-risk-level="LOW" style="border-color: var(--color-info); color: var(--color-info);">Low</button>
       <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
-        Rule 7 Compliant: Grounded advisory warnings (no definitive legal conclusions)
+        Advisory warnings only (not legal conclusions)
       </div>
     </div>
 
@@ -738,7 +738,7 @@
     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
       <div>
         <h2 class="card-title" style="margin-bottom: 0.25rem;">Document Q&A & Semantic Inquiries</h2>
-        <p class="card-subtitle" style="margin: 0;">Extractive, page-grounded question answering powered by Hybrid Retrieval (SBERT + BM25) and MiniLM SQuAD 2.0</p>
+        <p class="card-subtitle" style="margin: 0;">Answers come from the document text with page citations (hybrid SBERT + BM25 search and extractive QA).</p>
       </div>
       <button type="button" id="chat-clear-btn" class="btn btn-secondary btn-sm" style="font-size: 0.8rem;">
         Clear Conversation

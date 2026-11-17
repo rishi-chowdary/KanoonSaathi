@@ -6,9 +6,9 @@ Simulates the complete user lifecycle in a single end-to-end flow:
 3. Upload PDF contract document
 4. Verify extraction, chunks, and clause classification
 5. Verify grounded risk detection & missing provisions
-6. Test interactive Tri-Tier simplification
-7. Ask grounded question and verify verbatim page citation
-8. Generate and download ReportLab 10-section PDF dossier
+6. Test interactive simplification modes
+7. Ask a question and verify page citation
+8. Generate and download ReportLab 10-section PDF report
 9. Verify dashboard statistics update
 10. Delete document and confirm cleanup cascade
 """
@@ -117,7 +117,7 @@ def test_full_lifecycle_smoke(client, app):
         or "does not appear to address" in unans_text.lower()
     )
 
-    # 9. Download 10-Section PDF Dossier
+    # Download 10-section PDF report
     report_resp = client.get(f"/api/documents/{doc_id}/report")
     assert report_resp.status_code == 200
     assert report_resp.content_type == "application/pdf"

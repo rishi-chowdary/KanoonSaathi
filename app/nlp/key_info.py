@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from app.nlp.extraction import PageData
 from app.nlp.segmentation import legal_sentence_tokenizer
 
-# Rule 6 constant
 NOT_SPECIFIED = "Not specified"
 
 # Currency regexes supporting $, €, £, ₹, Rs.
@@ -81,14 +80,13 @@ def extract_contract_key_info(
     full_text: str,
     pages: list[PageData] | None = None,
 ) -> ContractKeyInfoResult:
-    """Extract structured commercial facts and important dates with strict Rule 6 defaults.
+    """Extract contract amounts, dates, deadlines, penalties, and notice periods.
 
-    Rule 6: If a field is not explicitly specified in the text, it defaults strictly
-    to 'Not specified' with source_page = None. No hallucinations.
+    Absent fields default to 'Not specified' with source_page=None.
     """
-    result = ContractKeyInfoResult()
+    key_facts = ContractKeyInfoResult()
     if not full_text.strip():
-        return result
+        return key_facts
 
     page_list = pages or [
         PageData(page_number=1, text=full_text, char_count=len(full_text))
@@ -111,7 +109,7 @@ def extract_contract_key_info(
     if found_dates:
         # Build important_dates list
         for d_str, pg, sn in found_dates:
-            result.important_dates.append(
+            key_facts.important_dates.append(
                 {
                     "date": d_str,
                     "context": sn[:160],
@@ -123,21 +121,21 @@ def extract_contract_key_info(
     for d_str, pg, sn in found_dates:
         sn_lower = sn.lower()
         if "commencing on" in sn_lower or "commence on" in sn_lower:
-            result.start_date = ExtractedFact(
+            key_facts.start_date = ExtractedFact(
                 value=d_str,
                 source_page=pg,
                 evidence_quote=sn,
             )
             break
 
-    if result.start_date.value == NOT_SPECIFIED:
+    if key_facts.start_date.value == NOT_SPECIFIED:
         for d_str, pg, sn in found_dates:
             sn_lower = sn.lower()
             if any(
                 k in sn_lower
                 for k in ["effective", "entered into", "made on", "as of", "date:"]
             ):
-                result.start_date = ExtractedFact(
+                key_facts.start_date = ExtractedFact(
                     value=d_str,
                     source_page=pg,
                     evidence_quote=sn,
@@ -145,10 +143,10 @@ def extract_contract_key_info(
                 break
 
     # If start_date still not matched, pick first found date if in first 500 chars
-    if result.start_date.value == NOT_SPECIFIED and found_dates:
+    if key_facts.start_date.value == NOT_SPECIFIED and found_dates:
         first_date = found_dates[0]
         if full_text.find(first_date[0]) < 600:
-            result.start_date = ExtractedFact(
+            key_facts.start_date = ExtractedFact(
                 value=first_date[0],
                 source_page=first_date[1],
                 evidence_quote=first_date[2],
@@ -169,8 +167,8 @@ def extract_contract_key_info(
                 "continue until",
                 "continuing through",
             ]
-        ) and (d_str != result.start_date.value or "maturity date" in sn_lower):
-            result.end_date = ExtractedFact(
+        ) and (d_str != key_facts.start_date.value or "maturity date" in sn_lower):
+            key_facts.end_date = ExtractedFact(
                 value=d_str,
                 source_page=pg,
                 evidence_quote=sn,
@@ -263,7 +261,7 @@ def extract_contract_key_info(
     if candidate_amounts:
         candidate_amounts.sort(key=lambda x: x[0], reverse=True)
         best = candidate_amounts[0]
-        result.contract_amount = ExtractedFact(
+        key_facts.contract_amount = ExtractedFact(
             value=best[1],
             source_page=best[2],
             evidence_quote=best[3],
@@ -289,13 +287,13 @@ def extract_contract_key_info(
                     page = (
                         _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
                     )
-                    result.payment_deadlines = ExtractedFact(
+                    key_facts.payment_deadlines = ExtractedFact(
                         value=phrase,
                         source_page=page,
                         evidence_quote=sent.strip(),
                     )
                     break
-        if result.payment_deadlines.value != NOT_SPECIFIED:
+        if key_facts.payment_deadlines.value != NOT_SPECIFIED:
             break
 
     # -------------------------------------------------------------------------
@@ -314,11 +312,13 @@ def extract_contract_key_info(
                     r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
                 ):
                     phrase = "late fee of $100.00"
-                if re.fullmatch(r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE):
+                if re.fullmatch(
+                    r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
+                ):
                     phrase = "late fee of $100.00"
                 sent_pos = full_text.find(sent)
                 page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-                result.penalties = ExtractedFact(
+                key_facts.penalties = ExtractedFact(
                     value=phrase,
                     source_page=page,
                     evidence_quote=sent.strip(),
@@ -343,7 +343,7 @@ def extract_contract_key_info(
                 ).strip()
                 sent_pos = full_text.find(sent)
                 page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-                result.notice_period = ExtractedFact(
+                key_facts.notice_period = ExtractedFact(
                     value=clean_phrase,
                     source_page=page,
                     evidence_quote=sent.strip(),
@@ -362,11 +362,11 @@ def extract_contract_key_info(
         ):
             sent_pos = full_text.find(sent)
             page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-            result.termination_conditions = ExtractedFact(
+            key_facts.termination_conditions = ExtractedFact(
                 value=sent.strip()[:140],
                 source_page=page,
                 evidence_quote=sent.strip(),
             )
             break
 
-    return result
+    return key_facts

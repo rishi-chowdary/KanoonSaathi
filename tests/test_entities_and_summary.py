@@ -48,8 +48,8 @@ def test_extractive_summary_verbatim_in_source():
                 ), f"Sentence '{p_clean}' in detailed summary of {fname} not found verbatim in source text!"
 
 
-def test_rule6_not_specified_consistency():
-    """Verify strict Rule 6 consistency: unstated fields default strictly to 'Not specified'."""
+def test_absent_fields_default_to_not_specified():
+    """Unstated fields should default to 'Not specified' with source_page=None."""
     path = Path("samples/contracts/clean_nda.pdf")
     doc = extract_document(path.read_bytes(), "clean_nda.pdf")
     info = extract_contract_key_info(doc.full_text, doc.pages)

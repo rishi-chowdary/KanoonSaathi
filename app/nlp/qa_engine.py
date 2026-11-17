@@ -125,14 +125,14 @@ FACT_INTENTS = [
 ]
 
 
-def _get_val_and_page(obj: Any, field_name: str) -> tuple[str, int]:
-    """Safely extract string value and 1-indexed page from model or dataclass."""
-    raw_val = getattr(obj, field_name, "Not specified")
+def _get_val_and_page(fact_record: Any, field_name: str) -> tuple[str, int]:
+    """Read string value and 1-indexed page from a fact dataclass or ORM model."""
+    raw_val = getattr(fact_record, field_name, "Not specified")
     val = getattr(raw_val, "value", raw_val) if raw_val is not None else "Not specified"
     if hasattr(raw_val, "source_page") and raw_val.source_page:
         page = raw_val.source_page
     else:
-        page = getattr(obj, f"{field_name}_page", 1) or 1
+        page = getattr(fact_record, f"{field_name}_page", 1) or 1
     val_str = str(val).strip() if val is not None else "Not specified"
     return val_str, int(page)
 

@@ -1,14 +1,4 @@
-"""Phase M5 Tests: Tri-Tier Rule-Based Simplification, Readability, and Trap Detection.
-
-Verifies:
-1. Readability formulas (Flesch Reading Ease and Flesch-Kincaid Grade Level)
-2. Readability improvement across 20+ diverse legal clauses
-3. Tri-tier generation (Simple English, Detailed, Professional)
-4. Negation and condition preservation invariant (Rule 6 / Hard Gate)
-5. 150+ legal terms glossary loading and extraction
-6. Contract subtle trap detection (uncapped indemnity, short cure windows, unilateral changes, etc.)
-7. REST API (POST /api/simplify, GET /api/glossary) and Web View (GET /studio)
-"""
+"""Tests for rule-based simplification, readability scoring, and trap detection."""
 
 from app.nlp.readability import (
     calculate_readability,
@@ -182,8 +172,6 @@ class TestReadabilityScorer:
 
 
 class TestSimplificationEngine:
-    """Test tri-tier simplification, preservation checks, and glossary integration."""
-
     def test_glossary_loaded_and_exceeds_150_terms(self):
         glossary = get_glossary()
         assert (
@@ -207,8 +195,7 @@ class TestSimplificationEngine:
         assert "forthwith" not in simplified.lower()
         assert "immediately" in simplified.lower()
 
-    def test_negation_preservation_invariant(self):
-        """Rule 6 invariant: negations must never be stripped or inverted."""
+    def test_negation_preservation(self):
         orig_prohibition = "The Employee shall not disclose any proprietary secrets."
         cand_bad = "The Employee must disclose proprietary secrets."
         cand_good = "The Employee must not share proprietary secrets."
@@ -216,8 +203,7 @@ class TestSimplificationEngine:
         assert verify_preservation(orig_prohibition, cand_good) is True
         assert verify_preservation(orig_prohibition, cand_bad) is False
 
-    def test_condition_preservation_invariant(self):
-        """Rule 6 invariant: conditions must be maintained."""
+    def test_condition_preservation(self):
         orig_condition = "The agreement shall terminate unless payment is received."
         cand_good = "The agreement will end unless payment is made."
         cand_bad = "The agreement will end."
@@ -252,7 +238,7 @@ class TestSimplificationEngine:
         traps_4 = detect_traps_and_nuances(jury)
         assert any(t["trap"] == "Waiver of Jury Trial / Class Action" for t in traps_4)
 
-    def test_tri_tier_modes_generation(self):
+    def test_simplification_modes_generation(self):
         text = LEGAL_TEST_CLAUSES[0][0]
         res = simplify_clause(text, category="INDEMNITY", affected_party="Tenant")
 
