@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{% block title %}LexiLegal AI — Contract Analysis & Simplification{% endblock %}</title>
+  <title>{% block title %}KanoonSaathi — Contract Analysis & Simplification{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   {% block extra_head %}{% endblock %}
@@ -12,7 +12,7 @@
 <body>
   <header>
     <nav class="navbar" aria-label="Main navigation">
-      <a href="{{ url_for('main.index') }}" class="nav-brand">LexiLegal AI</a>
+      <a href="{{ url_for('main.index') }}" class="nav-brand">KanoonSaathi</a>
 
       <div class="nav-links">
         <a href="{{ url_for('studio.legal_helper') }}">Legal Helper</a>
@@ -59,7 +59,7 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <p>&copy; {{ current_year }} LexiLegal AI</p>
+      <p>&copy; {{ current_year }} KanoonSaathi</p>
       <p class="disclaimer">
         Not legal advice. Extracts and simplifies contract text locally for reference only.
       </p>

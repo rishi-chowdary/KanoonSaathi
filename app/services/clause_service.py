@@ -13,7 +13,7 @@ from app.nlp.parties import detect_affected_party, extract_document_parties
 from app.nlp.segmentation import SegmentedClause
 from app.nlp.simplification import simplify_clause
 
-logger = logging.getLogger("lexilegal.services.clause_service")
+logger = logging.getLogger("kanoonsaathi.services.clause_service")
 
 
 def process_document_clauses(

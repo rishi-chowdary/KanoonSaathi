@@ -1,6 +1,6 @@
 # Privacy and Data Handling
 
-LexiLegal AI runs completely on the machine where you host it. Contract text, extracted clauses, and user questions stay inside your local Flask process and MySQL database.
+KanoonSaathi runs completely on the machine where you host it. Contract text, extracted clauses, and user questions stay inside your local Flask process and MySQL database.
 
 ## Local processing
 
@@ -28,4 +28,4 @@ Deleting a document (from the web UI or via `DELETE /api/documents/<id>`) remove
 
 ## Legal notice
 
-LexiLegal AI is a student NLP project for reading and summarizing contract text. It does not provide legal advice or determine whether a clause is valid or enforceable in any jurisdiction. Risk descriptions avoid absolute legal conclusions, and missing-provision items are labeled `"Possible omission"`.
+KanoonSaathi is a student NLP project for reading and summarizing contract text. It does not provide legal advice or determine whether a clause is valid or enforceable in any jurisdiction. Risk descriptions avoid absolute legal conclusions, and missing-provision items are labeled `"Possible omission"`.

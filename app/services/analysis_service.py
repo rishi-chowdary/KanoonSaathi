@@ -9,7 +9,7 @@ from app.nlp.extraction import PageData
 from app.nlp.key_info import extract_contract_key_info
 from app.nlp.summarizer import generate_extractive_summary
 
-logger = logging.getLogger("lexilegal.services.analysis_service")
+logger = logging.getLogger("kanoonsaathi.services.analysis_service")
 
 
 def process_key_info_and_summaries(

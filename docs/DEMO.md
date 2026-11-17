@@ -1,6 +1,6 @@
 # 5-Minute Demo Walkthrough
 
-This guide covers a straightforward 5-minute demonstration of LexiLegal AI running locally at `http://127.0.0.1:5000`.
+This guide covers a straightforward 5-minute demonstration of KanoonSaathi running locally at `http://127.0.0.1:5000`.
 
 ## Before you start
 

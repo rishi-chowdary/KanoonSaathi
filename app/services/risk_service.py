@@ -15,7 +15,7 @@ from app.models.risk import RiskFinding
 from app.nlp.missing_provisions import detect_missing_provisions
 from app.nlp.risk_engine import detect_clause_risks
 
-logger = logging.getLogger("lexilegal.services.risk_service")
+logger = logging.getLogger("kanoonsaathi.services.risk_service")
 
 
 def process_document_risks_and_missing(

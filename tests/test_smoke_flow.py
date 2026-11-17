@@ -1,4 +1,4 @@
-"""End-to-End Smoke Test for LexiLegal AI.
+"""End-to-End Smoke Test for KanoonSaathi.
 
 Simulates the complete user lifecycle in a single end-to-end flow:
 1. Register new user

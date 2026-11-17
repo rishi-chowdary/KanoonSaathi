@@ -1,4 +1,4 @@
-"""Offline evaluation script for LexiLegal AI's local NLP pipeline."""
+"""Offline evaluation script for KanoonSaathi's local NLP pipeline."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ from evaluation.evaluate_clauses import match_clause
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
-logger = logging.getLogger("lexilegal.evaluation")
+logger = logging.getLogger("kanoonsaathi.evaluation")
 
 
 def evaluate_clauses_and_quotes(gold_files: list[str]) -> dict[str, Any]:
@@ -535,7 +535,7 @@ def write_results_markdown(results: dict[str, Any]) -> None:
     ch = results["chat"]
     lat = results["latency"]
 
-    md_content = f"""# LexiLegal AI — Evaluation Results
+    md_content = f"""# KanoonSaathi — Evaluation Results
 
 **Date**: {time.strftime('%B %d, %Y')}  
 **Pipeline**: Local Python NLP (DistilBERT LEDGAR fallback + SBERT `all-MiniLM-L6-v2` + spaCy `en_core_web_md` + `minilm-uncased-squad2`)  

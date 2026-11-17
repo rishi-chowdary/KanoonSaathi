@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# LexiLegal AI — One-Command Local Startup Script (Python NLP Stack)
+# KanoonSaathi — One-Command Local Startup Script (Python NLP Stack)
 # Starts: MySQL 8 (Docker or local) -> Alembic Migrations -> Flask App Server
 # ==============================================================================
 
@@ -10,7 +10,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 echo "=========================================================="
-echo " Starting LexiLegal AI Platform (Python NLP Stack)"
+echo " Starting KanoonSaathi Platform (Python NLP Stack)"
 echo " Root directory: $ROOT_DIR"
 echo "=========================================================="
 
@@ -64,9 +64,9 @@ echo "[+] Database schema is up to date."
 
 # 5. Start Flask Application
 PORT="${PORT:-5000}"
-echo "[3/3] Starting LexiLegal AI Flask Server on http://127.0.0.1:${PORT}..."
+echo "[3/3] Starting KanoonSaathi Flask Server on http://127.0.0.1:${PORT}..."
 echo "=========================================================="
-echo " LexiLegal AI is running at: http://127.0.0.1:${PORT}"
+echo " KanoonSaathi is running at: http://127.0.0.1:${PORT}"
 echo " Press Ctrl+C to terminate the application."
 echo "=========================================================="
 

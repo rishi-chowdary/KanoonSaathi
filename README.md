@@ -1,6 +1,6 @@
-# LexiLegal AI
+# KanoonSaathi
 
-LexiLegal AI is a local web application built for Indian legal documents—including Bharatiya Nyaya Sanhita (BNS, 2023) sections, Indian Penal Code (IPC, 1860) sections, Constitution of India articles, and Indian contracts (leave and license agreements, NDAs, employment agreements, and service contracts). You upload a PDF, DOCX, or plain text file and it extracts the text page by page, breaks the text into clauses or sections, detects BNS/IPC/Constitutional cross-references, highlights risk patterns, pulls out key dates and rupee amounts, rewrites dense legal language in simpler English, and lets you ask questions about the document.
+KanoonSaathi is a local web application built for Indian legal documents—including Bharatiya Nyaya Sanhita (BNS, 2023) sections, Indian Penal Code (IPC, 1860) sections, Constitution of India articles, and Indian contracts (leave and license agreements, NDAs, employment agreements, and service contracts). You upload a PDF, DOCX, or plain text file and it extracts the text page by page, breaks the text into clauses or sections, detects BNS/IPC/Constitutional cross-references, highlights risk patterns, pulls out key dates and rupee amounts, rewrites dense legal language in simpler English, and lets you ask questions about the document.
 
 Everything runs locally in Python on your machine. No document text is sent to any external API or hosted model.
 

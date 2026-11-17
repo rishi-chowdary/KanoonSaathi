@@ -307,7 +307,9 @@ def test_report_endpoint_authorization(client, app):
     assert resp_owner.status_code == 200
     assert resp_owner.mimetype == "application/pdf"
     assert "Content-Disposition" in resp_owner.headers
-    assert f"lexilegal_report_{doc_id}.pdf" in resp_owner.headers["Content-Disposition"]
+    assert (
+        f"kanoonsaathi_report_{doc_id}.pdf" in resp_owner.headers["Content-Disposition"]
+    )
     assert len(resp_owner.data) > 10000
 
 

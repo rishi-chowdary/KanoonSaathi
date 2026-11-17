@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const THEME_STORAGE_KEY = "lexilegal_theme";
+  const THEME_STORAGE_KEY = "kanoonsaathi_theme";
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
@@ -36,7 +36,7 @@
     return meta ? meta.getAttribute("content") : "";
   }
 
-  window.LexiLegal = {
+  window.KanoonSaathi = {
     getCsrfToken: getCsrfToken,
     fetchWithCsrf: function (url, options) {
       options = options || {};

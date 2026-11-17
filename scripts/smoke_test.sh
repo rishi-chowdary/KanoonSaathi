@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# End-to-end live HTTP smoke test against a running LexiLegal AI server.
+# End-to-end live HTTP smoke test against a running KanoonSaathi server.
 
 set -euo pipefail
 
 BASE_URL="${API_BASE_URL:-http://127.0.0.1:5000}"
 SAMPLE_FILE="${1:-samples/contracts/rental_agreement.pdf}"
-COOKIE_JAR=$(mktemp /tmp/lexilegal_cookie_XXXXXX.txt)
-REPORT_TEMP=$(mktemp /tmp/lexilegal_report_XXXXXX.pdf)
+COOKIE_JAR=$(mktemp /tmp/kanoonsaathi_cookie_XXXXXX.txt)
+REPORT_TEMP=$(mktemp /tmp/kanoonsaathi_report_XXXXXX.pdf)
 
 cleanup() {
     rm -f "$COOKIE_JAR" "$REPORT_TEMP"

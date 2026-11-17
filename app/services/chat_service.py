@@ -1,4 +1,4 @@
-"""LexiLegal AI — Chat Service.
+"""KanoonSaathi — Chat Service.
 
 Orchestrates multi-turn grounded contract conversations, page-aware passage retrieval,
 factual routing, and extractive QA with strict tenant isolation.
@@ -18,7 +18,7 @@ from app.models.chunk import DocumentChunk
 from app.models.document import Document
 from app.nlp.qa_engine import answer_document_query
 
-logger = logging.getLogger("lexilegal.chat_service")
+logger = logging.getLogger("kanoonsaathi.chat_service")
 
 
 def get_conversations_for_document(

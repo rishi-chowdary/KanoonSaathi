@@ -1,4 +1,4 @@
-"""LexiLegal AI — Dashboard Service.
+"""KanoonSaathi — Dashboard Service.
 
 Computes genuine SQL aggregate statistics and risk distributions strictly partitioned
 by user ID to ensure complete multi-tenant data isolation. Zero hardcoded metrics.
@@ -17,7 +17,7 @@ from app.models.clause import ExtractedClause
 from app.models.document import Document
 from app.models.risk import RiskFinding
 
-logger = logging.getLogger("lexilegal.dashboard_service")
+logger = logging.getLogger("kanoonsaathi.dashboard_service")
 
 
 def get_dashboard_stats(user_id: str) -> dict[str, Any]:

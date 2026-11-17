@@ -11,7 +11,7 @@ reports_bp = Blueprint("reports", __name__)
 
 
 def _pdf_response(doc_id: str, pdf_bytes: bytes) -> Response:
-    safe_filename = f"lexilegal_report_{doc_id}.pdf"
+    safe_filename = f"kanoonsaathi_report_{doc_id}.pdf"
     return Response(
         pdf_bytes,
         mimetype="application/pdf",

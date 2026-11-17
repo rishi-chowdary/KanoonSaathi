@@ -22,7 +22,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-logger = logging.getLogger("lexilegal.report_service")
+logger = logging.getLogger("kanoonsaathi.report_service")
 
 COLOR_PRIMARY = colors.HexColor("#0B1B3D")
 COLOR_SECONDARY = colors.HexColor("#2C5282")
@@ -133,7 +133,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFillColor(COLOR_TEXT_MUTED)
 
         if self._pageNumber > 1:
-            self.drawString(36, 804, "LexiLegal AI — Contract Analysis Report")
+            self.drawString(36, 804, "KanoonSaathi — Contract Analysis Report")
             self.setStrokeColor(COLOR_BORDER)
             self.setLineWidth(0.5)
             self.line(36, 798, 559, 798)
@@ -141,7 +141,7 @@ class NumberedCanvas(canvas.Canvas):
         self.drawString(
             36,
             26,
-            "CONFIDENTIAL — Prepared by LexiLegal AI Natural Language Processing",
+            "CONFIDENTIAL — Prepared by KanoonSaathi Natural Language Processing",
         )
         self.drawRightString(559, 26, f"Page {self._pageNumber} of {total_pages}")
         self.setStrokeColor(COLOR_BORDER)
@@ -275,7 +275,7 @@ def _add_cover_section(
 ) -> None:
     story.append(
         Paragraph(
-            "<b>LEXILEGAL AI</b> &bull; CONTRACT ANALYSIS REPORT", styles["badge"]
+            "<b>KANOONSAATHI</b> &bull; CONTRACT ANALYSIS REPORT", styles["badge"]
         )
     )
     story.append(Spacer(1, 4))
@@ -726,7 +726,7 @@ def _add_disclaimer_section(
         Paragraph("9. Regulatory Notice & Legal Disclaimer", styles["sec_heading"])
     )
     disclaimer_text = (
-        "<b>LEGAL DISCLAIMER:</b> LexiLegal AI provides automated natural language processing "
+        "<b>LEGAL DISCLAIMER:</b> KanoonSaathi provides automated natural language processing "
         "analysis for document simplification and informational reference only. It does not constitute "
         "legal advice or a legal determination. Automated tools may miss ambiguity or local statutory "
         "requirements. Review important documents with a qualified legal professional before signing."

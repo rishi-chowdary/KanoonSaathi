@@ -1,4 +1,4 @@
-# LexiLegal AI — Evaluation Results
+# KanoonSaathi — Evaluation Results
 
 **Date**: November 18, 2026  
 **Pipeline**: Local Python NLP (DistilBERT LEDGAR fallback + SBERT `all-MiniLM-L6-v2` + spaCy `en_core_web_md` + `minilm-uncased-squad2`)  

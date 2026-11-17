@@ -1,1 +1,1 @@
-"""LexiLegal AI NLP package."""
+"""KanoonSaathi NLP package."""

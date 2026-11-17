@@ -1,4 +1,4 @@
-"""LexiLegal AI — Hybrid Retrieval Engine.
+"""KanoonSaathi — Hybrid Retrieval Engine.
 
 Implements hybrid passage retrieval over page-aware document chunks:
 1. Dense semantic search: SBERT cosine similarity (all-MiniLM-L6-v2)

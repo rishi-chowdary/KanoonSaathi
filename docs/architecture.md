@@ -1,6 +1,6 @@
 # System Architecture
 
-LexiLegal AI is a single Flask application backed by MySQL 8 and a local Python NLP pipeline. All text extraction, classification, simplification, risk checks, and document Q&A run in-process without calling external AI services.
+KanoonSaathi is a single Flask application backed by MySQL 8 and a local Python NLP pipeline. All text extraction, classification, simplification, risk checks, and document Q&A run in-process without calling external AI services.
 
 ## Stack
 

@@ -1,4 +1,4 @@
-"""LexiLegal AI — Extractive Question Answering and Intent Routing Engine.
+"""KanoonSaathi — Extractive Question Answering and Intent Routing Engine.
 
 Answers user questions about legal documents with 100% verifiable source grounding:
 1. Fact Intent Routing: Deterministic regex matching against verified pre-extracted facts
@@ -23,7 +23,7 @@ import torch
 from app.nlp.registry import get_qa_model
 from app.nlp.retrieval import hybrid_retrieve_chunks
 
-logger = logging.getLogger("lexilegal.nlp.qa_engine")
+logger = logging.getLogger("kanoonsaathi.nlp.qa_engine")
 
 # Confidence delta threshold for SQuAD 2.0 unanswerable refusal.
 # When diff (best_span_score - null_score) < 0.0, the null/no-answer token is more probable.

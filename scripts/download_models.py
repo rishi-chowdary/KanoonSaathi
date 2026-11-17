@@ -36,7 +36,7 @@ def _hf_model_size_mb(repo_id: str) -> float:
 
 def main() -> int:
     logger.info("=" * 60)
-    logger.info("LexiLegal AI — Offline NLP Model Verification & Download")
+    logger.info("KanoonSaathi — Offline NLP Model Verification & Download")
     logger.info("=" * 60)
 
     # 1. spaCy (en_core_web_md)

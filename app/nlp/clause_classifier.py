@@ -8,7 +8,7 @@ import yaml
 
 from app.nlp.registry import get_clause_hf_classifier, get_sentence_transformer
 
-logger = logging.getLogger("lexilegal.nlp.classifier")
+logger = logging.getLogger("kanoonsaathi.nlp.classifier")
 
 # Standard Contract & Indian Statute Categories
 STANDARD_CATEGORIES = [

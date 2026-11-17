@@ -1,4 +1,4 @@
-# LexiLegal AI — Expected Provisions Checklist by Document Type
+# KanoonSaathi — Expected Provisions Checklist by Document Type
 # Used to detect missing clauses with strict "Possible omission" labeling.
 
 document_types:

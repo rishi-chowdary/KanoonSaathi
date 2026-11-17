@@ -73,12 +73,12 @@ def match_clause(gold: dict, extracted: dict) -> bool:
 
 def main():
     print("=" * 80)
-    print("LEXILEGAL AI — PHASE 5 CLAUSE EXTRACTION BENCHMARK & EVALUATION")
+    print("KANOONSAATHI — PHASE 5 CLAUSE EXTRACTION BENCHMARK & EVALUATION")
     print("=" * 80)
 
     # 1. Register test user
     ts = int(time.time())
-    email = f"eval_runner_{ts}@lexilegal.test"
+    email = f"eval_runner_{ts}@kanoonsaathi.test"
     password = "Password123!"
     print(f"\n[1] Registering evaluation user: {email}...")
     reg_resp = requests.post(

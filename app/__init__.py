@@ -9,7 +9,7 @@ from app.extensions import csrf, db, limiter, login_manager, migrate
 
 
 def create_app(config_class=Config) -> Flask:
-    """Application factory for LexiLegal AI."""
+    """Application factory for KanoonSaathi."""
     app = Flask(__name__, static_folder="static", template_folder="templates")
     app.config.from_object(config_class)
 
@@ -45,7 +45,7 @@ def create_app(config_class=Config) -> Flask:
     def inject_globals():
         return {
             "current_year": datetime.now(UTC).year,
-            "app_name": "LexiLegal AI",
+            "app_name": "KanoonSaathi",
         }
 
     # Error Handlers

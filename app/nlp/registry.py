@@ -3,7 +3,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger("lexilegal.nlp.registry")
+logger = logging.getLogger("kanoonsaathi.nlp.registry")
 
 _lock = threading.Lock()
 _spacy_nlp: Any | None = None

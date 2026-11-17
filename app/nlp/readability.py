@@ -1,4 +1,4 @@
-"""LexiLegal AI — Readability Scorer.
+"""KanoonSaathi — Readability Scorer.
 
 Provides pure Python implementation of:
 1. Flesch Reading Ease (higher = easier to read, 0-100 scale, legal contracts often < 30)
