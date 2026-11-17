@@ -27,7 +27,7 @@ This document tracks implementation status across the 10 phases of the project. 
 
 | Phase M6 | Grounded Risk Detection & Missing Provisions | Completed | 2026-11-17 |
 | Phase M7 | Hybrid Retrieval & Extractive QA Document Chat | Completed | 2026-11-17 |
-| Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Planned | - |
+| Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Completed | 2026-11-17 |
 | Phase M9 | Offline Evaluation Suite & Parity Benchmarks | Planned | - |
 | Phase M10 | Legacy Removal, Hardening & Final Verification Gate | Planned | - |
 
@@ -1296,6 +1296,72 @@ cd frontend && npm test
 - Linter & Formatter:
   - `ruff check app tests` -> `All checks passed!`.
   - `black --check app tests` -> `All done! 54 files left unchanged.`.
+
+### Phase M8: Dashboard, ReportLab PDF Dossier & UI Polish
+- [x] Built Dashboard SQL Aggregation Service (`app/services/dashboard_service.py`):
+  - Strictly calculates real SQL aggregates per user (`totalDocuments`, `analyzedDocuments`, `failedDocuments`, `totalClauses`, `totalRisks`, `averageVerificationRate`, `riskDistributionByLevel`, `riskDistributionByCategory`, `recentDocuments`, `recentAnalyses`).
+  - Zero hardcoded numbers; strict tenant isolation with zero data leaks across users.
+  - Deleting a document properly cascades and updates dashboard counts immediately.
+- [x] Built ReportLab 10-Section Legal Dossier Generator (`app/services/report_service.py`):
+  - 10 structured sections:
+    1. Cover & Executive Summary (metadata grid, verification rate badge)
+    2. Executive Summary (SBERT TextRank key takeaways, purpose)
+    3. Key Contractual Provisions Table (category, importance, page, quote snippet)
+    4. Tri-Tier Plain-Language Explanations (Simple, Detailed, Professional)
+    5. Grounded Risk Assessment (color-coded High/Med/Low cards, evidence quotes, consequences)
+    6. Financial Terms & Payment Structure (amounts, deadlines, penalties)
+    7. Critical Dates & Timelines (start, end, renewal, notice)
+    8. Standard Provisions Checklist ("Possible omission" tags)
+    9. Actionable Questions for Legal Counsel
+    10. Regulatory Notice & Legal Disclaimer (Rule 7 non-definitive notice, SHA-256 integrity hash)
+  - Running headers & footers with two-pass `NumberedCanvas` ("Page X of Y", document title, generated timestamp).
+  - Proper paragraph wrapping inside table cells with explicit `colWidths`.
+  - UTF-8 / TrueType symbol support (₹, §, curly quotes, bullets).
+  - Graceful empty section handling (e.g. clean NDA with no risks displays an reassuring info panel).
+- [x] Endpoints added:
+  - `GET /api/dashboard/stats`: authenticated JSON aggregate metrics.
+  - `GET /documents/<id>/report` & `GET /documents/<id>/report.pdf`: in-browser PDF stream with `Content-Type: application/pdf`.
+  - `GET /api/documents/<id>/report`: direct download endpoint with attachment header.
+  - Proper authorization: unauthenticated -> 401, cross-user access -> 404.
+- [x] UI polish & Template integration:
+  - `app/templates/dashboard.html`: Stat metric cards, Chart.js Doughnut (risks by category) and Bar (risks by severity) charts, recent documents table, and clean empty state for new users.
+  - `app/templates/documents/detail.html`: Added "📄 Download PDF Report" button in document header.
+  - `app/templates/documents/list.html`: Added direct "PDF" download action link per document row.
+  - `app/templates/auth/profile.html`: Display user contract statistics overview.
+- [x] Visual and structural verification of rendered PDFs:
+  - Generated and rendered 3 diverse sample reports to PNG via PyMuPDF (`clean_nda.pdf` 3 pages, `rental_agreement.pdf` 3 pages, `one_sided_agreement.pdf` 5 pages).
+  - Checked page numbering, table cell wrapping, Unicode rendering, and empty-state messaging.
+- [x] Comprehensive automated test suite (`tests/test_dashboard_and_report.py`):
+  - 5 tests covering multi-user dashboard metric calculation and data isolation, deletion count updates, 10-section PDF generation with ReportLab, empty-state dashboard for new users, and report authorization (401/404).
+- [x] Full test suite now passes **88 / 88 tests** with **85% coverage** across 2,985 statements.
+- [x] Linters & formatters 100% clean: `ruff check app tests` (0 warnings) and `black --check app tests` (clean).
+
+**What was built:**
+- `app/services/dashboard_service.py`: Real SQL aggregate service filtered by `user_id`.
+- `app/services/report_service.py`: 10-section ReportLab PDF dossier generator with `NumberedCanvas` and Unicode support.
+- `app/blueprints/main.py`: Added dashboard statistics computation and `GET /api/dashboard/stats`.
+- `app/blueprints/documents.py`: Added `GET /documents/<id>/report` and `GET /api/documents/<id>/report`.
+- `app/blueprints/auth.py`: Injected user stats into profile template.
+- `app/templates/dashboard.html`: Dynamic dashboard with Chart.js charts and empty-state handling.
+- `app/templates/documents/detail.html`: Added PDF download action.
+- `app/templates/documents/list.html`: Added PDF download action in table rows.
+- `app/templates/auth/profile.html`: Added summary stats.
+- `tests/test_dashboard_and_report.py`: 5 tests verifying dashboard queries, report sections, and auth boundaries.
+
+**How it was verified:**
+- Multi-user isolation & SQL verification:
+  - Seeded two users with distinct document sets; verified dashboard numbers match exact SQL counts and no metrics leak across users.
+  - Document deletion confirmed to immediately decrement total document count.
+- PDF generation & PyMuPDF visual inspection:
+  - Verified 3 sample reports rendered cleanly across all 10 sections, page numbers "Page X of Y", table wrapping, Unicode currency symbols (`₹`, `§`), and empty-risk fallback.
+- Report endpoint security:
+  - Unauthenticated access returns HTTP 401; cross-tenant document report request returns HTTP 404.
+- Full Test Suite:
+  - `.venv/bin/pytest tests/ --cov=app -q` -> **88 passed in 45.65s (85% coverage across 2,985 statements)**.
+- Linter & Formatter:
+  - `ruff check app tests` -> `All checks passed!`.
+  - `black --check app tests` -> `All done! 58 files left unchanged.`.
+
 
 
 

@@ -41,6 +41,7 @@ htmlcov/
 uploads/
 backend/uploads/
 .local-storage/
+evaluation/sample_reports_png/
 
 # IDE and OS
 .idea/

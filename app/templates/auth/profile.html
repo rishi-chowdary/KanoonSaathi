@@ -3,7 +3,32 @@
 {% block title %}Account Profile — LexiLegal AI{% endblock %}
 
 {% block content %}
-<div class="auth-container" style="max-width: 540px;">
+<div class="auth-container" style="max-width: 600px; margin: 0 auto;">
+  <!-- Account Stats Overview -->
+  {% if stats %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <h2 class="card-title" style="font-size: 1.15rem;">Account Overview</h2>
+        <p class="card-subtitle">Your contract processing and analysis activity</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+        <div style="background: var(--bg-surface-alt); padding: 0.85rem; border-radius: var(--radius-sm);">
+          <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Documents</span>
+          <strong style="font-size: 1.4rem; color: var(--color-primary);">{{ stats.totalDocuments }}</strong>
+        </div>
+        <div style="background: var(--bg-surface-alt); padding: 0.85rem; border-radius: var(--radius-sm);">
+          <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Clauses</span>
+          <strong style="font-size: 1.4rem; color: var(--color-secondary);">{{ stats.totalClauses }}</strong>
+        </div>
+        <div style="background: var(--bg-surface-alt); padding: 0.85rem; border-radius: var(--radius-sm);">
+          <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Risks</span>
+          <strong style="font-size: 1.4rem; color: var(--color-danger);">{{ stats.totalRisks }}</strong>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Profile Settings Card -->
   <div class="card">
     <div class="card-header">
       <h1 class="card-title">User Profile</h1>
@@ -51,4 +76,3 @@
   </div>
 </div>
 {% endblock %}
-

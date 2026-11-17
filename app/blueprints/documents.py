@@ -1,5 +1,6 @@
 from flask import (
     Blueprint,
+    Response,
     abort,
     flash,
     jsonify,
@@ -551,3 +552,59 @@ def api_chat_delete_conversation(doc_id: str, conversation_id: str):
         return jsonify({"error": "Conversation not found"}), 404
 
     return "", 204
+
+
+# -----------------------------------------------------------------------------
+# ReportLab PDF Report Export
+# -----------------------------------------------------------------------------
+
+
+@documents_bp.route("/documents/<doc_id>/report", methods=["GET"])
+@documents_bp.route("/documents/<doc_id>/report.pdf", methods=["GET"])
+@login_required
+def view_document_report(doc_id: str):
+    """Generate and view publication-quality PDF report for document in browser."""
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        abort(404)
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        abort(404)
+
+    from app.services.report_service import generate_pdf_report
+
+    pdf_bytes = generate_pdf_report(doc, analysis)
+    safe_filename = f"lexilegal_report_{doc.id}.pdf"
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{safe_filename}"'},
+    )
+
+
+@documents_bp.route("/api/documents/<doc_id>/report", methods=["GET"])
+@documents_bp.route("/api/documents/<doc_id>/report.pdf", methods=["GET"])
+@csrf.exempt
+def api_document_report(doc_id: str):
+    """API endpoint to download or stream the PDF report."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Document analysis not found"}), 404
+
+    from app.services.report_service import generate_pdf_report
+
+    pdf_bytes = generate_pdf_report(doc, analysis)
+    safe_filename = f"lexilegal_report_{doc.id}.pdf"
+    return Response(
+        pdf_bytes,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{safe_filename}"'},
+    )

@@ -125,7 +125,10 @@ def profile():
         flash("Profile updated successfully.", "success")
         return redirect(url_for("auth.profile"))
 
-    return render_template("auth/profile.html", form=form)
+    from app.services.dashboard_service import get_dashboard_stats
+
+    stats = get_dashboard_stats(current_user.id)
+    return render_template("auth/profile.html", form=form, stats=stats)
 
 
 # -----------------------------------------------------------------------------
