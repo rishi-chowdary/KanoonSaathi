@@ -7,10 +7,16 @@ import com.lexilegal.entity.Document;
 import com.lexilegal.entity.User;
 import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.ExtractedClause;
+import com.lexilegal.entity.ExtractedInformation;
+import com.lexilegal.entity.MissingClauseWarning;
+import com.lexilegal.entity.RiskFinding;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.ExtractedClauseRepository;
+import com.lexilegal.repository.ExtractedInformationRepository;
+import com.lexilegal.repository.MissingClauseWarningRepository;
+import com.lexilegal.repository.RiskFindingRepository;
 import com.lexilegal.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +59,15 @@ class DocumentControllerTest {
     @Autowired
     private ExtractedClauseRepository extractedClauseRepository;
 
+    @Autowired
+    private RiskFindingRepository riskFindingRepository;
+
+    @Autowired
+    private ExtractedInformationRepository extractedInformationRepository;
+
+    @Autowired
+    private MissingClauseWarningRepository missingClauseWarningRepository;
+
     private String userAToken;
     private User userA;
     private String userBToken;
@@ -60,6 +75,9 @@ class DocumentControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        riskFindingRepository.deleteAll();
+        extractedInformationRepository.deleteAll();
+        missingClauseWarningRepository.deleteAll();
         extractedClauseRepository.deleteAll();
         documentAnalysisRepository.deleteAll();
         documentChunkRepository.deleteAll();
@@ -467,6 +485,192 @@ class DocumentControllerTest {
 
         // 6. Unauthenticated returns 401
         mockMvc.perform(get("/api/documents/" + docId + "/clauses"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testGetRiskFindingsSuccessAndFilter() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 risk document test".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "contract.pdf", "application/pdf", pdfContent);
+        MvcResult uploadRes = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        String uploadJson = uploadRes.getResponse().getContentAsString();
+        String docId = objectMapper.readTree(uploadJson).get("id").asText();
+
+        Document doc = documentRepository.findById(UUID.fromString(docId)).orElseThrow();
+        DocumentAnalysis analysis = new DocumentAnalysis();
+        analysis.setDocument(doc);
+        analysis.setTitle("Vendor Agreement");
+        analysis.setDocumentType("service_agreement");
+        analysis.setSummaryShort("Short");
+        analysis.setSummaryDetailed("Detailed");
+        analysis.setLlmProvider("gemini");
+        analysis.setLlmModel("gemini-1.5-flash");
+        analysis = documentAnalysisRepository.save(analysis);
+
+        RiskFinding r1 = new RiskFinding();
+        r1.setAnalysis(analysis);
+        r1.setTitle("Uncapped Indemnification");
+        r1.setCategory("Liability");
+        r1.setLevel("HIGH");
+        r1.setOriginalClause("Vendor indemnifies Customer against all claims without limit.");
+        r1.setExplanation("This exposes Vendor to potentially unlimited financial liability.");
+        r1.setWhyItMatters("A single lawsuit could exceed the entire contract value.");
+        r1.setPossibleConsequences("Significant cash flow disruption or bankruptcy.");
+        r1.setSuggestedQuestions("[\"Can we cap indemnification at 12 months fees?\",\"Can we exclude consequential damages?\"]");
+        r1.setSourcePage(2);
+        r1.setEvidenceQuote("indemnifies Customer against all claims without limit");
+        r1.setQuoteVerified(true);
+        r1.setJurisdictionCaveat("Governing law is not specified; liability limits vary widely by jurisdiction.");
+        r1.setProvenance("AI_INTERPRETATION");
+        riskFindingRepository.save(r1);
+
+        RiskFinding r2 = new RiskFinding();
+        r2.setAnalysis(analysis);
+        r2.setTitle("Late Payment Penalty");
+        r2.setCategory("Financial");
+        r2.setLevel("MEDIUM");
+        r2.setOriginalClause("Late payments accrue 2% per month interest.");
+        r2.setExplanation("High interest rate on late invoices.");
+        r2.setWhyItMatters("Compounding charges if invoicing issues occur.");
+        r2.setPossibleConsequences("Additional financing costs.");
+        r2.setSuggestedQuestions("[\"Can the grace period be extended to 30 days?\"]");
+        r2.setSourcePage(3);
+        r2.setEvidenceQuote("2% per month interest");
+        r2.setQuoteVerified(true);
+        r2.setProvenance("AI_INTERPRETATION");
+        riskFindingRepository.save(r2);
+
+        // Fetch all risks
+        mockMvc.perform(get("/api/documents/" + docId + "/risks")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Uncapped Indemnification")))
+                .andExpect(jsonPath("$[0].level", is("HIGH")))
+                .andExpect(jsonPath("$[0].category", is("Liability")))
+                .andExpect(jsonPath("$[0].suggestedQuestions", hasSize(2)))
+                .andExpect(jsonPath("$[0].jurisdictionCaveat", containsString("Governing law is not specified")));
+
+        // Filter by level HIGH
+        mockMvc.perform(get("/api/documents/" + docId + "/risks")
+                        .param("level", "HIGH")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Uncapped Indemnification")));
+
+        // Filter by category Financial
+        mockMvc.perform(get("/api/documents/" + docId + "/risks")
+                        .param("category", "Financial")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Late Payment Penalty")));
+
+        // Cross-tenant: User B accessing User A's risks gets 404
+        mockMvc.perform(get("/api/documents/" + docId + "/risks")
+                        .header("Authorization", "Bearer " + userBToken))
+                .andExpect(status().isNotFound());
+
+        // Unauthenticated gets 401
+        mockMvc.perform(get("/api/documents/" + docId + "/risks"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testGetKeyInformationAndMissingProvisions() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 key info test".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "lease.pdf", "application/pdf", pdfContent);
+        MvcResult uploadRes = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+        String uploadJson = uploadRes.getResponse().getContentAsString();
+        String docId = objectMapper.readTree(uploadJson).get("id").asText();
+
+        Document doc = documentRepository.findById(UUID.fromString(docId)).orElseThrow();
+        DocumentAnalysis analysis = new DocumentAnalysis();
+        analysis.setDocument(doc);
+        analysis.setTitle("Commercial Lease");
+        analysis.setDocumentType("rental_lease");
+        analysis.setSummaryShort("Lease summary");
+        analysis.setSummaryDetailed("Detailed lease summary");
+        analysis.setLlmProvider("gemini");
+        analysis.setLlmModel("gemini-1.5-flash");
+        analysis = documentAnalysisRepository.save(analysis);
+
+        // Key info
+        ExtractedInformation keyInfo = new ExtractedInformation();
+        keyInfo.setAnalysis(analysis);
+        keyInfo.setContractAmount("$2,500 per month");
+        keyInfo.setContractAmountPage(1);
+        keyInfo.setPaymentDeadlines("First of each month");
+        keyInfo.setPaymentDeadlinesPage(1);
+        keyInfo.setPenalties("5% late fee after 5 days");
+        keyInfo.setPenaltiesPage(2);
+        keyInfo.setStartDate("January 1, 2026");
+        keyInfo.setStartDatePage(1);
+        keyInfo.setEndDate("December 31, 2026");
+        keyInfo.setEndDatePage(1);
+        keyInfo.setRenewalDate("Not specified");
+        keyInfo.setNoticePeriod("60 days written notice");
+        keyInfo.setNoticePeriodPage(3);
+        keyInfo.setTerminationConditions("Material breach with 14-day cure period");
+        keyInfo.setTerminationConditionsPage(4);
+        keyInfo.setObligations("[\"Maintain commercial general liability insurance\",\"Keep premises in good repair\"]");
+        keyInfo.setImportantDates("[{\"event\":\"Lease Commencement\",\"date_value\":\"January 1, 2026\",\"source_page\":1}]");
+        extractedInformationRepository.save(keyInfo);
+
+        // Missing provisions
+        MissingClauseWarning w1 = new MissingClauseWarning();
+        w1.setAnalysis(analysis);
+        w1.setCategory("Contractual");
+        w1.setClauseName("Subleasing Rights");
+        w1.setWhyItMatters("Specifies whether tenant can sublet space or assign the lease.");
+        w1.setTypicalProvision("Tenant shall not assign or sublet without Landlord's prior written consent.");
+        w1.setRiskLevel("MEDIUM");
+        w1.setLabel("Possible omission");
+        missingClauseWarningRepository.save(w1);
+
+        // 1. Fetch Key Info
+        mockMvc.perform(get("/api/documents/" + docId + "/key-info")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractAmount", is("$2,500 per month")))
+                .andExpect(jsonPath("$.contractAmountPage", is(1)))
+                .andExpect(jsonPath("$.startDate", is("January 1, 2026")))
+                .andExpect(jsonPath("$.renewalDate", is("Not specified")))
+                .andExpect(jsonPath("$.obligations", hasSize(2)))
+                .andExpect(jsonPath("$.importantDates", hasSize(1)));
+
+        // 2. Fetch Missing Provisions
+        mockMvc.perform(get("/api/documents/" + docId + "/missing")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].clauseName", is("Subleasing Rights")))
+                .andExpect(jsonPath("$[0].riskLevel", is("MEDIUM")))
+                .andExpect(jsonPath("$[0].label", is("Possible omission")));
+
+        // 3. Cross-tenant for Key Info and Missing
+        mockMvc.perform(get("/api/documents/" + docId + "/key-info")
+                        .header("Authorization", "Bearer " + userBToken))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/documents/" + docId + "/missing")
+                        .header("Authorization", "Bearer " + userBToken))
+                .andExpect(status().isNotFound());
+
+        // 4. Unauthenticated for Key Info and Missing
+        mockMvc.perform(get("/api/documents/" + docId + "/key-info"))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(get("/api/documents/" + docId + "/missing"))
                 .andExpect(status().isUnauthorized());
     }
 }

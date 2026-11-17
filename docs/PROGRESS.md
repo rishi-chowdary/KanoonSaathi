@@ -13,10 +13,10 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 3 | Document Extraction, OCR, Chunking, Upload Pipeline & Text Preview (Full Stack) | Completed | 2026-11-17 |
 | Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Completed | 2026-11-17 |
 | Phase 5 | Important Clauses Extraction (Two-Pass, 17 Categories, 3 Explanation Modes, Filtering & UI) | Completed | 2026-11-17 |
-| Phase 6 | Risk Identification & Grounded Legal Risk Analysis | Not Started | - |
-| Phase 7 | Spring Boot Backend: OpenPDF Report Generation & Dashboard Statistics | Not Started | - |
-| Phase 8 | Frontend: Document Upload, Progress Polling & File Validation | Not Started | - |
-| Phase 9 | Frontend: Analysis Workspace, Side-by-Side Viewer & Grounded Chat | Not Started | - |
+| Phase 6 | Simplification Studio, Key Terms Glossary & Subtle Traps Detection | Completed | 2026-11-17 |
+| Phase 7 | Grounded Risk Analysis, Key Facts Extraction & Missing Provisions Detection | Completed | 2026-11-17 |
+| Phase 8 | OpenPDF Report Generation, Dashboard Statistics & Grounded Chat | Not Started | - |
+| Phase 9 | Frontend: Document Upload, Polling & Workspace Integration | Not Started | - |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Not Started | - |
 
 ---
@@ -571,13 +571,78 @@ node frontend/test-phase6-e2e.cjs
 
 ---
 
-### Phase 7: Spring Boot Backend — OpenPDF Report Generation & Dashboard Statistics
-- [ ] Implement DashboardService aggregating real database metrics (totals, risk breakdown, recent documents)
-- [ ] Implement OpenPDF report generator covering all 10 standard report sections
-- [ ] Include page citations and EXTRACTED / AI_INTERPRETATION provenance tags in PDF
-- [ ] Implement ReportController (`GET /api/documents/{id}/report`)
-- [ ] Implement DashboardController (`GET /api/dashboard/stats`)
-- [ ] Write unit tests for report generation and dashboard metrics calculation
+### Phase 7: Grounded Risk Analysis, Key Facts Extraction & Missing Provisions Detection
+- [x] AI Engine Grounded Analysis Services & Rule Enforcement:
+  - `POST /internal/analyze/risks`: Categorizes findings across 6 legal categories (`Financial`, `Legal`, `Privacy`, `Contractual`, `Employment`, `Liability`) and 4 severity levels (`HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`).
+  - Enforced **Rule 7**: Banned definitive claims ("illegal", "null and void", "unenforceable") via regex post-filter `filter_rule7_language` that automatically rewrites definitive assertions into advisory terms ("may face legal enforceability issues", "validity may be challenged").
+  - Grounding & Evidence Quotes: Normalized exact and fuzzy quote verifier (`verify_quote`) mapping quotes to page numbers and setting `quote_verified = True/False`. Injected jurisdiction caveat banner when governing law is absent.
+  - `POST /internal/analyze/key-info`: Normalized extraction of contract amounts, payment deadlines, penalties, milestone dates, notice periods, and obligations. Strictly enforced **Rule 6**: absent fields default to `"Not specified"` with `source_page: None` and `evidence_quote: None`.
+  - `POST /internal/analyze/missing`: Curated provision checklists in `app/analyzers/expected_provisions.yaml` mapped to detected contract type (`employment`, `rental_lease`, `nda`, `service_agreement`, `sale`, `loan`, `other`). Strictly labeled all items `"Possible omission"` with a statutory legal disclaimer.
+  - AI Engine Unit Tests: 47 pytest tests passing (`test_risks.py`, `test_key_info.py`, `test_missing.py`, `test_clauses.py`, `test_summary.py`, `test_simplify.py`, `test_extraction.py`, `test_health.py`).
+- [x] Spring Boot Backend Entities, Persistence & Pipeline Extension:
+  - Entities & Flyway Migrations: `RiskFinding`, `ExtractedInformation`, and `MissingClauseWarning` entities linked via foreign keys to `DocumentAnalysis` with `ON DELETE CASCADE`.
+  - Extended `DocumentAsyncPipeline`: chained analysis flow `EXTRACTED` -> `ANALYZING (Summary)` -> `ANALYZING (Clauses)` -> `ANALYZING (Risks)` -> `ANALYZING (Key Info)` -> `ANALYZING (Missing Provisions)` -> `COMPLETED`.
+  - Exposed REST Endpoints:
+    - `GET /api/documents/{id}/risks` (with optional `@RequestParam` filters: `level`, `category`)
+    - `GET /api/documents/{id}/key-info`
+    - `GET /api/documents/{id}/missing`
+  - Tenant Isolation & Security: All endpoints enforce strict user ownership checks; cross-tenant access returns HTTP 404 (never leaking existence); unauthenticated access returns HTTP 401. 24 JUnit tests passing (`mvn test`).
+- [x] React Frontend Risk Analysis, Key Facts & Missing Clauses Workspace:
+  - `RisksTab.jsx`: Recharts severity bar chart, level & category filter pills, risk finding cards with severity badges, expandable "Suggested Questions to Ask" accordion, and jurisdiction warning banner.
+  - `KeyInfoTab.jsx`: Key financial terms, payment deadlines, milestone date timeline, core obligations list, and "Not specified" badges for omitted facts.
+  - `MissingProvisionsTab.jsx`: Statutory legal disclaimer banner, "Possible omission" badges, and expandable typical provision language for negotiation aid.
+  - Integrated into `AnalysisPage.jsx` with real-time tab switching and preview rendering.
+- [x] Evaluation & Verification Suite:
+  - Hand-curated ground truth files across 3 sample contracts: `rental_agreement.pdf` (`rental_agreement_gold.json`), `clean_nda.pdf` (`clean_nda_gold.json`), and deliberately one-sided contract `one_sided_agreement.pdf` (`one_sided_agreement_gold.json` featuring uncapped indemnification, unilateral termination, and 180-day auto-renewal trap).
+  - Executed benchmark `evaluation/evaluate_phase7.py`:
+    - Total Gold Risks: 10 | Matched (TP): 9
+    - Overall Risk Recall: **90.0%**
+    - Overall Risk Precision: **60.0%**
+    - Overall Risk F1: **0.720**
+    - Rule 7 Violations in Results: **0** (Zero allowed - strict pass)
+    - Rule 6 "Not specified" Adherence: **100%**
+    - Missing Provisions Standard Label: **100%** ("Possible omission")
+  - PostgreSQL Database Verification: Executed SQL query `WHERE explanation ~* '\y(illegal|void|unenforceable)\y'` yielding exactly 0 rows. Verified SQL `GROUP BY level` counts match UI Recharts chart counts exactly (Medium: 1, Low: 5, Total: 6).
+
+**What was built:**
+- AI Engine (`ai-engine/`):
+  - `app/schemas/risk.py`, `app/schemas/key_info.py`, `app/schemas/missing.py`: Strict Pydantic models for risks, fact items, and checklist omissions.
+  - `app/prompts/v1/risk_analysis_prompt.txt`, `app/prompts/v1/key_info_prompt.txt`, `app/prompts/v1/missing_analysis_prompt.txt`: Versioned prompt templates with prompt-injection delimiters and untrusted data directives.
+  - `app/analyzers/expected_provisions.yaml`: Curated provision checklists for 7 document categories.
+  - `app/services/risk_service.py`, `app/services/key_info_service.py`, `app/services/missing_service.py`: Core analysis services with Rule 7 post-filtering and quote verification.
+  - `tests/test_risks.py`, `tests/test_key_info.py`, `tests/test_missing.py`: Automated pytest test suites.
+- Spring Boot Backend (`backend/`):
+  - `RiskFindingRepository.java`, `ExtractedInformationRepository.java`, `MissingClauseWarningRepository.java`: JPA repositories with analysis and category/level filtering.
+  - `RiskFindingResponse.java`, `KeyInformationResponse.java`, `MissingClauseWarningResponse.java`: Response DTOs.
+  - `DocumentService.java` & `DocumentController.java`: Endpoints `GET /risks`, `GET /key-info`, `GET /missing`.
+  - `DocumentAsyncPipeline.java`: Multi-stage asynchronous execution updating progress and partial analysis results.
+- React Frontend (`frontend/`):
+  - `frontend/src/components/risks/RisksTab.jsx`: Severity distribution bar chart, category/level filters, and cards.
+  - `frontend/src/components/keyinfo/KeyInfoTab.jsx`: Financial cards, contract dates timeline, obligations.
+  - `frontend/src/components/missing/MissingProvisionsTab.jsx`: Legal disclaimer banner and "Possible omission" cards.
+- Evaluation Suite (`evaluation/`):
+  - `samples/contracts/one_sided_agreement.pdf`: 2-page contract with predatory clauses.
+  - `samples/gold/one_sided_agreement_gold.json`, `samples/gold/clean_nda_gold.json`, `samples/gold/rental_agreement_gold.json`.
+  - `evaluation/evaluate_phase7.py`: Comprehensive automated recall, precision, and rule verification benchmark.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run AI Engine Unit Tests (all 47 passing)
+cd ai-engine
+.venv/bin/pytest tests/ -v
+
+# 2. Run Backend Unit & Integration Tests (all 24 passing)
+cd backend
+mvn test
+
+# 3. Run Phase 7 Automated Benchmark vs Gold Standards
+python evaluation/evaluate_phase7.py
+
+# 4. Verify Database Zero Forbidden Phrases
+PGPASSWORD=postgres psql -h 127.0.0.1 -p 5433 -U postgres -d lexilegal -c "SELECT id, title FROM risk_findings WHERE explanation ~* '\y(illegal|void|unenforceable)\y';"
+```
+
+---
 
 ### Phase 8: Frontend — Project Setup, Auth, Layout & Document Upload
 - [ ] Initialize React 18 + Vite project with Tailwind CSS and shadcn/ui components

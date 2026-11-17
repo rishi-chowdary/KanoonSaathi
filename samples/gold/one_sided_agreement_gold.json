@@ -1,0 +1,69 @@
+{
+  "contract_name": "one_sided_agreement.pdf",
+  "contract_type": "Master Services Agreement (One-Sided)",
+  "gold_risks": [
+    {
+      "id": "one_sided_risk_1",
+      "title": "Uncapped and Unlimited Indemnification",
+      "category": "Liability",
+      "level": "HIGH",
+      "key_indicators": ["without any limitation", "indemnify, defend, and hold harmless", "financial cap"],
+      "why_it_matters": "Customer is exposed to unlimited financial liability without consequential damages exclusion."
+    },
+    {
+      "id": "one_sided_risk_2",
+      "title": "Unilateral Termination for Convenience",
+      "category": "Contractual",
+      "level": "HIGH",
+      "key_indicators": ["Vendor may terminate", "Customer shall have no right to terminate", "remaining fees"],
+      "why_it_matters": "Only Vendor can terminate at will; early termination by Customer triggers acceleration of all remaining fees."
+    },
+    {
+      "id": "one_sided_risk_3",
+      "title": "Automatic Renewal Trap",
+      "category": "Contractual",
+      "level": "HIGH",
+      "key_indicators": ["automatically renew", "three (3) years", "one hundred eighty (180) days", "certified mail"],
+      "why_it_matters": "Strict 180-day certified mail window to avoid an automatic 3-year renewal commitment."
+    },
+    {
+      "id": "one_sided_risk_4",
+      "title": "Disproportionate Liability Cap Imbalance",
+      "category": "Liability",
+      "level": "HIGH",
+      "key_indicators": ["one hundred dollars ($100.00)", "disclaims all"],
+      "why_it_matters": "Vendor caps its liability at $100 while Customer bears uncapped liability."
+    },
+    {
+      "id": "one_sided_risk_5",
+      "title": "Compounding Daily Late Interest",
+      "category": "Financial",
+      "level": "MEDIUM",
+      "key_indicators": ["2.5% per month", "compounded daily", "three (3) calendar days", "$500"],
+      "why_it_matters": "Extreme late payment interest compounding daily after only 3 days."
+    },
+    {
+      "id": "one_sided_risk_6",
+      "title": "Unilateral Modification of Terms and Fees",
+      "category": "Contractual",
+      "level": "HIGH",
+      "key_indicators": ["modify the service fees", "without requiring Customer's consent"],
+      "why_it_matters": "Vendor can increase prices and change terms unilaterally."
+    }
+  ],
+  "gold_key_info": {
+    "contract_amount": "Not specified",
+    "payment_deadlines": "within three (3) calendar days",
+    "penalties": "2.5% per month compounded daily alongside a mandatory $500 administrative fee",
+    "start_date": "November 1, 2026",
+    "end_date": "Not specified",
+    "renewal_date": "Not specified",
+    "notice_period": "one hundred eighty (180) days"
+  },
+  "gold_missing_provisions": [
+    "Customer Termination for Convenience",
+    "Vendor Mutual Indemnification",
+    "Data Protection and Confidentiality Safeguards"
+  ]
+}
+

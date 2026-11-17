@@ -213,6 +213,131 @@ class MockProvider(LLMProvider):
             )
             return obj  # type: ignore
 
+        if schema.__name__ == "LLMRisksWrapper":
+            from app.schemas.risk import RawRiskItem
+            from app.services.risk_service import LLMRisksWrapper
+            return LLMRisksWrapper(
+                risks=[
+                    RawRiskItem(
+                        title="Uncapped Indemnification Exposure",
+                        category="Liability",
+                        level="HIGH",
+                        original_clause="Contractor shall indemnify and hold harmless Company from any and all damages.",
+                        evidence_quote="shall indemnify and hold harmless",
+                        source_page=1,
+                        explanation="This clause obligates the contractor to indemnify the company without any monetary liability cap.",
+                        why_it_matters="Unlimited liability can jeopardize the commercial solvency of the indemnifying party.",
+                        possible_consequences="Potentially catastrophic financial liabilities exceeding total contract value.",
+                        suggested_questions=[
+                            "Can an aggregate liability cap matching the fees paid be added?",
+                            "Can carve-outs for client gross negligence be included?",
+                        ],
+                    ),
+                    RawRiskItem(
+                        title="Short Cure Notice Period",
+                        category="Contractual",
+                        level="MEDIUM",
+                        original_clause="Non-breaching party may terminate immediately if breach is not cured within 5 days.",
+                        evidence_quote="not cured within 5 days",
+                        source_page=1,
+                        explanation="A 5-day cure window may be operationally insufficient to remedy complex service defects.",
+                        why_it_matters="Increases the likelihood of unintended contract termination.",
+                        possible_consequences="Premature termination and abrupt loss of recurring business.",
+                        suggested_questions=["Can the cure window be extended to 30 calendar days?"],
+                    ),
+                ]
+            )  # type: ignore
+
+        if schema.__name__ == "RawKeyInfoResult":
+            from app.schemas.key_info import FactItem, ImportantDateItem, RawKeyInfoResult
+            return RawKeyInfoResult(
+                contract_amount=FactItem(
+                    value="$50,000.00",
+                    source_page=1,
+                    evidence_quote="total fee of $50,000.00",
+                    quote_verified=True,
+                ),
+                payment_deadlines=FactItem(
+                    value="Net 30 days from invoice",
+                    source_page=1,
+                    evidence_quote="payable Net 30 days from invoice",
+                    quote_verified=True,
+                ),
+                penalties=FactItem(
+                    value="1.5% monthly late interest",
+                    source_page=1,
+                    evidence_quote="accruing 1.5% monthly late interest",
+                    quote_verified=True,
+                ),
+                start_date=FactItem(
+                    value="October 1, 2026",
+                    source_page=1,
+                    evidence_quote="commencing on October 1, 2026",
+                    quote_verified=True,
+                ),
+                end_date=FactItem(
+                    value="September 30, 2027",
+                    source_page=2,
+                    evidence_quote="terminating on September 30, 2027",
+                    quote_verified=True,
+                ),
+                renewal_date=FactItem(value="Not specified"),
+                notice_period=FactItem(
+                    value="30 days written notice",
+                    source_page=2,
+                    evidence_quote="upon 30 days written notice",
+                    quote_verified=True,
+                ),
+                termination_conditions=FactItem(
+                    value="Material breach with 30-day cure period",
+                    source_page=2,
+                    evidence_quote="material breach following 30-day cure",
+                    quote_verified=True,
+                ),
+                obligations=[
+                    "Provide monthly technical progress reports.",
+                    "Safeguard proprietary confidential information.",
+                ],
+                important_dates=[
+                    ImportantDateItem(
+                        event="Contract Effective Date",
+                        date_value="October 1, 2026",
+                        source_page=1,
+                        evidence_quote="October 1, 2026",
+                    ),
+                    ImportantDateItem(
+                        event="Scheduled Expiration Date",
+                        date_value="September 30, 2027",
+                        source_page=2,
+                        evidence_quote="September 30, 2027",
+                    ),
+                ],
+            )  # type: ignore
+
+        if schema.__name__ == "RawMissingAnalysisResult":
+            from app.schemas.missing import MissingProvisionItem, RawMissingAnalysisResult
+            return RawMissingAnalysisResult(
+                detected_document_type="service_agreement",
+                missing_provisions=[
+                    MissingProvisionItem(
+                        category="Liability",
+                        clause_name="Limitation of Liability",
+                        why_it_matters="Protects parties against uncapped enterprise liability in the event of unforeseen breaches.",
+                        typical_provision="Each party's aggregate liability under this Agreement shall not exceed fees paid.",
+                        risk_level="HIGH",
+                        label="Possible omission",
+                    ),
+                    MissingProvisionItem(
+                        category="Legal",
+                        clause_name="Governing Law and Dispute Resolution",
+                        why_it_matters="Clarifies which jurisdiction's statutes apply and prevents costly procedural forum disputes.",
+                        typical_provision="This Agreement is governed by the laws of the State of Delaware.",
+                        risk_level="MEDIUM",
+                        label="Possible omission",
+                    ),
+                ],
+            )  # type: ignore
+
         # Fallback default instantiation
         try:
             return schema.model_validate({})

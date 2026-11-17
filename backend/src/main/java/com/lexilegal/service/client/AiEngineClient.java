@@ -6,7 +6,13 @@ import com.lexilegal.dto.ai.ClauseAnalysisResponseDto;
 import com.lexilegal.dto.ai.DocumentSummaryRequestDto;
 import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
+import com.lexilegal.dto.ai.KeyInfoRequestDto;
+import com.lexilegal.dto.ai.KeyInfoResponseDto;
+import com.lexilegal.dto.ai.MissingProvisionsRequestDto;
+import com.lexilegal.dto.ai.MissingProvisionsResponseDto;
 import com.lexilegal.dto.ai.PageDto;
+import com.lexilegal.dto.ai.RiskAnalysisRequestDto;
+import com.lexilegal.dto.ai.RiskAnalysisResponseDto;
 import com.lexilegal.dto.ai.SimplifyResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -111,6 +117,39 @@ public class AiEngineClient {
                 .body(req)
                 .retrieve()
                 .body(SimplifyResponseDto.class);
+    }
+
+    public RiskAnalysisResponseDto analyzeRisks(String documentId, List<PageDto> pages, List<ChunkDto> chunks, Boolean governingLawFound) {
+        RiskAnalysisRequestDto req = new RiskAnalysisRequestDto(documentId, pages, chunks, governingLawFound);
+        return restClient.post()
+                .uri("/internal/analyze/risks")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(RiskAnalysisResponseDto.class);
+    }
+
+    public KeyInfoResponseDto extractKeyInfo(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
+        KeyInfoRequestDto req = new KeyInfoRequestDto(documentId, pages, chunks);
+        return restClient.post()
+                .uri("/internal/analyze/key-info")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(KeyInfoResponseDto.class);
+    }
+
+    public MissingProvisionsResponseDto analyzeMissingProvisions(String documentId, List<PageDto> pages, List<ChunkDto> chunks, String documentTypeHint) {
+        MissingProvisionsRequestDto req = new MissingProvisionsRequestDto(documentId, pages, chunks, documentTypeHint);
+        return restClient.post()
+                .uri("/internal/analyze/missing")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(MissingProvisionsResponseDto.class);
     }
 }
 

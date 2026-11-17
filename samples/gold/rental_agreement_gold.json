@@ -65,6 +65,46 @@
       "key_quote": "laws of the State of Illinois",
       "importance": "LOW"
     }
+  ],
+  "gold_risks": [
+    {
+      "id": "lease_risk_1",
+      "title": "Subletting and Assignment Prohibition",
+      "category": "Contractual",
+      "level": "MEDIUM",
+      "key_indicators": ["shall not assign", "sublet the premises"],
+      "why_it_matters": "Prohibits tenant from assigning or subletting without prior written consent."
+    },
+    {
+      "id": "lease_risk_2",
+      "title": "Short Default Cure and Eviction Notice",
+      "category": "Contractual",
+      "level": "HIGH",
+      "key_indicators": ["fourteen (14) days", "commence eviction"],
+      "why_it_matters": "Fourteen days cure period before eviction proceedings may commence."
+    },
+    {
+      "id": "lease_risk_3",
+      "title": "Security Deposit Forfeiture Terms",
+      "category": "Financial",
+      "level": "MEDIUM",
+      "key_indicators": ["security deposit", "deduct therefrom"],
+      "why_it_matters": "Landlord can deduct repair costs and unpaid rent from deposit."
+    }
+  ],
+  "gold_key_info": {
+    "contract_amount": "$2,400.00",
+    "payment_deadlines": "first (1st) day of each calendar month",
+    "penalties": "Not specified",
+    "start_date": "August 1, 2026",
+    "end_date": "July 31, 2027",
+    "renewal_date": "Not specified",
+    "notice_period": "Not specified"
+  },
+  "gold_missing_provisions": [
+    "Late Payment Fee Schedule",
+    "Landlord Right of Entry Notice Period",
+    "Condition on Move-in Inspection Checklist",
+    "Subleasing Rights"
   ]
 }
-

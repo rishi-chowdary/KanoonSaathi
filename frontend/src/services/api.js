@@ -51,4 +51,19 @@ export const reExplainDocumentClause = async (documentId, clauseId, mode = "simp
   return response.data;
 };
 
+export const getDocumentRisks = async (documentId, params = {}) => {
+  const response = await api.get(`/documents/${documentId}/risks`, { params });
+  return response.data;
+};
+
+export const getDocumentKeyInfo = async (documentId) => {
+  const response = await api.get(`/documents/${documentId}/key-info`);
+  return response.data;
+};
+
+export const getDocumentMissingProvisions = async (documentId) => {
+  const response = await api.get(`/documents/${documentId}/missing`);
+  return response.data;
+};
+
 export default api;

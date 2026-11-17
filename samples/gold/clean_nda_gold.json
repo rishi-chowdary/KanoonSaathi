@@ -38,6 +38,30 @@
       "key_quote": "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware",
       "importance": "LOW"
     }
+  ],
+  "gold_risks": [
+    {
+      "id": "nda_risk_1",
+      "title": "Extended Confidentiality Obligation",
+      "category": "Contractual",
+      "level": "LOW",
+      "key_indicators": ["term of three", "remain in effect"],
+      "why_it_matters": "Confidentiality obligations persist for 3 years after the effective date."
+    }
+  ],
+  "gold_key_info": {
+    "contract_amount": "Not specified",
+    "payment_deadlines": "Not specified",
+    "penalties": "Not specified",
+    "start_date": "July 1, 2026",
+    "end_date": "Not specified",
+    "renewal_date": "Not specified",
+    "notice_period": "Not specified",
+    "termination_conditions": "Not specified"
+  },
+  "gold_missing_provisions": [
+    "Definition of Non-Confidential Exceptions",
+    "Remedies and Injunctions",
+    "Return or Destruction of Information"
   ]
 }
-

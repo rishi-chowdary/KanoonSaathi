@@ -90,6 +90,32 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/risks")
+    public ResponseEntity<java.util.List<RiskFindingResponse>> getRisks(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id,
+            @RequestParam(name = "level", required = false) String level,
+            @RequestParam(name = "category", required = false) String category) {
+        java.util.List<RiskFindingResponse> response = documentService.getRiskFindings(principal.getId(), id, level, category);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/key-info")
+    public ResponseEntity<KeyInformationResponse> getKeyInfo(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        KeyInformationResponse response = documentService.getKeyInformation(principal.getId(), id);
+        return ResponseEntity.ok(response != null ? response : new KeyInformationResponse());
+    }
+
+    @GetMapping("/{id}/missing")
+    public ResponseEntity<java.util.List<MissingClauseWarningResponse>> getMissing(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        java.util.List<MissingClauseWarningResponse> response = documentService.getMissingClauseWarnings(principal.getId(), id);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{id}/clauses/{clauseId}/re-explain")
     public ResponseEntity<ReExplainClauseResponse> reExplainClause(
             @AuthenticationPrincipal UserPrincipal principal,

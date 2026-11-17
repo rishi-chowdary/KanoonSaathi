@@ -6,12 +6,18 @@ import com.lexilegal.entity.Document;
 import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
 import com.lexilegal.entity.ExtractedClause;
+import com.lexilegal.entity.ExtractedInformation;
+import com.lexilegal.entity.MissingClauseWarning;
+import com.lexilegal.entity.RiskFinding;
 import com.lexilegal.entity.User;
 import com.lexilegal.exception.ResourceNotFoundException;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.ExtractedClauseRepository;
+import com.lexilegal.repository.ExtractedInformationRepository;
+import com.lexilegal.repository.MissingClauseWarningRepository;
+import com.lexilegal.repository.RiskFindingRepository;
 import com.lexilegal.repository.UserRepository;
 import com.lexilegal.service.client.AiEngineClient;
 import jakarta.persistence.criteria.Predicate;
@@ -35,6 +41,9 @@ public class DocumentService {
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentAnalysisRepository documentAnalysisRepository;
     private final ExtractedClauseRepository extractedClauseRepository;
+    private final RiskFindingRepository riskFindingRepository;
+    private final ExtractedInformationRepository extractedInformationRepository;
+    private final MissingClauseWarningRepository missingClauseWarningRepository;
     private final UserRepository userRepository;
     private final DocumentStorageService storageService;
     private final DocumentAsyncPipeline asyncPipeline;
@@ -45,6 +54,9 @@ public class DocumentService {
             DocumentChunkRepository documentChunkRepository,
             DocumentAnalysisRepository documentAnalysisRepository,
             ExtractedClauseRepository extractedClauseRepository,
+            RiskFindingRepository riskFindingRepository,
+            ExtractedInformationRepository extractedInformationRepository,
+            MissingClauseWarningRepository missingClauseWarningRepository,
             UserRepository userRepository,
             DocumentStorageService storageService,
             DocumentAsyncPipeline asyncPipeline,
@@ -53,6 +65,9 @@ public class DocumentService {
         this.documentChunkRepository = documentChunkRepository;
         this.documentAnalysisRepository = documentAnalysisRepository;
         this.extractedClauseRepository = extractedClauseRepository;
+        this.riskFindingRepository = riskFindingRepository;
+        this.extractedInformationRepository = extractedInformationRepository;
+        this.missingClauseWarningRepository = missingClauseWarningRepository;
         this.userRepository = userRepository;
         this.storageService = storageService;
         this.asyncPipeline = asyncPipeline;
@@ -337,6 +352,65 @@ public class DocumentService {
                 simplifyResult != null ? simplifyResult.getWarnings() : Collections.emptyList(),
                 simplifyResult != null ? simplifyResult.getIsGrounded() : true
         );
+    }
+
+    public List<RiskFindingResponse> getRiskFindings(UUID userId, UUID documentId, String level, String category) {
+        Document doc = documentRepository.findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId()).orElse(null);
+        if (analysis == null) {
+            return Collections.emptyList();
+        }
+
+        Specification<RiskFinding> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("analysis").get("id"), analysis.getId()));
+
+            if (level != null && !level.isBlank()) {
+                predicates.add(cb.equal(cb.upper(root.get("level")), level.trim().toUpperCase()));
+            }
+
+            if (category != null && !category.isBlank()) {
+                predicates.add(cb.equal(cb.lower(root.get("category")), category.trim().toLowerCase()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return riskFindingRepository.findAll(spec, Sort.by(Sort.Direction.ASC, "sourcePage"))
+                .stream()
+                .map(RiskFindingResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public KeyInformationResponse getKeyInformation(UUID userId, UUID documentId) {
+        Document doc = documentRepository.findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId()).orElse(null);
+        if (analysis == null) {
+            return null;
+        }
+
+        return extractedInformationRepository.findByAnalysisId(analysis.getId())
+                .map(KeyInformationResponse::fromEntity)
+                .orElse(null);
+    }
+
+    public List<MissingClauseWarningResponse> getMissingClauseWarnings(UUID userId, UUID documentId) {
+        Document doc = documentRepository.findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId()).orElse(null);
+        if (analysis == null) {
+            return Collections.emptyList();
+        }
+
+        return missingClauseWarningRepository.findByAnalysisId(analysis.getId())
+                .stream()
+                .map(MissingClauseWarningResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Transactional

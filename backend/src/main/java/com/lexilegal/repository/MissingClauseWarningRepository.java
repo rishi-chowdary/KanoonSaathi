@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface MissingClauseWarningRepository extends JpaRepository<MissingClauseWarning, UUID> {
     List<MissingClauseWarning> findByAnalysisId(UUID analysisId);
+    void deleteByAnalysisId(UUID analysisId);
 }
 

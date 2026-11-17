@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface ExtractedInformationRepository extends JpaRepository<ExtractedInformation, UUID> {
     Optional<ExtractedInformation> findByAnalysisId(UUID analysisId);
+    void deleteByAnalysisId(UUID analysisId);
 }
 

@@ -6,15 +6,26 @@ import com.lexilegal.dto.ai.ClauseAnalysisResponseDto;
 import com.lexilegal.dto.ai.ClauseItemDto;
 import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
+import com.lexilegal.dto.ai.KeyInfoResponseDto;
+import com.lexilegal.dto.ai.MissingProvisionItemDto;
+import com.lexilegal.dto.ai.MissingProvisionsResponseDto;
 import com.lexilegal.dto.ai.PageDto;
+import com.lexilegal.dto.ai.RiskAnalysisResponseDto;
+import com.lexilegal.dto.ai.RiskItemDto;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
 import com.lexilegal.entity.ExtractedClause;
+import com.lexilegal.entity.ExtractedInformation;
+import com.lexilegal.entity.MissingClauseWarning;
+import com.lexilegal.entity.RiskFinding;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.ExtractedClauseRepository;
+import com.lexilegal.repository.ExtractedInformationRepository;
+import com.lexilegal.repository.MissingClauseWarningRepository;
+import com.lexilegal.repository.RiskFindingRepository;
 import com.lexilegal.service.client.AiEngineClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +48,9 @@ public class DocumentAsyncPipeline {
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentAnalysisRepository documentAnalysisRepository;
     private final ExtractedClauseRepository extractedClauseRepository;
+    private final RiskFindingRepository riskFindingRepository;
+    private final ExtractedInformationRepository extractedInformationRepository;
+    private final MissingClauseWarningRepository missingClauseWarningRepository;
     private final AiEngineClient aiEngineClient;
     private final ObjectMapper objectMapper;
 
@@ -45,12 +59,18 @@ public class DocumentAsyncPipeline {
             DocumentChunkRepository documentChunkRepository,
             DocumentAnalysisRepository documentAnalysisRepository,
             ExtractedClauseRepository extractedClauseRepository,
+            RiskFindingRepository riskFindingRepository,
+            ExtractedInformationRepository extractedInformationRepository,
+            MissingClauseWarningRepository missingClauseWarningRepository,
             AiEngineClient aiEngineClient,
             ObjectMapper objectMapper) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
         this.documentAnalysisRepository = documentAnalysisRepository;
         this.extractedClauseRepository = extractedClauseRepository;
+        this.riskFindingRepository = riskFindingRepository;
+        this.extractedInformationRepository = extractedInformationRepository;
+        this.missingClauseWarningRepository = missingClauseWarningRepository;
         this.aiEngineClient = aiEngineClient;
         this.objectMapper = objectMapper;
     }
@@ -256,6 +276,134 @@ public class DocumentAsyncPipeline {
             }
         } catch (Exception e) {
             log.error("clause extraction failed for document {}: {}", document.getId(), e.getMessage(), e);
+        }
+
+        // Step 3: Risk analysis
+        log.info("running risk analysis for document {}", document.getId());
+        try {
+            RiskAnalysisResponseDto riskResponse = aiEngineClient.analyzeRisks(
+                    document.getId().toString(),
+                    pages != null ? pages : Collections.emptyList(),
+                    chunks != null ? chunks : Collections.emptyList(),
+                    null
+            );
+            riskFindingRepository.deleteByAnalysisId(analysis.getId());
+            if (riskResponse != null && riskResponse.getRisks() != null && !riskResponse.getRisks().isEmpty()) {
+                List<RiskFinding> riskEntities = new ArrayList<>();
+                for (RiskItemDto item : riskResponse.getRisks()) {
+                    RiskFinding rf = new RiskFinding();
+                    rf.setAnalysis(analysis);
+                    rf.setTitle(item.getTitle() != null ? item.getTitle() : "Unspecified Risk");
+                    rf.setCategory(item.getCategory() != null ? item.getCategory() : "Contractual");
+                    rf.setLevel(item.getLevel() != null ? item.getLevel() : "MEDIUM");
+                    rf.setOriginalClause(item.getOriginalClause() != null ? item.getOriginalClause() : "");
+                    rf.setExplanation(item.getExplanation() != null ? item.getExplanation() : "");
+                    rf.setWhyItMatters(item.getWhyItMatters() != null ? item.getWhyItMatters() : "");
+                    rf.setPossibleConsequences(item.getPossibleConsequences() != null ? item.getPossibleConsequences() : "");
+                    rf.setSourcePage(item.getSourcePage() != null ? item.getSourcePage() : 1);
+                    rf.setEvidenceQuote(item.getEvidenceQuote() != null ? item.getEvidenceQuote() : "");
+                    rf.setQuoteVerified(Boolean.TRUE.equals(item.getQuoteVerified()));
+                    rf.setJurisdictionCaveat(item.getJurisdictionCaveat());
+                    rf.setProvenance(item.getProvenance() != null ? item.getProvenance() : "AI_INTERPRETATION");
+                    if (item.getSuggestedQuestions() != null) {
+                        rf.setSuggestedQuestions(objectMapper.writeValueAsString(item.getSuggestedQuestions()));
+                    } else {
+                        rf.setSuggestedQuestions("[]");
+                    }
+                    riskEntities.add(rf);
+                }
+                riskFindingRepository.saveAll(riskEntities);
+                log.info("persisted {} risk findings for document {}", riskEntities.size(), document.getId());
+            }
+        } catch (Exception e) {
+            log.error("risk analysis failed for document {}: {}", document.getId(), e.getMessage(), e);
+        }
+
+        // Step 4: Key information extraction
+        log.info("running key info extraction for document {}", document.getId());
+        try {
+            KeyInfoResponseDto keyInfoResponse = aiEngineClient.extractKeyInfo(
+                    document.getId().toString(),
+                    pages != null ? pages : Collections.emptyList(),
+                    chunks != null ? chunks : Collections.emptyList()
+            );
+            extractedInformationRepository.deleteByAnalysisId(analysis.getId());
+            if (keyInfoResponse != null) {
+                ExtractedInformation info = new ExtractedInformation();
+                info.setAnalysis(analysis);
+                if (keyInfoResponse.getContractAmount() != null) {
+                    info.setContractAmount(keyInfoResponse.getContractAmount().getValue() != null ? keyInfoResponse.getContractAmount().getValue() : "Not specified");
+                    info.setContractAmountPage(keyInfoResponse.getContractAmount().getSourcePage());
+                }
+                if (keyInfoResponse.getPaymentDeadlines() != null) {
+                    info.setPaymentDeadlines(keyInfoResponse.getPaymentDeadlines().getValue() != null ? keyInfoResponse.getPaymentDeadlines().getValue() : "Not specified");
+                    info.setPaymentDeadlinesPage(keyInfoResponse.getPaymentDeadlines().getSourcePage());
+                }
+                if (keyInfoResponse.getPenalties() != null) {
+                    info.setPenalties(keyInfoResponse.getPenalties().getValue() != null ? keyInfoResponse.getPenalties().getValue() : "Not specified");
+                    info.setPenaltiesPage(keyInfoResponse.getPenalties().getSourcePage());
+                }
+                if (keyInfoResponse.getStartDate() != null) {
+                    info.setStartDate(keyInfoResponse.getStartDate().getValue() != null ? keyInfoResponse.getStartDate().getValue() : "Not specified");
+                    info.setStartDatePage(keyInfoResponse.getStartDate().getSourcePage());
+                }
+                if (keyInfoResponse.getEndDate() != null) {
+                    info.setEndDate(keyInfoResponse.getEndDate().getValue() != null ? keyInfoResponse.getEndDate().getValue() : "Not specified");
+                    info.setEndDatePage(keyInfoResponse.getEndDate().getSourcePage());
+                }
+                if (keyInfoResponse.getRenewalDate() != null) {
+                    info.setRenewalDate(keyInfoResponse.getRenewalDate().getValue() != null ? keyInfoResponse.getRenewalDate().getValue() : "Not specified");
+                    info.setRenewalDatePage(keyInfoResponse.getRenewalDate().getSourcePage());
+                }
+                if (keyInfoResponse.getNoticePeriod() != null) {
+                    info.setNoticePeriod(keyInfoResponse.getNoticePeriod().getValue() != null ? keyInfoResponse.getNoticePeriod().getValue() : "Not specified");
+                    info.setNoticePeriodPage(keyInfoResponse.getNoticePeriod().getSourcePage());
+                }
+                if (keyInfoResponse.getTerminationConditions() != null) {
+                    info.setTerminationConditions(keyInfoResponse.getTerminationConditions().getValue() != null ? keyInfoResponse.getTerminationConditions().getValue() : "Not specified");
+                    info.setTerminationConditionsPage(keyInfoResponse.getTerminationConditions().getSourcePage());
+                }
+                if (keyInfoResponse.getObligations() != null) {
+                    info.setObligations(objectMapper.writeValueAsString(keyInfoResponse.getObligations()));
+                }
+                if (keyInfoResponse.getImportantDates() != null) {
+                    info.setImportantDates(objectMapper.writeValueAsString(keyInfoResponse.getImportantDates()));
+                }
+                extractedInformationRepository.save(info);
+                log.info("persisted extracted information for document {}", document.getId());
+            }
+        } catch (Exception e) {
+            log.error("key info extraction failed for document {}: {}", document.getId(), e.getMessage(), e);
+        }
+
+        // Step 5: Missing provisions analysis
+        log.info("running missing provisions analysis for document {}", document.getId());
+        try {
+            MissingProvisionsResponseDto missingResponse = aiEngineClient.analyzeMissingProvisions(
+                    document.getId().toString(),
+                    pages != null ? pages : Collections.emptyList(),
+                    chunks != null ? chunks : Collections.emptyList(),
+                    summaryDto.getDocumentType()
+            );
+            missingClauseWarningRepository.deleteByAnalysisId(analysis.getId());
+            if (missingResponse != null && missingResponse.getMissingProvisions() != null && !missingResponse.getMissingProvisions().isEmpty()) {
+                List<MissingClauseWarning> warnings = new ArrayList<>();
+                for (MissingProvisionItemDto item : missingResponse.getMissingProvisions()) {
+                    MissingClauseWarning w = new MissingClauseWarning();
+                    w.setAnalysis(analysis);
+                    w.setCategory(item.getCategory() != null ? item.getCategory() : "General");
+                    w.setClauseName(item.getClauseName() != null ? item.getClauseName() : "Unnamed Provision");
+                    w.setWhyItMatters(item.getWhyItMatters() != null ? item.getWhyItMatters() : "");
+                    w.setTypicalProvision(item.getTypicalProvision() != null ? item.getTypicalProvision() : "");
+                    w.setRiskLevel(item.getRiskLevel() != null ? item.getRiskLevel() : "MEDIUM");
+                    w.setLabel(item.getLabel() != null ? item.getLabel() : "Possible omission");
+                    warnings.add(w);
+                }
+                missingClauseWarningRepository.saveAll(warnings);
+                log.info("persisted {} missing clause warnings for document {}", warnings.size(), document.getId());
+            }
+        } catch (Exception e) {
+            log.error("missing provisions analysis failed for document {}: {}", document.getId(), e.getMessage(), e);
         }
 
         document.setStatus("COMPLETED");
