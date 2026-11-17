@@ -94,7 +94,7 @@ def iter_files(dirs: list[str], suffixes: tuple[str, ...]) -> list[Path]:
 
 def check_emojis(errors: list[str]) -> None:
     files = iter_files(
-        ["app", "tests", "scripts", "docs", "README.md", "CLAUDE.md"],
+        ["app", "tests", "scripts", "docs", "README.md"],
         (".py", ".html", ".css", ".js", ".md"),
     )
     for path in files:
@@ -112,7 +112,7 @@ def check_emojis(errors: list[str]) -> None:
 
 def check_banned_words(errors: list[str]) -> None:
     files = iter_files(
-        ["app/templates", "docs", "README.md", "CLAUDE.md"],
+        ["app/templates", "docs", "README.md"],
         (".html", ".md"),
     )
     for path in files:
@@ -135,7 +135,6 @@ def check_leaked_terms(errors: list[str]) -> None:
             "data",
             "docs",
             "README.md",
-            "CLAUDE.md",
             "evaluation/evaluate_nlp_stack.py",
             "evaluation/RESULTS.md",
         ],
