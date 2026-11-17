@@ -12,8 +12,8 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 2 | Database Schema, All Entities & Complete Auth Flow (Backend + Frontend) | Completed | 2026-11-16 |
 | Phase 3 | Document Extraction, OCR, Chunking, Upload Pipeline & Text Preview (Full Stack) | Completed | 2026-11-17 |
 | Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Completed | 2026-11-17 |
-| Phase 5 | Spring Boot Backend: Document Storage, Hash Caching & Async Pipeline | Not Started | - |
-| Phase 6 | Spring Boot Backend: Analysis Persistence & Full-Text Search Retrieval | Not Started | - |
+| Phase 5 | Important Clauses Extraction (Two-Pass, 17 Categories, 3 Explanation Modes, Filtering & UI) | Completed | 2026-11-17 |
+| Phase 6 | Risk Identification & Grounded Legal Risk Analysis | Not Started | - |
 | Phase 7 | Spring Boot Backend: OpenPDF Report Generation & Dashboard Statistics | Not Started | - |
 | Phase 8 | Frontend: Document Upload, Progress Polling & File Validation | Not Started | - |
 | Phase 9 | Frontend: Analysis Workspace, Side-by-Side Viewer & Grounded Chat | Not Started | - |
@@ -397,15 +397,81 @@ npm run build
 node frontend/test-phase4-e2e.cjs
 ```
 
-### Phase 5: Spring Boot Backend — Document Storage, Hash Caching & Async Pipeline
-- [ ] Implement Document entity and DocumentRepository
-- [ ] Implement file upload service with 10MB limit and magic-byte validation
-- [ ] Implement SHA-256 file hashing and duplicate detection per user
-- [ ] Configure Spring `@Async` task executor for background processing
-- [ ] Implement HTTP client to communicate with FastAPI internal endpoints (`AiEngineClient`)
-- [ ] Implement async document processing pipeline: UPLOADED -> EXTRACTING -> ANALYZING -> COMPLETED/FAILED
-- [ ] Implement document status polling endpoint (`GET /api/documents/{id}/status`)
-- [ ] Write integration tests for upload, deduplication, and async status flow
+### Phase 5: Important Clauses Extraction (Two-Pass, 17 Categories, 3 Explanation Modes, Filtering & UI)
+- [x] Schema & Prompts: Defined Pydantic schemas in `app/schemas/clause.py` supporting 17 standard categories + `Other` (with `custom_label`), 3 explanation modes (`simplified_simple`, `simplified_detailed`, `simplified_professional`), importance ratings, page and section references, and grounded evidence quotes.
+- [x] Two-Pass Extraction Architecture:
+  - Pass 1: Per-chunk clause extraction wrapped in `<document_content>` delimiters with instruction injection defenses.
+  - Chunk Overlap Deduplication: Merged duplicate clauses spanning chunk overlap using section references and text similarity metrics (keeping the longest text and earliest page).
+  - Pass 2: Batch explanation generation producing 3 distinct levels: Simple English, Detailed (preserving all exceptions and conditions), and Professional.
+  - Number & Date Hallucination Post-Check: Regex scanner extracting numbers, currency, percentages, and dates from explanations and confirming presence in original text.
+  - Quote Verification: Grounding quotes verified against document pages with fuzzy match ratio >= 0.90.
+- [x] AI Engine API: Exposed `POST /internal/analyze/clauses` and `POST /analyze/clauses`.
+- [x] Spring Boot Integration:
+  - Implemented DTOs (`ClauseItemDto`, `ClauseAnalysisRequestDto`, `ClauseAnalysisResponseDto`, `ClauseResponse`).
+  - Added `AiEngineClient.analyzeClauses(...)` communicating over internal RestClient.
+  - Extended async processing pipeline in `DocumentAsyncPipeline.java`: persists extracted clauses to `extracted_clauses` table linked to `DocumentAnalysis`.
+  - Added endpoint `GET /api/documents/{id}/clauses` in `DocumentController.java` with query filters (`category`, `importance`, `search`), pagination, and strict per-user ownership enforcement (returning 404 for unauthorized access).
+- [x] Frontend Important Clauses Workspace:
+  - Created `ClauseCard.jsx` with category chips, importance badges (`HIGH`, `MEDIUM`, `LOW`), provenance badges, local/global explanation mode toggle, expandable "Show original text" accordion with key quote callout, and copy button.
+  - Created `ClausesTab.jsx` with real-time search, category dropdown, importance filter, global mode switcher, pagination, and a sliding "View Page" side panel drawer for original text inspection.
+  - Integrated `ClausesTab` into `AnalysisPage.jsx`.
+
+**What was built:**
+- `ai-engine/app/schemas/clause.py`: Pydantic models for raw chunk clauses, explanations, batch responses, and full clause items.
+- `ai-engine/app/prompts/v1/clause_chunk_prompt.txt`: Versioned prompt template for per-chunk clause categorization.
+- `ai-engine/app/prompts/v1/clause_simplify_prompt.txt`: Batch prompt template for generating 3 explanation levels without hallucinating numbers/dates.
+- `ai-engine/app/services/clause_service.py`: Pipeline orchestrating chunk extraction, deduplication, batch explanation generation, number/date validation, and quote verification.
+- `ai-engine/tests/test_clauses.py`: 4 pytest unit tests covering deduplication, number/date validation, mock provider pipeline, and endpoint authentication.
+- `backend/src/main/java/com/lexilegal/dto/ai/ClauseItemDto.java`
+- `backend/src/main/java/com/lexilegal/dto/ai/ClauseAnalysisRequestDto.java`
+- `backend/src/main/java/com/lexilegal/dto/ai/ClauseAnalysisResponseDto.java`
+- `backend/src/main/java/com/lexilegal/dto/response/ClauseResponse.java`
+- `backend/src/main/java/com/lexilegal/repository/ExtractedClauseRepository.java`: Added `JpaSpecificationExecutor` and `deleteByAnalysisId`.
+- `backend/src/main/java/com/lexilegal/service/DocumentService.java`: Added `getClauses` with dynamic JPA specifications for category, importance, and text search.
+- `backend/src/main/java/com/lexilegal/service/DocumentAsyncPipeline.java`: Automated clause extraction pass following summary analysis.
+- `backend/src/main/java/com/lexilegal/controller/DocumentController.java`: Added `GET /api/documents/{id}/clauses`.
+- `backend/src/test/java/com/lexilegal/controller/DocumentControllerTest.java`: 14 comprehensive tests including clause filtering, pagination, unauthenticated 401, and cross-tenant 404.
+- `frontend/src/components/clauses/ClauseCard.jsx`
+- `frontend/src/components/clauses/ClausesTab.jsx`
+- `frontend/src/pages/AnalysisPage.jsx`: Replaced placeholder tab with live `ClausesTab`.
+- `evaluation/verify_phase5_live.py`: Automated live verification script.
+- `frontend/test-phase5-e2e.cjs`: Puppeteer browser end-to-end test.
+
+**How it was verified:**
+- AI Engine Unit Tests: `cd ai-engine && .venv/bin/pytest tests/test_clauses.py -v` -> 4 passed. Full suite `pytest tests/` -> 30 passed with 0 failures.
+- Backend Integration Tests: `cd backend && mvn clean test` -> 22 passed with 0 failures. `DocumentControllerTest` confirmed clauses endpoint filtering and tenant isolation.
+- Live Pipeline Verification: `python3 evaluation/verify_phase5_live.py` executed against live backend and Ollama:
+  - 4 clauses extracted from `clean_nda.pdf`: Definitions (`Other`), Non-Disclosure Obligations (`Confidentiality`, HIGH), Term and Termination (`Term and Renewal`, MEDIUM), Governing Law (`Governing Law`, LOW).
+  - Quote verification rate: 75.0% (3/4 verified; unverified quote properly flagged).
+  - Category filter (`?category=Other`), importance filter (`?importance=HIGH`), and text search (`?search=Definitions`) verified.
+  - Cross-tenant access: User B requesting User A's clauses returned HTTP 404.
+  - Unauthenticated access: returned HTTP 401.
+- Frontend E2E Browser Test (`node frontend/test-phase5-e2e.cjs` via headless Chrome):
+  - User logged in, opened document workspace, switched to Clauses tab.
+  - Verified 4 clause cards rendered with category chips and importance badges.
+  - Verified explanation mode toggling (Simple English, Detailed, Professional).
+  - Verified original text accordion expansion.
+  - Verified "View Page 1" side drawer opens and displays page text.
+  - Verified keyword search filters to matching clauses.
+  - Verified filter reset restores all clauses.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run AI Engine unit tests
+cd ai-engine
+.venv/bin/pytest tests/test_clauses.py -v
+
+# 2. Run Backend tests
+cd ../backend
+mvn test
+
+# 3. Run Live Pipeline Verification
+cd ..
+python3 evaluation/verify_phase5_live.py
+
+# 4. Run Frontend E2E Browser Verification
+node frontend/test-phase5-e2e.cjs
+```
 
 ### Phase 6: Spring Boot Backend — Analysis Persistence & Full-Text Search Retrieval
 - [ ] Implement entities and repositories for DocumentAnalysis, ExtractedClause, RiskFinding, ExtractedInformation, MissingClauseWarning, and DocumentChunk

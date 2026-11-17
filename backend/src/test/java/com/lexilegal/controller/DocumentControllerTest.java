@@ -6,9 +6,11 @@ import com.lexilegal.dto.response.AuthResponse;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.User;
 import com.lexilegal.entity.DocumentAnalysis;
+import com.lexilegal.entity.ExtractedClause;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
+import com.lexilegal.repository.ExtractedClauseRepository;
 import com.lexilegal.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +50,9 @@ class DocumentControllerTest {
     @Autowired
     private DocumentAnalysisRepository documentAnalysisRepository;
 
+    @Autowired
+    private ExtractedClauseRepository extractedClauseRepository;
+
     private String userAToken;
     private User userA;
     private String userBToken;
@@ -55,6 +60,7 @@ class DocumentControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        extractedClauseRepository.deleteAll();
         documentAnalysisRepository.deleteAll();
         documentChunkRepository.deleteAll();
         documentRepository.deleteAll();
@@ -357,5 +363,110 @@ class DocumentControllerTest {
         mockMvc.perform(post("/api/documents/" + docId + "/reanalyze")
                         .header("Authorization", "Bearer " + userBToken))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetClausesSuccessAndFiltering() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 sample for clause filtering".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "clauses.pdf", "application/pdf", pdfContent);
+
+        MvcResult uploadResult = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        String docId = objectMapper.readTree(uploadResult.getResponse().getContentAsString()).get("id").asText();
+        Document doc = documentRepository.findById(UUID.fromString(docId)).orElseThrow();
+
+        DocumentAnalysis analysis = new DocumentAnalysis();
+        analysis.setDocument(doc);
+        analysis.setTitle("Clause Test Agreement");
+        analysis.setDocumentType("Contract");
+        analysis.setPurpose("Testing");
+        analysis.setSummaryShort("Short");
+        analysis.setSummaryDetailed("Detailed");
+        analysis.setLlmProvider("mock");
+        analysis.setLlmModel("mock-v1");
+        analysis = documentAnalysisRepository.save(analysis);
+
+        // Clause 1: Confidentiality, HIGH
+        ExtractedClause c1 = new ExtractedClause();
+        c1.setAnalysis(analysis);
+        c1.setTitle("Mutual Confidentiality");
+        c1.setCategory("Confidentiality");
+        c1.setOriginalText("Parties agree to hold all confidential information secret.");
+        c1.setSimplifiedSimple("You must keep information secret.");
+        c1.setSimplifiedDetailed("Comprehensive detailed confidentiality terms.");
+        c1.setSimplifiedProfessional("Professional confidentiality covenants.");
+        c1.setImportance("HIGH");
+        c1.setAffectedParty("Both parties");
+        c1.setSourcePage(1);
+        c1.setEvidenceQuote("hold all confidential information secret");
+        c1.setQuoteVerified(true);
+        c1.setProvenance("EXTRACTED");
+        extractedClauseRepository.save(c1);
+
+        // Clause 2: Termination, MEDIUM
+        ExtractedClause c2 = new ExtractedClause();
+        c2.setAnalysis(analysis);
+        c2.setTitle("Termination for Convenience");
+        c2.setCategory("Termination");
+        c2.setOriginalText("Either party may cancel with 30 days notice.");
+        c2.setSimplifiedSimple("Either party can cancel anytime with notice.");
+        c2.setSimplifiedDetailed("Termination requires thirty days advance notice.");
+        c2.setSimplifiedProfessional("Provides unilateral termination rights.");
+        c2.setImportance("MEDIUM");
+        c2.setAffectedParty("Both parties");
+        c2.setSourcePage(2);
+        c2.setEvidenceQuote("cancel with 30 days notice");
+        c2.setQuoteVerified(true);
+        c2.setProvenance("EXTRACTED");
+        extractedClauseRepository.save(c2);
+
+        // 1. Fetch all clauses
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements", is(2)))
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].category", is("Confidentiality")))
+                .andExpect(jsonPath("$.content[0].importance", is("HIGH")))
+                .andExpect(jsonPath("$.content[0].quoteVerified", is(true)))
+                .andExpect(jsonPath("$.content[0].simplifiedSimple", is("You must keep information secret.")));
+
+        // 2. Filter by category
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses")
+                        .param("category", "Termination")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements", is(1)))
+                .andExpect(jsonPath("$.content[0].category", is("Termination")))
+                .andExpect(jsonPath("$.content[0].title", is("Termination for Convenience")));
+
+        // 3. Filter by importance
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses")
+                        .param("importance", "HIGH")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements", is(1)))
+                .andExpect(jsonPath("$.content[0].category", is("Confidentiality")));
+
+        // 4. Search text
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses")
+                        .param("search", "cancel")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements", is(1)))
+                .andExpect(jsonPath("$.content[0].title", is("Termination for Convenience")));
+
+        // 5. Cross-tenant access: User B requesting User A's clauses returns 404
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses")
+                        .header("Authorization", "Bearer " + userBToken))
+                .andExpect(status().isNotFound());
+
+        // 6. Unauthenticated returns 401
+        mockMvc.perform(get("/api/documents/" + docId + "/clauses"))
+                .andExpect(status().isUnauthorized());
     }
 }

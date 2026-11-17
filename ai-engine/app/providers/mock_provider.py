@@ -11,6 +11,12 @@ from app.schemas.summary import (
     GroundedItem,
     PartyItem,
 )
+from app.schemas.clause import (
+    ChunkClauseExtraction,
+    RawClauseItem,
+    BatchExplanationsResponse,
+    ClauseExplanations,
+)
 
 logger = logging.getLogger("ai_engine.mock_provider")
 T = TypeVar("T", bound=BaseModel)
@@ -115,6 +121,71 @@ class MockProvider(LLMProvider):
                 conditions=[GroundedItem(text="Confidential treatment required", evidence_quote="Confidential Information", source_page=1)],
                 obligations=[GroundedItem(text="Shall not disclose", evidence_quote="shall not disclose", source_page=1)],
                 financial_terms=[GroundedItem(text="Not specified", evidence_quote="Not specified", source_page=1)],
+            )
+            return obj  # type: ignore
+
+        if schema is ChunkClauseExtraction:
+            obj = ChunkClauseExtraction(
+                clauses=[
+                    RawClauseItem(
+                        title="Confidential Information and Non-Disclosure",
+                        category="Confidentiality",
+                        custom_label=None,
+                        original_text="Recipient agrees to hold all Confidential Information in strict confidence and not disclose it to any third party for a period of thirty (30) days.",
+                        evidence_quote="hold all Confidential Information in strict confidence",
+                        importance="HIGH",
+                        affected_party="Receiving Party",
+                        source_page=1,
+                        section_reference="Section 2.1",
+                    ),
+                    RawClauseItem(
+                        title="Termination for Convenience",
+                        category="Termination",
+                        custom_label=None,
+                        original_text="Either party may terminate this Agreement by providing thirty (30) days prior written notice.",
+                        evidence_quote="by providing thirty (30) days prior written notice",
+                        importance="MEDIUM",
+                        affected_party="Both parties",
+                        source_page=1,
+                        section_reference="Section 4.1",
+                    ),
+                    RawClauseItem(
+                        title="Security Protocol Guidelines",
+                        category="Other",
+                        custom_label="Security Standards",
+                        original_text="The contractor must adhere to the designated data isolation guidelines.",
+                        evidence_quote="adhere to the designated data isolation guidelines",
+                        importance="LOW",
+                        affected_party="Contractor",
+                        source_page=1,
+                        section_reference="Section 6.1",
+                    ),
+                ]
+            )
+            return obj  # type: ignore
+
+        if schema is BatchExplanationsResponse:
+            obj = BatchExplanationsResponse(
+                explanations=[
+                    ClauseExplanations(
+                        clause_index=0,
+                        simplified_simple="You must keep all shared confidential information secret and not share it with others for 30 days.",
+                        simplified_detailed="The receiving party is strictly prohibited from disclosing confidential information to third parties for a duration of thirty (30) days, unless authorized in writing.",
+                        simplified_professional="Imposes a 30-day non-disclosure obligation on the receiving party protecting shared business and technical disclosures.",
+                    ),
+                    ClauseExplanations(
+                        clause_index=1,
+                        simplified_simple="Either party can cancel this agreement at any time by giving 30 days written notice.",
+                        simplified_detailed="Allows unilateral termination for convenience by either party subject to a mandatory 30-day advance written notice requirement.",
+                        simplified_professional="Provides bilateral termination for convenience with a standard 30-day notice period.",
+                    ),
+                    ClauseExplanations(
+                        clause_index=2,
+                        simplified_simple="The contractor must follow all required data safety rules.",
+                        simplified_detailed="The contractor is required to strictly observe all designated security protocols regarding data isolation.",
+                        simplified_professional="Mandates strict adherence to security and data isolation protocols for contractor personnel.",
+                    ),
+                ]
             )
             return obj  # type: ignore
 

@@ -3,8 +3,10 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.schemas.extraction import ExtractionResponse, ExtractionErrorResponse
 from app.schemas.summary import DocumentSummaryRequest, DocumentSummaryResponse
+from app.schemas.clause import ClauseAnalysisRequest, ClauseAnalysisResponse
 from app.services.extractor import process_document, ExtractionException
 from app.services.summary_service import analyze_document_summary
+from app.services.clause_service import analyze_document_clauses
 from app.providers import get_llm_provider
 
 router = APIRouter()
@@ -75,3 +77,31 @@ async def analyze_summary(request: DocumentSummaryRequest):
             status_code=500,
             content={"code": "SUMMARY_GENERATION_FAILED", "detail": str(e)},
         )
+
+
+@router.post(
+    "/internal/analyze/clauses",
+    response_model=ClauseAnalysisResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+@router.post(
+    "/analyze/clauses",
+    response_model=ClauseAnalysisResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+async def analyze_clauses(request: ClauseAnalysisRequest):
+    provider = get_llm_provider()
+    try:
+        response = await analyze_document_clauses(
+            document_id=request.document_id,
+            pages=request.pages,
+            chunks=request.chunks,
+            provider=provider,
+        )
+        return response
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"code": "CLAUSE_EXTRACTION_FAILED", "detail": str(e)},
+        )
+

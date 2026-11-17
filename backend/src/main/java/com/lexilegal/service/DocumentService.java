@@ -4,15 +4,20 @@ import com.lexilegal.dto.response.*;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
+import com.lexilegal.entity.ExtractedClause;
 import com.lexilegal.entity.User;
 import com.lexilegal.exception.ResourceNotFoundException;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
+import com.lexilegal.repository.ExtractedClauseRepository;
 import com.lexilegal.repository.UserRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +32,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentAnalysisRepository documentAnalysisRepository;
+    private final ExtractedClauseRepository extractedClauseRepository;
     private final UserRepository userRepository;
     private final DocumentStorageService storageService;
     private final DocumentAsyncPipeline asyncPipeline;
@@ -35,12 +41,14 @@ public class DocumentService {
             DocumentRepository documentRepository,
             DocumentChunkRepository documentChunkRepository,
             DocumentAnalysisRepository documentAnalysisRepository,
+            ExtractedClauseRepository extractedClauseRepository,
             UserRepository userRepository,
             DocumentStorageService storageService,
             DocumentAsyncPipeline asyncPipeline) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
         this.documentAnalysisRepository = documentAnalysisRepository;
+        this.extractedClauseRepository = extractedClauseRepository;
         this.userRepository = userRepository;
         this.storageService = storageService;
         this.asyncPipeline = asyncPipeline;
@@ -217,6 +225,66 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("document not found"));
 
         asyncPipeline.reanalyzeDocumentAsync(doc.getId());
+    }
+
+    public PageResponse<ClauseResponse> getClauses(
+            UUID userId,
+            UUID documentId,
+            String category,
+            String importance,
+            String search,
+            int page,
+            int size) {
+        Document doc = documentRepository.findByIdAndUserId(documentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId()).orElse(null);
+        if (analysis == null) {
+            return new PageResponse<>(Collections.emptyList(), page, size, 0, 0);
+        }
+
+        Pageable pageable = PageRequest.of(
+                Math.max(0, page),
+                Math.max(1, size),
+                Sort.by(Sort.Direction.ASC, "sourcePage", "createdAt")
+        );
+
+        Specification<ExtractedClause> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("analysis").get("id"), analysis.getId()));
+
+            if (category != null && !category.isBlank() && !category.equalsIgnoreCase("ALL")) {
+                predicates.add(cb.equal(cb.lower(root.get("category")), category.trim().toLowerCase()));
+            }
+
+            if (importance != null && !importance.isBlank() && !importance.equalsIgnoreCase("ALL")) {
+                predicates.add(cb.equal(cb.upper(root.get("importance")), importance.trim().toUpperCase()));
+            }
+
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                Predicate titleMatch = cb.like(cb.lower(root.get("title")), pattern);
+                Predicate textMatch = cb.like(cb.lower(root.get("originalText")), pattern);
+                Predicate simpleMatch = cb.like(cb.lower(root.get("simplifiedSimple")), pattern);
+                Predicate refMatch = cb.like(cb.lower(root.get("sectionReference")), pattern);
+                predicates.add(cb.or(titleMatch, textMatch, simpleMatch, refMatch));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<ExtractedClause> pageResult = extractedClauseRepository.findAll(spec, pageable);
+        List<ClauseResponse> dtos = pageResult.getContent().stream()
+                .map(ClauseResponse::fromEntity)
+                .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                dtos,
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages()
+        );
     }
 
     @Transactional

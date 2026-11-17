@@ -75,6 +75,21 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/clauses")
+    public ResponseEntity<PageResponse<ClauseResponse>> getClauses(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "importance", required = false) String importance,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        PageResponse<ClauseResponse> response = documentService.getClauses(
+                principal.getId(), id, category, importance, search, page, size
+        );
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{id}/reanalyze")
     public ResponseEntity<Map<String, String>> reanalyze(
             @AuthenticationPrincipal UserPrincipal principal,

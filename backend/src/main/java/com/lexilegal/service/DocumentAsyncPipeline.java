@@ -2,21 +2,26 @@ package com.lexilegal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lexilegal.dto.ai.ChunkDto;
+import com.lexilegal.dto.ai.ClauseAnalysisResponseDto;
+import com.lexilegal.dto.ai.ClauseItemDto;
 import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
 import com.lexilegal.dto.ai.PageDto;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
+import com.lexilegal.entity.ExtractedClause;
 import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
+import com.lexilegal.repository.ExtractedClauseRepository;
 import com.lexilegal.service.client.AiEngineClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +36,7 @@ public class DocumentAsyncPipeline {
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
     private final DocumentAnalysisRepository documentAnalysisRepository;
+    private final ExtractedClauseRepository extractedClauseRepository;
     private final AiEngineClient aiEngineClient;
     private final ObjectMapper objectMapper;
 
@@ -38,11 +44,13 @@ public class DocumentAsyncPipeline {
             DocumentRepository documentRepository,
             DocumentChunkRepository documentChunkRepository,
             DocumentAnalysisRepository documentAnalysisRepository,
+            ExtractedClauseRepository extractedClauseRepository,
             AiEngineClient aiEngineClient,
             ObjectMapper objectMapper) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
         this.documentAnalysisRepository = documentAnalysisRepository;
+        this.extractedClauseRepository = extractedClauseRepository;
         this.aiEngineClient = aiEngineClient;
         this.objectMapper = objectMapper;
     }
@@ -176,7 +184,8 @@ public class DocumentAsyncPipeline {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void runAnalysis(Document document, List<PageDto> pages, List<ChunkDto> chunks) throws Exception {
+    @Transactional
+    public void runAnalysis(Document document, List<PageDto> pages, List<ChunkDto> chunks) throws Exception {
         document.setStatus("ANALYZING");
         documentRepository.save(document);
         log.info("running summary analysis for document {}", document.getId());
@@ -207,7 +216,47 @@ public class DocumentAsyncPipeline {
         analysis.setLlmModel(summaryDto.getLlmModel() != null ? summaryDto.getLlmModel() : "gemini-1.5-flash");
         analysis.setVerificationRate(summaryDto.getVerificationRate() != null ? summaryDto.getVerificationRate() : java.math.BigDecimal.ZERO);
 
-        documentAnalysisRepository.save(analysis);
+        analysis = documentAnalysisRepository.save(analysis);
+
+        // Run clause extraction pass
+        log.info("running clause extraction for document {}", document.getId());
+        try {
+            ClauseAnalysisResponseDto clauseResponse = aiEngineClient.analyzeClauses(
+                    document.getId().toString(),
+                    pages != null ? pages : Collections.emptyList(),
+                    chunks != null ? chunks : Collections.emptyList()
+            );
+
+            // Clean previous clauses if reanalyzing
+            extractedClauseRepository.deleteByAnalysisId(analysis.getId());
+
+            if (clauseResponse != null && clauseResponse.getClauses() != null && !clauseResponse.getClauses().isEmpty()) {
+                List<ExtractedClause> clauseEntities = new ArrayList<>();
+                for (ClauseItemDto item : clauseResponse.getClauses()) {
+                    ExtractedClause entity = new ExtractedClause();
+                    entity.setAnalysis(analysis);
+                    entity.setTitle(item.getTitle() != null ? item.getTitle() : "Untitled Clause");
+                    entity.setCategory(item.getCategory() != null ? item.getCategory() : "Other");
+                    entity.setCustomLabel(item.getCustomLabel());
+                    entity.setOriginalText(item.getOriginalText() != null ? item.getOriginalText() : "");
+                    entity.setSimplifiedSimple(item.getSimplifiedSimple() != null ? item.getSimplifiedSimple() : "");
+                    entity.setSimplifiedDetailed(item.getSimplifiedDetailed() != null ? item.getSimplifiedDetailed() : "");
+                    entity.setSimplifiedProfessional(item.getSimplifiedProfessional() != null ? item.getSimplifiedProfessional() : "");
+                    entity.setImportance(item.getImportance() != null ? item.getImportance() : "MEDIUM");
+                    entity.setAffectedParty(item.getAffectedParty() != null ? item.getAffectedParty() : "Both parties");
+                    entity.setSourcePage(item.getSourcePage() != null ? item.getSourcePage() : 1);
+                    entity.setSectionReference(item.getSectionReference());
+                    entity.setEvidenceQuote(item.getEvidenceQuote() != null ? item.getEvidenceQuote() : "");
+                    entity.setQuoteVerified(Boolean.TRUE.equals(item.getQuoteVerified()));
+                    entity.setProvenance(item.getProvenance() != null ? item.getProvenance() : "EXTRACTED");
+                    clauseEntities.add(entity);
+                }
+                extractedClauseRepository.saveAll(clauseEntities);
+                log.info("persisted {} extracted clauses for document {}", clauseEntities.size(), document.getId());
+            }
+        } catch (Exception e) {
+            log.error("clause extraction failed for document {}: {}", document.getId(), e.getMessage(), e);
+        }
 
         document.setStatus("COMPLETED");
         document.setFailureReason(null);

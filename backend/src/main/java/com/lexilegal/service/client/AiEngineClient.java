@@ -1,6 +1,8 @@
 package com.lexilegal.service.client;
 
 import com.lexilegal.dto.ai.ChunkDto;
+import com.lexilegal.dto.ai.ClauseAnalysisRequestDto;
+import com.lexilegal.dto.ai.ClauseAnalysisResponseDto;
 import com.lexilegal.dto.ai.DocumentSummaryRequestDto;
 import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
@@ -81,6 +83,17 @@ public class AiEngineClient {
                 .body(req)
                 .retrieve()
                 .body(DocumentSummaryResponseDto.class);
+    }
+
+    public ClauseAnalysisResponseDto analyzeClauses(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
+        ClauseAnalysisRequestDto req = new ClauseAnalysisRequestDto(documentId, pages, chunks);
+        return restClient.post()
+                .uri("/internal/analyze/clauses")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(ClauseAnalysisResponseDto.class);
     }
 }
 
