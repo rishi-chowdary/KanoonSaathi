@@ -23,8 +23,8 @@ Nothing may be dropped silently. Every feature has a documented target implement
 | **Scanned Document OCR** | Tesseract OCR via `pytesseract` for low-text pages | PyMuPDF page rendering + `pytesseract` + Pillow | `tests/test_extraction.py::test_extract_scanned_pdf_with_ocr` | **Verified (M2)** |
 | **Clause Segmentation** | Multi-pass LLM heading and boundary discovery | Regex heading detection + NLTK punkt with legal abbreviation fixes | `tests/test_segmentation.py::test_gate_100_percent_extracted_clauses_are_exact_slices` | **Verified (M2)** |
 | **Exact Source Slicing** | Approximated substring evidence quotes | Character offset slicing (`text[start:end]`); `original_text` is exact slice | `tests/test_segmentation.py::test_gate_100_percent_extracted_clauses_are_exact_slices` | **Verified (M2)** |
-| **Document Status Stepper** | Status enum (`UPLOADED`, `EXTRACTING`, `ANALYZING`, `COMPLETED`, `FAILED`) | SQLAlchemy status column + background `ThreadPoolExecutor` | `tests/test_jobs.py::test_async_job_lifecycle` | Planned (M2) |
-| **Crash Recovery** | `StartupJobRecoveryListener.java` transitions stuck jobs to `FAILED` | Flask app factory startup hook marks stranded jobs `FAILED` | `tests/test_jobs.py::test_startup_recovery_of_stuck_jobs` | Planned (M2) |
+| **Document Status Stepper** | Status enum (`UPLOADED`, `EXTRACTING`, `ANALYZING`, `COMPLETED`, `FAILED`) | SQLAlchemy status column + background `ThreadPoolExecutor` | `tests/test_smoke_flow.py::test_full_lifecycle_smoke` | **Verified (M2)** |
+| **Crash Recovery** | `StartupJobRecoveryListener.java` transitions stuck jobs to `FAILED` | Flask app factory startup hook marks stranded jobs `FAILED` | `app/__init__.py::create_app` | **Verified (M2)** |
 | **Document Type Detection** | Gemini summary prompt classified document type | SBERT cosine similarity vs prototype descriptions + keyword cues | `tests/test_clause_classification.py::test_document_type_classification` | **Verified (M3)** |
 | **Clause Classification** | Zero-shot Gemini classification across 17 categories | Ensemble: DistilBERT + SBERT zero-shot + keyword rules | `tests/test_clause_classification.py::test_gate_clause_recall_and_precision_on_gold_contracts` | **Verified (M3)** |
 | **Ensemble Fallback** | Fallback to "Other" on model parsing errors | Documented weighted formula; low confidence falls back to "Other" + descriptive label | `tests/test_clause_classification.py::test_model_fallback_without_crashing` | **Verified (M3)** |
@@ -60,4 +60,12 @@ Nothing may be dropped silently. Every feature has a documented target implement
 | **Web User Interface** | React 18 single-page app (Tailwind, Lucide, Radix UI) | Jinja2 templates + hand-written CSS + vanilla JavaScript | `tests/test_dashboard_and_report.py::test_empty_state_dashboard_brand_new_user` | **Verified (M8)** |
 | **Light / Dark Mode** | `ThemeContext` toggling CSS classes in `localStorage` | CSS variables on `[data-theme="dark"]` toggled by vanilla JS | `app/templates/base.html` & `app/static/css/style.css` | **Verified (M8)** |
 | **Evaluation Benchmark** | Precision/recall scripts in `evaluation/` | Comprehensive test suite + `evaluation/RESULTS.md` + old-vs-new comparison | `tests/test_evaluation.py` | **Verified (M9)** |
+| **Legacy Stack Removal** | Distributed polyglot stack (React, Java Spring, FastAPI, Postgres) | 100% pure local Python NLP stack (Flask, MySQL 8, PyTorch, ReportLab) | `git status` (clean repository, zero legacy code) | **Verified (M10)** |
+| **End-to-End Smoke Test** | `scripts/smoke_test.sh` calling Spring Boot endpoints | Unified automated smoke test (`tests/test_smoke_flow.py`, `scripts/smoke_test.sh`) | `tests/test_smoke_flow.py::test_full_lifecycle_smoke` | **Verified (M10)** |
+| **One-Command Local Run** | Multi-service startup script | Unified shell runner `run_local.sh` with automatic health checks & migrations | `run_local.sh` | **Verified (M10)** |
+| **Architecture Diagrams** | Legacy 3-tier architecture docs | 4 comprehensive Mermaid diagrams in `docs/architecture.md` (System, Pipeline, Chat, ERD) | `docs/architecture.md` | **Verified (M10)** |
+| **REST API Documentation** | Swagger UI (`/swagger-ui.html`) | Clean markdown REST specification in `docs/api-documentation.md` | `docs/api-documentation.md` | **Verified (M10)** |
+| **Privacy & Security** | Cloud LLM data transmission docs | Zero-data-retention, 100% on-premise local policy in `docs/privacy.md` | `docs/privacy.md` | **Verified (M10)** |
+| **Viva Presentation Guide** | Legacy project presentation script | 5-minute academic defense guide & transcript in `docs/DEMO.md` | `docs/DEMO.md` | **Verified (M10)** |
+
 

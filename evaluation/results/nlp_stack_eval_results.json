@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-17 17:21:50 UTC",
+  "timestamp": "2026-11-17 17:41:08 UTC",
   "engine": "Local Python NLP Stack (DistilBERT + SBERT + spaCy + Minilm-SQuAD2)",
   "clauses": {
     "clause_recall": 1.0,
@@ -154,7 +154,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 1.792
+        "latency_sec": 1.858
       },
       {
         "id": "q4_rental_cure",
@@ -171,7 +171,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.0
+        "latency_sec": 0.001
       },
       {
         "id": "q5_rental_governing_law",
@@ -239,7 +239,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.371
+        "latency_sec": 0.448
       },
       {
         "id": "q9_one_sided_liability_cap",
@@ -256,7 +256,7 @@
             "quoteVerified": true
           }
         ],
-        "latency_sec": 0.348
+        "latency_sec": 0.465
       },
       {
         "id": "q10_one_sided_late_charges",
@@ -282,7 +282,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.184
+        "latency_sec": 0.185
       },
       {
         "id": "q12_rental_pet_policy",
@@ -300,7 +300,7 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.108
+        "latency_sec": 0.11
       },
       {
         "id": "q14_nda_solicitation",
@@ -318,18 +318,18 @@
         "answer": "The document does not appear to address this.",
         "is_honest_refusal": true,
         "citations": [],
-        "latency_sec": 0.346
+        "latency_sec": 0.349
       }
     ]
   },
   "latency": {
     "extraction": 0.004,
     "segmentation": 0.0,
-    "classification": 0.157,
-    "summarization": 0.122,
-    "key_info": 0.002,
-    "risk_detection": 0.186,
+    "classification": 0.158,
+    "summarization": 0.123,
+    "key_info": 0.003,
+    "risk_detection": 0.194,
     "missing_provisions": 0.008,
-    "total_pipeline": 0.479
+    "total_pipeline": 0.489
   }
 }

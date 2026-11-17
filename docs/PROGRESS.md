@@ -29,7 +29,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase M7 | Hybrid Retrieval & Extractive QA Document Chat | Completed | 2026-11-17 |
 | Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Completed | 2026-11-17 |
 | Phase M9 | Offline Evaluation Suite & Parity Benchmarks | Completed | 2026-11-17 |
-| Phase M10 | Legacy Removal, Hardening & Final Verification Gate | Planned | - |
+| Phase M10 | Legacy Removal, Hardening & Final Verification Gate | Completed | 2026-11-17 |
 
 ---
 
@@ -1412,6 +1412,62 @@ cd frontend && npm test
 - Code quality checks:
   - `ruff check app tests evaluation/evaluate_nlp_stack.py` -> `All checks passed!`.
   - `black --check app tests evaluation/evaluate_nlp_stack.py` -> `60 files left unchanged.`.
+
+### Phase M10: Legacy Removal, Hardening & Final Verification Gate
+- [x] Legacy Stack Decommissioning:
+  - Safely removed legacy codebases (`frontend/`, `backend/`, `ai-engine/`, and `database/`) via `git rm -rf`.
+  - Removed outdated legacy HTTP-based evaluation scripts in `evaluation/` (`verify_phase*.py`, `evaluate_chat.py`, `evaluate_phase7.py`, `capture_baseline_llm.py`).
+  - Stored baseline LLM outputs in `evaluation/baseline_llm/` for long-term historical comparison.
+- [x] Hardening & Security Verification:
+  - Audited all endpoints in `app/blueprints/auth.py`, `app/blueprints/documents.py`, `app/blueprints/studio.py`, `app/blueprints/main.py`.
+  - Enforced strict tenant isolation via `current_user.id` on all document, clause, chunk, risk, chat, and report endpoints (cross-tenant access strictly returns 404).
+  - Confirmed magic byte verification (`%PDF-`, `PK\x03\x04`, plain text) and size enforcement (`MAX_CONTENT_LENGTH = 10MB`).
+  - Confirmed secure session cookies (`HttpOnly`, `SameSite=Lax`, optional `Secure`).
+  - Verified zero secrets committed in git history or configuration files.
+- [x] End-to-End Smoke Test Suite:
+  - Created automated end-to-end integration test (`tests/test_smoke_flow.py`) covering the full user lifecycle:
+    1. Register new user
+    2. Authenticate session
+    3. Upload contract PDF
+    4. Verify clause segmentation and 100% exact quote verification
+    5. Verify grounded risk detection
+    6. Grounded document Q&A and exact page citation
+    7. Unanswerable question honest refusal probe
+    8. Generate & download 10-section ReportLab PDF dossier
+    9. Verify dashboard statistics aggregation
+    10. Delete document and confirm foreign-key cascade cleanup
+  - Rewrote shell smoke test (`scripts/smoke_test.sh`) using `curl` against the Flask application.
+- [x] One-Command Local Startup:
+  - Rewrote `run_local.sh`: verifies MySQL 8 connectivity, runs Alembic migrations (`flask db upgrade`), and starts waitress/gunicorn on port 5000.
+- [x] Comprehensive Documentation Refresh:
+  - `README.md`: rewritten for Python NLP stack, prerequisites, quick start, testing, benchmark table, and privacy guarantees.
+  - `docs/architecture.md`: rewritten with 4 Mermaid diagrams (High-Level Architecture, End-to-End Pipeline Sequence, Chat Q&A Sequence, and MySQL ERD).
+  - `docs/api-documentation.md`: rewritten for all Flask session-based REST endpoints.
+  - `docs/privacy.md`: rewritten for 100% on-premise local NLP residency and zero-cloud execution.
+  - `docs/DEMO.md`: rewritten for the 5-minute Python NLP viva presentation and demo flow.
+  - `postman/lexilegal.postman_collection.json`: updated `base_url` to `http://127.0.0.1:5000`.
+  - `docs/parity.md`: updated with all verified parity milestones.
+- [x] Verification Gate Passed:
+  - Test Suite: **95 passed in 53.46s (86% coverage across 3,015 statements)**.
+  - Linters & Formatters: `ruff check` (0 warnings) and `black --check` (clean).
+  - Offline Evaluation Benchmark: `evaluation/evaluate_nlp_stack.py` executed cleanly, achieving 100% clause recall, 100% quote verification rate, 100% risk recall, 3/3 predatory traps detected, 0 Rule 7 violations, 0 Rule 6 violations, 100% chat answer accuracy, 100% honest refusal rate, and 0.49s average latency per document.
+
+**What was built:**
+- `tests/test_smoke_flow.py`: Full lifecycle smoke test asserting registration, upload, segmentation, classification, risks, chat, PDF report, dashboard counts, and document deletion.
+- `scripts/smoke_test.sh`: Standalone bash smoke test exercising the live web server via `curl`.
+- `run_local.sh`: Single-command local startup script with MySQL verification and migration execution.
+- Documentation suite refreshed: `README.md`, `docs/architecture.md`, `docs/api-documentation.md`, `docs/privacy.md`, `docs/DEMO.md`, `docs/parity.md`, `docs/PROGRESS.md`.
+- Legacy stack safely deleted: removed all Spring Boot, React/Vite, FastAPI, and PostgreSQL files from git tree.
+
+**How it was verified:**
+- Full test suite:
+  - `.venv/bin/pytest tests/ --cov=app -q` -> **95 passed, 1 warning in 53.46s (86% coverage)**.
+- Code style and linting:
+  - `.venv/bin/ruff check app tests evaluation/evaluate_nlp_stack.py` -> `All checks passed!`.
+  - `.venv/bin/black --check app tests evaluation/evaluate_nlp_stack.py` -> `61 files left unchanged.`.
+- Benchmark evaluation:
+  - `.venv/bin/python evaluation/evaluate_nlp_stack.py` -> Generated `evaluation/results/nlp_stack_eval_results.json` and updated `evaluation/RESULTS.md`.
+
 
 
 

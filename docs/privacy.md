@@ -2,38 +2,43 @@
 
 ## 1. Core Commitment & Legaltech Privacy Model
 
-LexiLegal AI is designed specifically for sensitive legal contracts, NDAs, and corporate agreements. It adheres to strict data privacy principles to ensure confidentiality, integrity, and regulatory compliance.
+**LexiLegal AI** is architected specifically for sensitive legal contracts, non-disclosure agreements, and confidential corporate documents. Following its migration to a pure local Python NLP stack, LexiLegal AI guarantees **100% on-premise data residency**, eliminating cloud data transmission risks entirely.
 
 ---
 
-## 2. Data Transmission & LLM Boundaries
+## 2. Zero-Cloud Processing & Local NLP Invariants
 
-### 2.1 Inference Data Boundary
-- **Transmission**: When using external inference providers (such as Google Gemini API via `gemini-3.5-flash-lite`), only extracted chunk text and structured analysis prompts are transmitted over encrypted TLS 1.3 channels.
-- **Zero Training Commitment**: Under enterprise API terms, data transmitted through the Gemini API is **not** used to train foundation models, train fine-tuned models, or improve Google products.
-- **Local / Mock Mode Support**: LexiLegal AI supports offline execution (`USE_MOCK_LLM=true`), ensuring that in sensitive or isolated environments, zero bytes leave the local infrastructure.
+### 2.1 Complete Local Processing (Zero External API Calls)
+- **Zero Cloud Transmission**: All natural language processing tasks—including document layout extraction, optical character recognition (OCR), ensemble clause classification, extractive summarization, risk detection, and question answering—run strictly in-process on the local host.
+- **No Third-Party Models or APIs**: The system uses zero hosted AI services (no Gemini, no OpenAI, no Anthropic, no Ollama). Document contents, contract terms, and user questions never leave your server.
+- **Model Storage**: Pre-trained model weights (DistilBERT LEDGAR, SBERT `all-MiniLM-L6-v2`, `deepset/minilm-uncased-squad2`, and spaCy `en_core_web_md`) reside entirely on the local filesystem.
 
-### 2.2 Inference Logging Safeguards
-- Raw document text is stripped from application telemetry and log files.
-- Exception handlers and server logs log only document identifiers and anonymized token metrics, never verbatim contract excerpts.
+### 2.2 Inference Telemetry & Logging Safeguards
+- Raw contract text and user queries are completely stripped from application telemetry and persistent logging.
+- Error logs and server logs record only document UUIDs, timestamp metrics, and high-level execution statuses, never verbatim contract excerpts or sensitive client data.
 
 ---
 
 ## 3. Data Storage & Multi-Tenant Isolation
 
-### 3.1 Data at Rest
-- **Document Files**: Uploaded binary documents (PDF, DOCX, TXT) are stored in the local server directory (`./uploads`) with UUID-based path masking to prevent filesystem enumeration.
-- **Database Persistence**: Structured analyses, extracted clauses, risks, key dates, and chunks are stored in PostgreSQL with strict foreign-key cascade deletion.
-- **Tenant Isolation**: Every database operation is scoped to the authenticated `user_id`. Access to documents belonging to other users returns an opaque `404 Not Found` response to prevent existence enumeration.
+### 3.1 Data at Rest & Encryption
+- **Physical Document Storage**: Uploaded binary documents (PDF, DOCX, TXT) are stored in partitioned user subdirectories (`./uploads/<user_id>/`) with UUID-based path masking to prevent filesystem traversal.
+- **Database Persistence**: Structured analyses, extracted clauses, risk findings, key metadata, and conversation logs are persisted in MySQL 8 (InnoDB, `utf8mb4`).
+- **Strict Tenant Isolation**: Every database read, update, and delete query is parameterized with `user_id == current_user.id`. Requests attempting to access documents belonging to other users return an opaque `404 Not Found` response, eliminating document existence enumeration.
 
-### 3.2 Right to Erasure / Deletion Guarantees
-- When a user deletes a document via `DELETE /api/documents/{id}`:
-  1. The binary file is immediately unlinked and deleted from storage.
-  2. The `documents` record is deleted, triggering an automated database `ON DELETE CASCADE` across `document_analyses`, `extracted_clauses`, `risk_findings`, `extracted_information`, `missing_clause_warnings`, `document_chunks`, and `chat_conversations`.
-  3. No residual metadata or vectors remain in the database.
+### 3.2 Right to Erasure & Immediate Deletion
+- When a document is deleted via the web interface or `DELETE /api/documents/<id>`:
+  1. The underlying physical contract file is immediately unlinked and removed from disk.
+  2. The `documents` row is deleted, triggering cascade deletion across `document_analyses`, `extracted_clauses`, `risk_findings`, `extracted_information`, `missing_clause_warnings`, `document_chunks`, `chat_conversations`, and `chat_messages`.
+  3. No residual metadata, cached embeddings, or orphaned records remain in the database.
 
 ---
 
-## 4. Legal Disclaimer & Regulatory Notice
+## 4. Regulatory Notice & Rule 7 Legal Advice Guard
 
-LexiLegal AI provides automated information extraction, natural-language summarization, and commercial risk identification. **It does not provide formal legal advice, legal representation, or statutory compliance guarantees.** The platform should be used to support and inform human review by qualified legal counsel.
+LexiLegal AI provides automated NLP information extraction, plain-language simplification, and contract risk highlighting. **It does not provide formal legal advice, legal counsel representation, or statutory compliance guarantees.**
+
+To protect users against the unauthorized practice of law (UPL):
+- The platform strictly enforces **Rule 7 Legal Advice Guards**, eliminating conclusionary legal statements (*"illegal"*, *"void"*, *"unenforceable"*, *"unlawful"*).
+- All advisory commentary employs calibrated non-definitive phrasing (*"may create ambiguity"*, *"presents significant financial exposure"*, *"questionable under standard commercial practice"*).
+- Missing standard provisions are labeled `"Possible omission"` rather than legal defects.

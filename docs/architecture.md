@@ -2,195 +2,307 @@
 
 ## 1. System Overview
 
-LexiLegal AI is an enterprise-grade legal document analysis and simplification platform. It transforms complex legal contracts (leases, NDAs, vendor agreements, employment contracts) into plain-language summaries, structured clause inventories, grounded risk assessments, and verifiable citations.
+**LexiLegal AI** is an enterprise-grade legal document simplification and clause extraction platform engineered as a unified Python application. It operates entirely on-premise without external generative AI APIs, vector databases, or third-party cloud microservices.
 
-### High-Level Architecture
+### Target Technology Stack:
+- **Application Framework**: Python 3.11+ / Flask (Application Factory, Blueprints, Flask-Login, Flask-WTF CSRF, Flask-Limiter)
+- **Database Layer**: MySQL 8.0 (InnoDB, `utf8mb4` character set, Alembic migrations via Flask-Migrate)
+- **Document Processing**: PyMuPDF (`fitz`), `python-docx`, Tesseract OCR (`pytesseract` + Pillow)
+- **Machine Learning & NLP**: PyTorch, Hugging Face `transformers` (DistilBERT LEDGAR), `sentence-transformers` (`all-MiniLM-L6-v2`), spaCy (`en_core_web_md`), NLTK (Punkt tokenizer)
+- **Extractive QA & Retrieval**: `deepset/minilm-uncased-squad2` + SBERT dense / BM25 sparse Reciprocal Rank Fusion (RRF)
+- **Report Engine**: ReportLab 5 (10-Section Legal Dossier, running headers, two-pass `NumberedCanvas`, TrueType font support)
+- **Frontend / Presentation**: Jinja2 semantic templates, hand-crafted responsive CSS, vanilla JavaScript, Chart.js (served locally, zero CDN)
+
+---
+
+## 2. High-Level Architecture Diagram
 
 ```mermaid
 flowchart TD
-    Client["Client Web Browser\n(React 18 + Vite + Tailwind CSS)"]
+    User["User Web Browser\n(Semantic HTML5, CSS Variables, Vanilla JS, Chart.js)"]
     
-    subgraph SpringBootApp ["Spring Boot Backend (Port 8080)"]
-        Security["Security Filter Chain\n(JWT Auth + Rate Limiting)"]
-        DocController["Document / Chat / Dashboard Controllers"]
-        DocStorage["Local Storage Service\n(SHA-256 Deduplication & Magic Bytes)"]
-        AsyncPipe["DocumentAsyncPipeline\n(Thread Pool Executor)"]
-        ReportSvc["ReportPdfService\n(OpenPDF 2.0.3 Dossier Engine)"]
-        ChatSvc["ChatService\n(PostgreSQL Full-Text Search RAG)"]
+    subgraph FlaskApp ["LexiLegal AI — Flask Monolith (Port 5000)"]
+        subgraph WebTier ["Presentation & Routing Layer"]
+            AuthBP["auth_bp\n(Flask-Login Sessions, CSRF, Password Hashing)"]
+            DocBP["documents_bp\n(Upload, List, Detail, REST APIs, PDF Downloads)"]
+            StudioBP["studio_bp\n(Interactive Tri-Tier Simplification Studio)"]
+            MainBP["main_bp\n(Dashboard, Real SQL Aggregation)"]
+        end
+
+        subgraph ServiceTier ["Service & Orchestration Layer"]
+            DocSvc["Document Service\n(Validation, Magic Bytes, SHA-256 Hashing)"]
+            ClauseSvc["Clause Service\n(Ensemble Classification & Quote Verification)"]
+            AnalysisSvc["Analysis Service\n(Key Facts, Preamble Parties, Summaries)"]
+            RiskSvc["Risk Service\n(Grounded Detection & Missing Provision Checklists)"]
+            ChatSvc["Chat Service\n(Conversation Lifecycles & Grounded QA)"]
+            ReportSvc["Report Service\n(ReportLab 10-Section Dossier Engine)"]
+            DashboardSvc["Dashboard Service\n(Strict Tenant SQL Aggregation)"]
+        end
+
+        subgraph NLPTier ["Pure Python NLP Engine (Local In-Process)"]
+            ExtractEng["Extraction & OCR Engine\n(PyMuPDF, python-docx, Tesseract)"]
+            SegEng["Legal Segmentation Engine\n(Punkt Sentence Splitting & Regex Headings)"]
+            ClassEng["Clause Classifier Ensemble\n(DistilBERT LEDGAR + SBERT + Keyword Rules)"]
+            SummEng["Extractive Summarizer\n(SBERT TextRank + Maximal Marginal Relevance)"]
+            SimpEng["Tri-Tier Simplifier\n(Glossary Substitution & Structural Decomposition)"]
+            ReadEng["Readability Engine\n(Pure Python Flesch-Kincaid & Ease Formulas)"]
+            RiskEng["Grounded Risk Engine\n(Rules, Regex, Thresholds + Rule 7 Guard)"]
+            MissingEng["Missing Provisions Engine\n(Document-Type Checklists + SBERT Cosine)"]
+            RetrievalEng["Hybrid Retrieval Engine\n(SBERT Dense + BM25 Sparse RRF k=60)"]
+            QAEng["Extractive QA Engine\n(minilm-uncased-squad2 + Fact Intent Router)"]
+            Registry["Model Registry\n(Single-point lazy loading & model caching)"]
+        end
     end
 
-    subgraph FastApiApp ["AI Engine Service (Port 8000)"]
-        Extractor["PyMuPDF Document Extractor\n(Layout-aware Parser + OCR)"]
-        Chunker["Sliding-Window Chunker\n(500-token chunks with overlap)"]
-        SummaryAnalyzer["Summary & Conditions Analyzer"]
-        ClauseAnalyzer["Clause Analyzer & Tri-Tier Simplifier"]
-        RiskAnalyzer["Risk & Predatory Terms Analyzer"]
-        KeyInfoAnalyzer["Key Info & Dates Extractor"]
-        MissingAnalyzer["Missing Provisions Analyzer"]
-        ChatEngine["Grounded RAG Chat Engine"]
-        Rule7Filter["Rule 7 Post-Filter\n(Forbidden Phrase Redactor)"]
-        QuoteVerifier["Quote Verifier\n(Exact + Fuzzy Levenshtein)"]
+    subgraph PersistenceTier ["Data Persistence & Storage"]
+        MySQL[("MySQL 8.0 Database\n(InnoDB, utf8mb4, Indexes)")]
+        FileStore[("Local Upload Storage\n(./uploads/<user_id>/)")]
     end
 
-    subgraph DataLayer ["Data Persistence Layer"]
-        SupabasePostgres[("PostgreSQL Database\n(Supabase Cloud Pooler)")]
-        FileStore[("File Storage\n(./uploads filesystem)")]
-    end
-
-    subgraph ExternalLLM ["LLM Inference Providers"]
-        GeminiAPI["Google Gemini API\n(gemini-3.5-flash-lite)"]
-        MockLLM["Mock Deterministic Provider\n(Zero-token offline tests)"]
-    end
-
-    Client -->|HTTPS / REST| Security
-    Security --> DocController
-    DocController --> DocStorage
-    DocController --> ChatSvc
-    DocController --> ReportSvc
-    DocStorage --> FileStore
-    DocController --> AsyncPipe
-    
-    ChatSvc -->|Full-Text Search ts_rank| SupabasePostgres
-    ChatSvc -->|Grounding Context| ChatEngine
-    
-    AsyncPipe -->|Internal REST X-Internal-Api-Key| FastApiApp
-    AsyncPipe -->|Entities & Chunks| SupabasePostgres
-    
-    Extractor --> Chunker
-    Chunker --> FastApiApp
-    
-    SummaryAnalyzer --> ExternalLLM
-    ClauseAnalyzer --> ExternalLLM
-    RiskAnalyzer --> ExternalLLM
-    KeyInfoAnalyzer --> ExternalLLM
-    MissingAnalyzer --> ExternalLLM
-    ChatEngine --> ExternalLLM
-    
-    RiskAnalyzer --> Rule7Filter
-    ClauseAnalyzer --> QuoteVerifier
+    User -->|HTTP / Session Cookie| WebTier
+    WebTier --> ServiceTier
+    ServiceTier --> NLPTier
+    ServiceTier --> MySQL
+    DocSvc --> FileStore
+    NLPTier --> Registry
 ```
 
 ---
 
-## 2. Multi-Stage Asynchronous Ingestion & Analysis Pipeline
-
-When a user uploads a contract, the backend executes an asynchronous processing pipeline to avoid blocking HTTP requests while delivering real-time status updates.
+## 3. End-to-End Document Analysis Pipeline
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as User Browser
-    participant Controller as DocumentController
-    participant Storage as DocumentStorageService
-    participant Pipeline as DocumentAsyncPipeline
-    participant DB as PostgreSQL (Supabase)
-    participant Engine as AI Engine (FastAPI)
-    participant LLM as Google Gemini API
-
-    User->>Controller: POST /api/documents/upload (Multipart PDF/DOCX)
-    Controller->>Storage: validate(file) [Magic bytes, Size <= 10MB]
-    Storage->>Storage: computeSha256(file)
-    Controller->>DB: INSERT INTO documents (status='UPLOADED')
-    Controller-->>User: 202 Accepted {id, status='UPLOADED'}
+    participant Flask as Flask Controller (documents_bp)
+    participant DocSvc as Document Service
+    participant NLPExt as Extraction & Segmentation
+    participant NLPClass as Ensemble Classifier
+    participant NLPRisk as Risk & Missing Engine
+    participant DB as MySQL 8 (SQLAlchemy)
     
-    Controller->>Pipeline: processDocumentAsync(docId)
-    Pipeline->>DB: UPDATE documents SET status='EXTRACTING'
-    Pipeline->>Engine: POST /internal/extract (Document file)
-    Engine->>Engine: PyMuPDF page-by-page layout & text extraction
-    Engine->>Engine: Semantic Chunking (500 tokens / 50 overlap)
-    Engine-->>Pipeline: ExtractionResponseDto (pages, chunks)
-    Pipeline->>DB: INSERT INTO document_chunks (page, content, tsv)
-    Pipeline->>DB: UPDATE documents SET status='ANALYZING', page_count=N
+    User->>Flask: POST /api/documents/upload (Multipart PDF/DOCX/TXT)
+    Flask->>DocSvc: save_and_extract_document(file_bytes, filename)
+    DocSvc->>DocSvc: Validate magic bytes (%PDF, PK) & SHA-256 hash
+    DocSvc->>NLPExt: extract_document() -> Pages, Sections, OCR
+    DocSvc->>NLPExt: segment_clauses() & create_chunks()
+    DocSvc->>DB: INSERT into documents & document_chunks
+    DocSvc-->>Flask: Document (Status: UPLOADED)
     
-    Note over Pipeline,Engine: Multi-Pass Map-Reduce Analysis
-    Pipeline->>Engine: POST /internal/analyze/summary
-    Engine->>LLM: Generate summary, purpose, parties, obligations
-    Engine-->>Pipeline: DocumentSummaryResponseDto
-    Pipeline->>DB: INSERT INTO document_analyses
+    Flask->>DocSvc: Process Document Pipeline
+    DocSvc->>NLPClass: classify_clause() & calculate_clause_importance()
+    NLPClass->>NLPClass: DistilBERT LEDGAR + SBERT Prototype + Rules
+    NLPClass->>DB: INSERT into extracted_clauses (100% Exact Quotes)
     
-    Pipeline->>Engine: POST /internal/analyze/clauses
-    Engine->>LLM: Extract clauses & generate 3 simplification tiers
-    Engine->>Engine: verify_quote(quote, pages)
-    Engine-->>Pipeline: ClauseAnalysisResponseDto
-    Pipeline->>DB: INSERT INTO extracted_clauses
+    DocSvc->>NLPRisk: detect_clause_risks() & detect_missing_provisions()
+    NLPRisk->>NLPRisk: Apply risk_rules.yaml + Rule 7 Legal Guard
+    NLPRisk->>DB: INSERT into risk_findings & missing_clause_warnings
     
-    Pipeline->>Engine: POST /internal/analyze/risks
-    Engine->>LLM: Detect high/medium/low risks & predatory traps
-    Engine->>Engine: filter_rule7_language() [Redact "illegal", "void"]
-    Engine-->>Pipeline: RiskAnalysisResponseDto
-    Pipeline->>DB: INSERT INTO risk_findings
-    
-    Pipeline->>Engine: POST /internal/analyze/key-info
-    Engine->>LLM: Extract payment deadlines, dates, amounts
-    Engine-->>Pipeline: KeyInfoResponseDto
-    Pipeline->>DB: INSERT INTO extracted_information
-    
-    Pipeline->>Engine: POST /internal/analyze/missing
-    Engine->>LLM: Compare vs. expected provisions checklist
-    Engine-->>Pipeline: MissingProvisionsResponseDto
-    Pipeline->>DB: INSERT INTO missing_clause_warnings
-    
-    Pipeline->>DB: UPDATE documents SET status='COMPLETED'
-    User->>Controller: GET /api/documents/{id}/status (Polling)
-    Controller-->>User: {status: 'COMPLETED'}
+    DocSvc->>DB: UPDATE documents (Status: COMPLETED, verification_rate: 100.0)
+    DocSvc-->>Flask: Complete Analysis Bundle
+    Flask-->>User: HTTP 201 Created (Redirect /documents/<id>)
 ```
 
 ---
 
-## 3. Grounded Retrieval-Augmented Generation (RAG) Document Chat
-
-The document chat facility strictly refuses to invent legal clauses or follow instructions contained within document text.
+## 4. Grounded Chat & Question Answering Flow
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as User Browser
-    participant ChatCtrl as ChatController
-    participant ChatSvc as ChatService
-    participant DB as PostgreSQL (Supabase)
-    participant Engine as AI Engine (FastAPI)
-    participant LLM as Google Gemini API
-
-    User->>ChatCtrl: POST /api/documents/{id}/chat {message}
-    ChatCtrl->>ChatSvc: sendMessage(userId, docId, message)
-    ChatSvc->>DB: Verify document ownership (tenant isolation)
+    participant ChatAPI as POST /api/documents/<id>/chat
+    participant ChatSvc as Chat Service
+    participant QAEng as QA & Intent Engine
+    participant Retrieval as Hybrid Retrieval (SBERT + BM25)
+    participant Model as deepset/minilm-uncased-squad2
     
-    ChatSvc->>DB: Full-Text Search ts_rank(tsv, websearch_to_tsquery(:query))
-    alt Full-Text Matches Found
-        DB-->>ChatSvc: Top-5 relevant chunks with page attribution
-    else No FTS Match
-        ChatSvc->>DB: Fallback: Token-broadened query / chronological chunks
-        DB-->>ChatSvc: Candidate chunks
+    User->>ChatAPI: {"message": "How many days notice to prevent renewal?"}
+    ChatAPI->>ChatSvc: send_chat_message(user_id, doc_id, query)
+    ChatSvc->>QAEng: answer_document_query(query, analysis, chunks)
+    
+    rect rgb(240, 248, 255)
+        Note over QAEng: 1. Fact Intent Router
+        QAEng->>QAEng: Match regex intents (amount, dates, deadlines, parties)
     end
     
-    ChatSvc->>DB: Load last 6 messages from chat_messages
-    ChatSvc->>Engine: POST /internal/chat {question, chunks, history}
-    Note over Engine: Untrusted Data Framing:\nTreat chunk text as untrusted data.\nReject prompt injection attacks.
-    Engine->>LLM: Generate grounded answer strictly from chunks
-    LLM-->>Engine: RawChatResult {answer, citations: [{page, quote}], confidence}
-    Engine->>Engine: verify_quote(quote, chunks)
-    Engine-->>ChatSvc: ChatResponseDto {answer, citations, confidence}
+    rect rgb(255, 250, 240)
+        Note over QAEng, Retrieval: 2. Hybrid Retrieval (if not resolved by metadata)
+        QAEng->>Retrieval: hybrid_retrieve_chunks(query, chunks, top_k=4)
+        Retrieval->>Retrieval: Dense Rank (SBERT) + Sparse Rank (BM25)
+        Retrieval->>Retrieval: Reciprocal Rank Fusion (RRF, k=60)
+        Retrieval-->>QAEng: Top-4 Attributed Chunks
+    end
     
-    ChatSvc->>DB: INSERT INTO chat_messages (user, assistant, citations)
-    ChatSvc-->>ChatCtrl: ChatMessageResponse
-    ChatCtrl-->>User: 200 OK {messageId, answer, citations, confidence}
+    rect rgb(245, 255, 250)
+        Note over QAEng, Model: 3. Extractive QA & Honest Refusal
+        QAEng->>Model: Forward pass over candidate chunk text
+        Model-->>QAEng: start_logits, end_logits, null_score
+        QAEng->>QAEng: Delta = best_span_score - null_score
+        alt Delta >= 0.0 (Answerable)
+            QAEng-->>ChatSvc: Extracted Span Text + Page Citation Badge
+        else Delta < 0.0 (Unanswerable / Off-Topic)
+            QAEng-->>ChatSvc: Honest Refusal ("The document does not appear to address this.")
+        end
+    end
+    
+    ChatSvc->>ChatSvc: Persist ChatConversation & ChatMessage to DB
+    ChatSvc-->>ChatAPI: Response Payload
+    ChatAPI-->>User: HTTP 200 OK {"answer": "...", "citations": [{"page": 1, ...}]}
 ```
 
 ---
 
-## 4. Key Design Principles & Safeguards
+## 5. Database Entity Relationship Diagram (ERD)
 
-1. **Rule 7 Compliance (Strict Advisory Framing)**:
-   - The platform never outputs legal conclusions claiming a contract term is *"illegal"*, *"void"*, or *"unenforceable"*.
-   - A deterministic post-processor sanitizes every response before persistence, substituting advisory phrasing such as *"may be subject to statutory challenge"* or *"presents significant enforceability risk"*.
+```mermaid
+erDiagram
+    users ||--o{ documents : owns
+    users ||--o{ chat_conversations : creates
+    documents ||--|| document_analyses : has
+    documents ||--o{ document_chunks : contains
+    documents ||--o{ chat_conversations : relates_to
+    chat_conversations ||--o{ chat_messages : contains
+    document_analyses ||--o{ extracted_clauses : contains
+    document_analyses ||--o{ risk_findings : contains
+    document_analyses ||--o{ missing_clause_warnings : contains
+    document_analyses ||--|| extracted_information : stores
 
-2. **Rule 6 Grounding Safeguards**:
-   - Absent provisions default strictly to `"Not specified"`. The model is prohibited from guessing payment schedules or durations when they are not present in the text.
+    users {
+        string id PK
+        string email UK
+        string password_hash
+        string full_name
+        string role
+        datetime created_at
+        datetime updated_at
+    }
 
-3. **Multi-Tenant Isolation**:
-   - Every database query filters by `user_id`. Any cross-tenant access attempt strictly returns `404 Not Found` (never `403 Forbidden`) to prevent document ID enumeration.
+    documents {
+        string id PK
+        string user_id FK
+        string original_filename
+        string storage_path
+        string file_type
+        integer file_size
+        string file_hash
+        integer page_count
+        string status
+        string failure_reason
+        datetime created_at
+    }
 
-4. **Fault Tolerance & Reliability**:
-   - AI Engine calls are wrapped in an exponential backoff retry loop (`executeWithRetry`) handling transient timeouts.
-   - If secondary analyzers (e.g. key dates or missing provisions) experience unexpected failures while clauses succeed, the document transitions to `COMPLETED_WITH_WARNINGS` rather than aborting.
-   - On backend restart, `StartupJobRecoveryListener` automatically scans for stranded `ANALYZING` jobs and marks them `FAILED` with an actionable user prompt to retry.
+    document_chunks {
+        string id PK
+        string document_id FK
+        integer chunk_index
+        integer page_number
+        text content
+        integer token_count
+    }
+
+    document_analyses {
+        string id PK
+        string document_id FK
+        string title
+        string document_type
+        text purpose
+        json parties
+        text summary_short
+        text summary_detailed
+        json main_conditions
+        json obligations_summary
+        json financial_terms_summary
+        string llm_provider
+        string llm_model
+        float verification_rate
+    }
+
+    extracted_clauses {
+        string id PK
+        string analysis_id FK
+        string title
+        string category
+        string section_reference
+        text original_text
+        text simplified_simple
+        text simplified_detailed
+        text simplified_professional
+        string importance
+        text evidence_quote
+        boolean quote_verified
+        integer source_page
+        integer clause_index
+    }
+
+    risk_findings {
+        string id PK
+        string analysis_id FK
+        string rule_id
+        string category
+        string level
+        string title
+        text original_clause
+        text explanation
+        text why_it_matters
+        text possible_consequences
+        json suggested_questions
+        integer source_page
+        text evidence_quote
+        boolean quote_verified
+        string jurisdiction_caveat
+    }
+
+    missing_clause_warnings {
+        string id PK
+        string analysis_id FK
+        string clause_name
+        string risk_level
+        text why_it_matters
+        text typical_provision
+        string label
+    }
+
+    extracted_information {
+        string id PK
+        string analysis_id FK
+        string contract_amount
+        integer contract_amount_page
+        string payment_deadlines
+        integer payment_deadlines_page
+        string penalties
+        integer penalties_page
+        string start_date
+        integer start_date_page
+        string end_date
+        integer end_date_page
+        string renewal_date
+        integer renewal_date_page
+        string notice_period
+        integer notice_period_page
+        string termination_conditions
+        integer termination_conditions_page
+        json obligations
+        json important_dates
+    }
+```
+
+---
+
+## 6. Security & Guardrail Guarantees
+
+1. **Deterministic Grounding**:
+   - Zero generative LLM hallucinations.
+   - 100% of quotes are exact substring slices verified against character offsets.
+2. **Rule 7 Legal Advice Guard**:
+   - Post-processor eliminates forbidden words (*"illegal"*, *"void"*, *"unenforceable"*, *"unlawful"*).
+   - Missing provisions are tagged with strict non-definitive labels: `"Possible omission"`.
+3. **Rule 6 Absent Field Invariant**:
+   - Missing metadata fields strictly default to `"Not specified"`.
+4. **Tenant Isolation**:
+   - All queries filter strictly by `user_id == current_user.id`.
+   - Access attempts to cross-user documents return HTTP 404 (preventing user ID enumeration).
+5. **Session & Transport Protection**:
+   - HTTP session cookies with `HttpOnly`, `SameSite=Lax`.
+   - Form protection via Flask-WTF CSRF tokens on all web form submissions.

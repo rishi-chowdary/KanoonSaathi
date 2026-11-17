@@ -23,7 +23,7 @@ Following the architectural migration from the legacy distributed stack (React +
    - Page citation accuracy: **100.0%** (10/10).
    - Honest refusal rate on unanswerable questions: **100.0%** (5/5) via SQuAD 2.0 unanswerable thresholding.
 5. **Speed, Privacy & Cost**:
-   - Average document analysis pipeline latency reduced from **12.4s -> 0.48s** (**>25.9x speedup**).
+   - Average document analysis pipeline latency reduced from **12.4s -> 0.49s** (**>25.4x speedup**).
    - Cloud tokens per contract reduced from **~7,480 tokens -> 0 tokens**.
    - Cloud cost per contract reduced from **~$0.00042 -> $0.00000** with **100% local data privacy**.
 
@@ -48,7 +48,7 @@ Following the architectural migration from the legacy distributed stack (React +
 | | Citation Page Accuracy | $\ge 80.0\%$ | 100.0% (10/10) | **100.0%** (10/10) | **PASS** |
 | | Honest Refusal ("Not Found") Rate | $\ge 80.0\%$ | 100.0% (5/5) | **100.0%** (5/5) | **PASS** |
 | | Prompt Injection Resistance | Ignore instructions | Passed | **Passed (100% resistant)** | **PASS** |
-| **Performance & Cost** | Average Pipeline Latency | $< 30.0\text{s}$ | 12.4s | **0.48s** | **PASS** |
+| **Performance & Cost** | Average Pipeline Latency | $< 30.0\text{s}$ | 12.4s | **0.49s** | **PASS** |
 | | Interactive QA Latency | $< 5.0\text{s}$ | 1.8s | **~0.12s** | **PASS** |
 | | Average Tokens / Document | Budget $\le 10,000$ | ~7,480 tokens | **0 tokens** | **OPTIMAL** |
 | | Average Cloud Cost / Doc | Budget $\le \$0.01$ | ~$0.00042 | **$0.00 (Zero)** | **OPTIMAL** |
@@ -92,11 +92,11 @@ A deterministic post-processor sanitizes any conclusionary legal assertions (*"i
 |---|---|---|---|
 | Document Ingestion & PyMuPDF Extraction | 0.80s | 0.004s | ~200.0x |
 | Legal Clause Segmentation | — | 0.000s | Local In-Memory |
-| Clause Ensemble Classification | 4.20s | 0.157s | ~26.8x |
-| Extractive Summarization (TextRank + MMR) | 2.50s | 0.122s | ~20.5x |
-| Key Facts & Entity Anchoring | 1.30s | 0.002s | ~650.0x |
-| Grounded Risk & Consequence Detection | 2.60s | 0.186s | ~14.0x |
+| Clause Ensemble Classification | 4.20s | 0.158s | ~26.6x |
+| Extractive Summarization (TextRank + MMR) | 2.50s | 0.123s | ~20.3x |
+| Key Facts & Entity Anchoring | 1.30s | 0.003s | ~433.3x |
+| Grounded Risk & Consequence Detection | 2.60s | 0.194s | ~13.4x |
 | Expected Provisions Checklist Matching | 1.00s | 0.008s | ~125.0x |
-| **Full End-to-End Analysis Pipeline** | **12.40s** | **0.48s** | **~25.9x Faster** |
+| **Full End-to-End Analysis Pipeline** | **12.40s** | **0.49s** | **~25.4x Faster** |
 | **Interactive Document Chat Turn** | **1.80s** | **~0.12s** | **~15.0x Faster** |
 | **ReportLab 10-Section PDF Dossier Generation** | 0.25s | ~0.15s | ~1.7x Faster |
