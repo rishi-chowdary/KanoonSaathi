@@ -1,160 +1,128 @@
-# LexiLegal AI — System Architecture & Design Specification
+# System Architecture
 
-## 1. System Overview
+LexiLegal AI is a single Flask application backed by MySQL 8 and a local Python NLP pipeline. All text extraction, classification, simplification, risk checks, and document Q&A run in-process without calling external AI services.
 
-**LexiLegal AI** is an enterprise-grade legal document simplification and clause extraction platform engineered as a unified Python application. It operates entirely on-premise without external generative AI APIs, vector databases, or third-party cloud microservices.
+## Stack
 
-### Target Technology Stack:
-- **Application Framework**: Python 3.11+ / Flask (Application Factory, Blueprints, Flask-Login, Flask-WTF CSRF, Flask-Limiter)
-- **Database Layer**: MySQL 8.0 (InnoDB, `utf8mb4` character set, Alembic migrations via Flask-Migrate)
-- **Document Processing**: PyMuPDF (`fitz`), `python-docx`, Tesseract OCR (`pytesseract` + Pillow)
-- **Machine Learning & NLP**: PyTorch, Hugging Face `transformers` (DistilBERT LEDGAR), `sentence-transformers` (`all-MiniLM-L6-v2`), spaCy (`en_core_web_md`), NLTK (Punkt tokenizer)
-- **Extractive QA & Retrieval**: `deepset/minilm-uncased-squad2` + SBERT dense / BM25 sparse Reciprocal Rank Fusion (RRF)
-- **Report Engine**: ReportLab 5 (10-Section Legal Dossier, running headers, two-pass `NumberedCanvas`, TrueType font support)
-- **Frontend / Presentation**: Jinja2 semantic templates, hand-crafted responsive CSS, vanilla JavaScript, Chart.js (served locally, zero CDN)
+- **Web server**: Python 3.11+, Flask (app factory, blueprints), Flask-Login, Flask-WTF (CSRF), Flask-Limiter
+- **Database**: MySQL 8 (`InnoDB`, `utf8mb4`), SQLAlchemy, Alembic via Flask-Migrate
+- **Extraction**: PyMuPDF (`fitz`), `python-docx`, Tesseract OCR (`pytesseract` + Pillow)
+- **NLP and ML**: PyTorch, Hugging Face `transformers` (LEDGAR DistilBERT, `deepset/minilm-uncased-squad2`), `sentence-transformers` (`all-MiniLM-L6-v2`), spaCy (`en_core_web_md`), NLTK (`punkt`), scikit-learn
+- **PDF reports**: ReportLab with local TrueType fonts (`LiberationSans`)
+- **Frontend**: Jinja2 templates, hand-written CSS with local Liberation Serif fonts, vanilla JavaScript, local Chart.js (`app/static/vendor/chart.js`)
 
----
-
-## 2. High-Level Architecture Diagram
+## Component overview
 
 ```mermaid
 flowchart TD
-    User["User Web Browser\n(Semantic HTML5, CSS Variables, Vanilla JS, Chart.js)"]
-    
-    subgraph FlaskApp ["LexiLegal AI — Flask Monolith (Port 5000)"]
-        subgraph WebTier ["Presentation & Routing Layer"]
-            AuthBP["auth_bp\n(Flask-Login Sessions, CSRF, Password Hashing)"]
-            DocBP["documents_bp\n(Upload, List, Detail, REST APIs, PDF Downloads)"]
-            StudioBP["studio_bp\n(Interactive Tri-Tier Simplification Studio)"]
-            MainBP["main_bp\n(Dashboard, Real SQL Aggregation)"]
+    User["Web Browser (HTML, CSS, Vanilla JS, Chart.js)"]
+
+    subgraph FlaskApp ["Flask Application (Port 5000)"]
+        subgraph Routes ["Blueprints (app/blueprints/)"]
+            AuthBP["auth (register, login, logout, profile)"]
+            DocBP["documents (upload, list, detail, delete)"]
+            AnalysisBP["analysis (clauses, risks, key info, status)"]
+            ChatBP["chat (Q&A and conversations)"]
+            ReportsBP["reports (PDF download and preview)"]
+            StudioBP["studio (standalone clause simplifier)"]
+            MainBP["main (landing page, dashboard)"]
         end
 
-        subgraph ServiceTier ["Service & Orchestration Layer"]
-            DocSvc["Document Service\n(Validation, Magic Bytes, SHA-256 Hashing)"]
-            ClauseSvc["Clause Service\n(Ensemble Classification & Quote Verification)"]
-            AnalysisSvc["Analysis Service\n(Key Facts, Preamble Parties, Summaries)"]
-            RiskSvc["Risk Service\n(Grounded Detection & Missing Provision Checklists)"]
-            ChatSvc["Chat Service\n(Conversation Lifecycles & Grounded QA)"]
-            ReportSvc["Report Service\n(ReportLab 10-Section Dossier Engine)"]
-            DashboardSvc["Dashboard Service\n(Strict Tenant SQL Aggregation)"]
+        subgraph Services ["Services (app/services/)"]
+            DocSvc["document_service"]
+            ClauseSvc["clause_service"]
+            AnalysisSvc["analysis_service"]
+            RiskSvc["risk_service"]
+            ChatSvc["chat_service"]
+            ReportSvc["report_service"]
+            DashboardSvc["dashboard_service"]
         end
 
-        subgraph NLPTier ["Pure Python NLP Engine (Local In-Process)"]
-            ExtractEng["Extraction & OCR Engine\n(PyMuPDF, python-docx, Tesseract)"]
-            SegEng["Legal Segmentation Engine\n(Punkt Sentence Splitting & Regex Headings)"]
-            ClassEng["Clause Classifier Ensemble\n(DistilBERT LEDGAR + SBERT + Keyword Rules)"]
-            SummEng["Extractive Summarizer\n(SBERT TextRank + Maximal Marginal Relevance)"]
-            SimpEng["Tri-Tier Simplifier\n(Glossary Substitution & Structural Decomposition)"]
-            ReadEng["Readability Engine\n(Pure Python Flesch-Kincaid & Ease Formulas)"]
-            RiskEng["Grounded Risk Engine\n(Rules, Regex, Thresholds + Rule 7 Guard)"]
-            MissingEng["Missing Provisions Engine\n(Document-Type Checklists + SBERT Cosine)"]
-            RetrievalEng["Hybrid Retrieval Engine\n(SBERT Dense + BM25 Sparse RRF k=60)"]
-            QAEng["Extractive QA Engine\n(minilm-uncased-squad2 + Fact Intent Router)"]
-            Registry["Model Registry\n(Single-point lazy loading & model caching)"]
+        subgraph NLP ["Local NLP Package (app/nlp/)"]
+            Extract["extraction.py (PDF, DOCX, TXT, OCR)"]
+            Segment["segmentation.py (headings + punkt)"]
+            Classify["clause_classifier.py + document_classifier.py"]
+            Summary["summarizer.py + key_info.py + parties.py"]
+            Simplify["simplification/ (glossary, rewriter, templates, traps)"]
+            Risk["risk_engine.py + missing_provisions.py"]
+            QA["retrieval.py (SBERT + BM25 RRF) + qa_engine.py"]
+            Registry["registry.py (lazy model singletons)"]
         end
     end
 
-    subgraph PersistenceTier ["Data Persistence & Storage"]
-        MySQL[("MySQL 8.0 Database\n(InnoDB, utf8mb4, Indexes)")]
-        FileStore[("Local Upload Storage\n(./uploads/<user_id>/)")]
-    end
+    MySQL[("MySQL 8 (10 tables)")]
+    Uploads[("Local uploads (./uploads/<user_id>/)")]
 
-    User -->|HTTP / Session Cookie| WebTier
-    WebTier --> ServiceTier
-    ServiceTier --> NLPTier
-    ServiceTier --> MySQL
-    DocSvc --> FileStore
-    NLPTier --> Registry
+    User --> Routes
+    Routes --> Services
+    Services --> NLP
+    Services --> MySQL
+    DocSvc --> Uploads
+    NLP --> Registry
 ```
 
----
+Routes stay thin: they validate request inputs, enforce document ownership (`app/blueprints/guards.py`), call a service function, and render HTML or JSON.
 
-## 3. End-to-End Document Analysis Pipeline
+## Document ingestion and analysis flow
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    actor User as User Browser
-    participant Flask as Flask Controller (documents_bp)
-    participant DocSvc as Document Service
-    participant NLPExt as Extraction & Segmentation
-    participant NLPClass as Ensemble Classifier
-    participant NLPRisk as Risk & Missing Engine
-    participant DB as MySQL 8 (SQLAlchemy)
-    
-    User->>Flask: POST /api/documents/upload (Multipart PDF/DOCX/TXT)
-    Flask->>DocSvc: save_and_extract_document(file_bytes, filename)
-    DocSvc->>DocSvc: Validate magic bytes (%PDF, PK) & SHA-256 hash
-    DocSvc->>NLPExt: extract_document() -> Pages, Sections, OCR
-    DocSvc->>NLPExt: segment_clauses() & create_chunks()
-    DocSvc->>DB: INSERT into documents & document_chunks
-    DocSvc-->>Flask: Document (Status: UPLOADED)
-    
-    Flask->>DocSvc: Process Document Pipeline
-    DocSvc->>NLPClass: classify_clause() & calculate_clause_importance()
-    NLPClass->>NLPClass: DistilBERT LEDGAR + SBERT Prototype + Rules
-    NLPClass->>DB: INSERT into extracted_clauses (100% Exact Quotes)
-    
-    DocSvc->>NLPRisk: detect_clause_risks() & detect_missing_provisions()
-    NLPRisk->>NLPRisk: Apply risk_rules.yaml + Rule 7 Legal Guard
-    NLPRisk->>DB: INSERT into risk_findings & missing_clause_warnings
-    
-    DocSvc->>DB: UPDATE documents (Status: COMPLETED, verification_rate: 100.0)
-    DocSvc-->>Flask: Complete Analysis Bundle
-    Flask-->>User: HTTP 201 Created (Redirect /documents/<id>)
+    actor User
+    participant Routes as documents blueprint
+    participant DocSvc as document_service
+    participant NLP as app/nlp/
+    participant DB as MySQL 8
+
+    User->>Routes: POST /documents/upload or /api/documents/upload
+    Routes->>DocSvc: save_and_extract_document(file_bytes, filename)
+    DocSvc->>DocSvc: Validate extension, magic bytes, size, SHA-256 duplicate
+    DocSvc->>NLP: extract_document() -> pages and full text
+    DocSvc->>NLP: create_chunks()
+    DocSvc->>DB: Save Document and DocumentChunk rows
+    DocSvc->>NLP: segment_clauses(), classify_clause(), simplify_clause()
+    DocSvc->>DB: Save ExtractedClause rows (with exact source offsets)
+    DocSvc->>NLP: extract_contract_key_info(), generate_extractive_summary()
+    DocSvc->>DB: Save DocumentAnalysis and ExtractedInformation rows
+    DocSvc->>NLP: detect_clause_risks(), detect_missing_provisions()
+    DocSvc->>DB: Save RiskFinding and MissingClauseWarning rows
+    DocSvc->>DB: Update Document status (COMPLETED or COMPLETED_WITH_WARNINGS)
+    Routes-->>User: Redirect to /documents/<id> or return 201 JSON
 ```
 
----
+On startup, `app/__init__.py` checks for documents left in `EXTRACTING` or `ANALYZING` from an interrupted run and marks them `FAILED` with a recovery reason.
 
-## 4. Grounded Chat & Question Answering Flow
+## Document Q&A flow
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    actor User as User Browser
-    participant ChatAPI as POST /api/documents/<id>/chat
-    participant ChatSvc as Chat Service
-    participant QAEng as QA & Intent Engine
-    participant Retrieval as Hybrid Retrieval (SBERT + BM25)
-    participant Model as deepset/minilm-uncased-squad2
-    
-    User->>ChatAPI: {"message": "How many days notice to prevent renewal?"}
+    actor User
+    participant ChatAPI as chat blueprint
+    participant ChatSvc as chat_service
+    participant QA as qa_engine.py
+    participant Retrieval as retrieval.py
+    participant Model as minilm-uncased-squad2
+
+    User->>ChatAPI: POST /api/documents/<id>/chat
     ChatAPI->>ChatSvc: send_chat_message(user_id, doc_id, query)
-    ChatSvc->>QAEng: answer_document_query(query, analysis, chunks)
-    
-    rect rgb(240, 248, 255)
-        Note over QAEng: 1. Fact Intent Router
-        QAEng->>QAEng: Match regex intents (amount, dates, deadlines, parties)
-    end
-    
-    rect rgb(255, 250, 240)
-        Note over QAEng, Retrieval: 2. Hybrid Retrieval (if not resolved by metadata)
-        QAEng->>Retrieval: hybrid_retrieve_chunks(query, chunks, top_k=4)
-        Retrieval->>Retrieval: Dense Rank (SBERT) + Sparse Rank (BM25)
-        Retrieval->>Retrieval: Reciprocal Rank Fusion (RRF, k=60)
-        Retrieval-->>QAEng: Top-4 Attributed Chunks
-    end
-    
-    rect rgb(245, 255, 250)
-        Note over QAEng, Model: 3. Extractive QA & Honest Refusal
-        QAEng->>Model: Forward pass over candidate chunk text
-        Model-->>QAEng: start_logits, end_logits, null_score
-        QAEng->>QAEng: Delta = best_span_score - null_score
-        alt Delta >= 0.0 (Answerable)
-            QAEng-->>ChatSvc: Extracted Span Text + Page Citation Badge
-        else Delta < 0.0 (Unanswerable / Off-Topic)
-            QAEng-->>ChatSvc: Honest Refusal ("The document does not appear to address this.")
+    ChatSvc->>QA: answer_document_query(query, analysis, chunks)
+    QA->>QA: Check deterministic fact intents (amounts, dates, deadlines, parties)
+    alt Matched stored key fact
+        QA-->>ChatSvc: Fact answer with page citation
+    else General document question
+        QA->>Retrieval: hybrid_retrieve_chunks(query, chunks, top_k=4)
+        Retrieval-->>QA: Top chunks via SBERT + BM25 RRF (k=60)
+        QA->>Model: Score extractive answer span vs null score
+        alt span_score - null_score >= 0.0
+            QA-->>ChatSvc: Extracted span with page citation
+        else Below threshold
+            QA-->>ChatSvc: "The document does not appear to address this."
         end
     end
-    
-    ChatSvc->>ChatSvc: Persist ChatConversation & ChatMessage to DB
-    ChatSvc-->>ChatAPI: Response Payload
-    ChatAPI-->>User: HTTP 200 OK {"answer": "...", "citations": [{"page": 1, ...}]}
+    ChatSvc->>ChatSvc: Persist ChatConversation and ChatMessage
+    ChatAPI-->>User: 200 JSON with answer and citations
 ```
 
----
-
-## 5. Database Entity Relationship Diagram (ERD)
+## Database schema
 
 ```mermaid
 erDiagram
@@ -176,7 +144,6 @@ erDiagram
         string full_name
         string role
         datetime created_at
-        datetime updated_at
     }
 
     documents {
@@ -211,11 +178,6 @@ erDiagram
         json parties
         text summary_short
         text summary_detailed
-        json main_conditions
-        json obligations_summary
-        json financial_terms_summary
-        string llm_provider
-        string llm_model
         float verification_rate
     }
 
@@ -233,7 +195,6 @@ erDiagram
         text evidence_quote
         boolean quote_verified
         integer source_page
-        integer clause_index
     }
 
     risk_findings {
@@ -243,7 +204,6 @@ erDiagram
         string category
         string level
         string title
-        text original_clause
         text explanation
         text why_it_matters
         text possible_consequences
@@ -251,7 +211,6 @@ erDiagram
         integer source_page
         text evidence_quote
         boolean quote_verified
-        string jurisdiction_caveat
     }
 
     missing_clause_warnings {
@@ -268,41 +227,22 @@ erDiagram
         string id PK
         string analysis_id FK
         string contract_amount
-        integer contract_amount_page
         string payment_deadlines
-        integer payment_deadlines_page
         string penalties
-        integer penalties_page
         string start_date
-        integer start_date_page
         string end_date
-        integer end_date_page
         string renewal_date
-        integer renewal_date_page
         string notice_period
-        integer notice_period_page
         string termination_conditions
-        integer termination_conditions_page
         json obligations
         json important_dates
     }
 ```
 
----
+## Design constraints and trade-offs
 
-## 6. Security & Guardrail Guarantees
-
-1. **Deterministic Grounding**:
-   - Zero generative LLM hallucinations.
-   - 100% of quotes are exact substring slices verified against character offsets.
-2. **Rule 7 Legal Advice Guard**:
-   - Post-processor eliminates forbidden words (*"illegal"*, *"void"*, *"unenforceable"*, *"unlawful"*).
-   - Missing provisions are tagged with strict non-definitive labels: `"Possible omission"`.
-3. **Rule 6 Absent Field Invariant**:
-   - Missing metadata fields strictly default to `"Not specified"`.
-4. **Tenant Isolation**:
-   - All queries filter strictly by `user_id == current_user.id`.
-   - Access attempts to cross-user documents return HTTP 404 (preventing user ID enumeration).
-5. **Session & Transport Protection**:
-   - HTTP session cookies with `HttpOnly`, `SameSite=Lax`.
-   - Form protection via Flask-WTF CSRF tokens on all web form submissions.
+- **Source offset verification**: Every clause and evidence quote is checked as a slice of the extracted text (`quote_verified`). This prevents fabricated quotes, though it does not guarantee that a predicted category or risk rule is always right.
+- **Non-definitive wording**: `soften_legal_claims()` in `app/nlp/risk_engine.py` replaces absolute terms ("illegal", "void", "unenforceable", "unlawful") with cautious phrasing, and absent metadata fields default to `"Not specified"`.
+- **Rule-based simplification**: Simplification uses `data/glossary.yaml`, clause templates, and sentence splitting (`app/nlp/simplification/`) instead of a generative LLM. It preserves numbers, dates, and negations reliably, at the cost of less natural phrasing than a large language model.
+- **Model domain and format limits**: The LEDGAR DistilBERT weights come from US SEC filings, DOCX page numbers are approximate character-count estimates, and all NLP rules target English text only.
+- **User isolation**: Every document query filters by `current_user.id` and returns `404` when a document belongs to another account.

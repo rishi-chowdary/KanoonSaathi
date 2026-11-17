@@ -1,69 +1,46 @@
-# LexiLegal AI — 5-Minute Evaluation & Viva Demo Script
+# 5-Minute Demo Walkthrough
 
-This script provides an exact 5-minute step-by-step walkthrough for project examiners and evaluators to demonstrate all key features of the LexiLegal AI local Python NLP platform.
+This guide covers a straightforward 5-minute demonstration of LexiLegal AI running locally at `http://127.0.0.1:5000`.
 
----
+## Before you start
 
-## ⏱️ Timeline & Agenda
+Make sure the app is running (`./run_local.sh`) and keep `samples/contracts/rental_agreement.pdf` and `samples/contracts/one_sided_agreement.pdf` ready to upload.
 
-| Time | Phase | Target Demonstration | Key Takeaway |
-|---|---|---|---|
-| **0:00 – 1:00** | **System Overview & Dashboard** | Login, Tenant Isolation, Real SQL Stats, Chart.js Visuals | Pure Python stack, zero hardcoded numbers |
-| **1:00 – 2:00** | **Document Upload & Ingestion** | Upload `rental_agreement.pdf`, Extraction, Chunk Inspector | Verifiable character offsets, fast sub-second analysis |
-| **2:00 – 3:00** | **Clause Inventory & Simplification** | Tri-Tier modes, Flesch Reading Score, Exact Quote Verification | 100% exact substring slice invariant |
-| **3:00 – 4:00** | **Risk Detection & Grounded Q&A** | Predatory terms, Rule 7 Guard, SQuAD 2.0 honest refusal | Zero hallucination, strict legal guardrails |
-| **4:00 – 5:00** | **ReportLab PDF Dossier & Wrap-up** | 10-section PDF download, Running headers, Offline privacy | 100% on-premise execution, zero cloud APIs |
+## 1. Landing page, sign-in, and dashboard (0:00 - 1:00)
 
----
+1. Open `http://127.0.0.1:5000` to show the landing page and the honest limits list (not legal advice, extractive summaries, rule-based simplification, runs locally).
+2. Sign in (or register a fresh account).
+3. On the dashboard, point out:
+   - Totals are queried directly from MySQL for the logged-in user (a brand-new account shows zeros and an empty state).
+   - Risk charts by category and severity are drawn locally with Chart.js from `app/static/vendor/chart.js`.
+   - Light and dark mode toggle cleanly in the top bar.
 
-## Step-by-Step Walkthrough
+## 2. Upload and text extraction (1:00 - 2:00)
 
-### 1. Overview & Dashboard (0:00 – 1:00)
-1. **Open the web application** at `http://127.0.0.1:5000`.
-2. **Log in** with evaluator credentials (or click **Register** to create a fresh user in 5 seconds).
-3. **Show Dashboard**:
-   - Highlight the real-time aggregate metric cards: *Total Contracts*, *Analyzed*, *Identified Clauses*, *Risk Findings*, and *Average Verification Rate (100.0%)*.
-   - Point out the **Risk Category Doughnut Chart** and **Risk Severity Bar Chart** rendered dynamically via local static Chart.js (zero external CDN).
-   - Demonstrate **Tenant Isolation**: Show that statistics are strictly queried for `current_user.id` using real SQL aggregation; user accounts never leak data across sessions.
+1. Open **Upload** and choose `samples/contracts/one_sided_agreement.pdf` (or `rental_agreement.pdf`).
+2. Mention the upload checks: `.pdf`/`.docx`/`.txt` extensions, magic-byte validation (`%PDF`, `PK\x03\x04`), 10 MB limit, and SHA-256 duplicate detection per user.
+3. Wait about a second for extraction and analysis to complete, then open the **Text Chunks** tab to show the extracted page text with page numbers.
 
-### 2. Document Upload & Ingestion (1:00 – 2:00)
-1. Click **Upload Document** in the navigation header.
-2. Note the file validation safeguards: 10MB size limit, extension filtering (`.pdf`, `.docx`, `.txt`), magic byte verification (`%PDF`, `PK\x03\x04`), and SHA-256 duplicate content detection.
-3. Select and upload `samples/contracts/rental_agreement.pdf` (or `one_sided_agreement.pdf`).
-4. Review the completed document overview:
-   - Extraction executes in **under 0.5 seconds** (over 25x faster than cloud LLM APIs).
-   - Inspect the **Raw Text & Pages** tab showing exact layout-preserved page blocks.
+## 3. Clauses and simplification (2:00 - 3:00)
 
-### 3. Clause Analysis & Tri-Tier Simplification (2:00 – 3:00)
-1. Open the **Clause Analysis** tab:
-   - Filter clauses by category (*Payment Terms*, *Termination*, *Governing Law*) and importance (*High*, *Medium*, *Low*).
-   - Point out the **"✓ Quote Verified" badge**: 100% of quotes are exact substring slices verified against character offsets in source text.
-2. Demonstrate **Tri-Tier Simplification Modes**:
-   - *Simple English*: Plain-language explanation for consumer comprehension (5th–8th grade reading level).
-   - *Detailed Context*: Balanced contractual explanation for operations teams.
-   - *Professional Summary*: Commercial legal perspective with obligor/obligation structure.
-3. Open the **Simplification Studio** (`/studio`):
-   - Paste any convoluted contract clause.
-   - Show the live **Flesch Reading Ease** and **Flesch-Kincaid Grade Level** scores alongside legal glossary term tooltips.
+1. Open the **Extracted Clauses** tab:
+   - Filter by importance (`High`, `Medium`, `Low`), category, or keyword search.
+   - Show the `"From the document"` badge and exact character slice quote. Note that the source-match percentage checks that every quote is an exact slice of the extracted text, not an LLM paraphrase.
+   - Switch a clause between **Simple English**, **Detailed**, and **Professional** modes.
+2. Open **Studio** (`/studio`), load one of the sample clauses, and click **Analyze** to show the before/after Flesch Reading Ease score, matched glossary terms, and trap warnings.
 
-### 4. Grounded Risk Detection & Document Q&A (3:00 – 4:00)
-1. Switch to the **Risk Analysis** tab:
-   - Show color-coded severity badges (`HIGH`, `MEDIUM`, `LOW`) with evidence quotes and "Why This Matters" explanations.
-   - Point out **Rule 7 Compliance**: The system never uses forbidden words like *"illegal"*, *"void"*, or *"unenforceable"*, framing all findings as non-definitive advisory observations.
-   - Point out **Rule 6 Compliance**: Absent contract fields strictly display `"Not specified"`.
-   - Point out **Missing Provisions**: Standard omitted clauses are clearly tagged `"Possible omission"`.
-2. Open the **Document Q&A** tab:
-   - Click starter chip: *"What is the monthly rent amount and when is it due?"*
-   - Show assistant response citing `✓ Page 1` with exact grounded dollar amount ($2,400.00).
-   - **Hallucination & Honesty Probe**: Ask about non-existent terms (e.g., *"What is the tenant's post-employment non-compete restriction?"*).
-   - Demonstrate the **Honest Refusal Invariant**: The system truthfully responds *"The document does not appear to address this."* without inventing facts or hallucinating citations.
+## 4. Key info, risk flags, and Q&A (3:00 - 4:15)
 
-### 5. ReportLab PDF Dossier & Offline Privacy (4:00 – 5:00)
-1. Click **📄 Download PDF Report** in the document header.
-2. Open the downloaded PDF dossier:
-   - Walk through all **10 structured sections**: Executive Summary, Key Provisions, Tri-Tier Explanations, Grounded Risks, Financial Commitments, Critical Dates, Missing Provisions Checklist, Counsel Questions, and Regulatory Notice with SHA-256 integrity hash.
-   - Note the two-pass running header and footer with dynamic page numbers (`Page X of Y`).
-   - Note the crisp TrueType Unicode font rendering currency and legal symbols (`$`, `₹`, `§`, bullets).
-3. **Viva Conclusion**:
-   - Emphasize that **0 external API calls** were made, **0 cloud tokens** were consumed, and **$0.00** was spent on external services.
-   - The entire platform runs locally with complete data privacy, deterministic reproducibility, and verifiable factual grounding.
+1. Open **Key Information**: show extracted amounts, dates, notice periods, and parties, and point out that absent fields explicitly say `"Not specified"` instead of guessing.
+2. Open **Risk Analysis** and **Missing Provisions**:
+   - Show severity tags (`High`, `Medium`, `Low`), source quotes, and suggested questions to ask.
+   - Note that wording avoids absolute legal conclusions (no "illegal" or "void") and missing checks are labeled `"Possible omission"`.
+3. Open **Document Q&A**:
+   - Ask a question covered by the contract (for example, `"What is the monthly rent amount and when is it due?"` on `rental_agreement.pdf`) and point out the page citation.
+   - Ask an off-topic question (for example, `"What is the employee stock option vesting schedule?"`) to show the honest refusal: `"The document does not appear to address this."`
+
+## 5. PDF report and wrap-up (4:15 - 5:00)
+
+1. Click **Download report** in the document header to open the 10-section ReportLab PDF.
+2. Point out the running header/footer (`Page X of Y`), Unicode currency and legal symbols (`$`, `₹`, `§`), provenance labels, and closing disclaimer.
+3. Wrap up by noting that the entire demo ran offline with zero external API calls and zero cloud cost, and mention the real trade-offs (rule-based simplification sounds less natural than a large LLM, and the LEDGAR model was trained on US corporate contracts).

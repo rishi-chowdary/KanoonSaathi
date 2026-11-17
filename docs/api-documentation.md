@@ -1,372 +1,115 @@
-# LexiLegal AI — REST API Documentation
+# REST API Reference
 
-This document describes all client-facing REST API endpoints provided by the LexiLegal AI Python application.
+All JSON API endpoints live under `/api/*` on the Flask server (`http://127.0.0.1:5000` by default).
 
-- **Base URL**: `http://127.0.0.1:5000`
-- **Authentication**: Session cookie (`session`) managed via Flask-Login (obtained via `/api/auth/login` or `/api/auth/register`)
-- **CSRF Protection**: Web UI forms require Flask-WTF CSRF tokens; programmatic JSON APIs under `/api/*` are exempted for automated and headless test client integration.
+- **Authentication**: Session cookie (`session`) set by Flask-Login after calling `POST /api/auth/login` or `POST /api/auth/register`.
+- **CSRF**: Web HTML forms require a Flask-WTF CSRF token. JSON endpoints under `/api/*` are exempt for API clients and tests.
+- **User isolation**: Any document endpoint returns `404 Not Found` if the ID does not exist or belongs to another user.
 
----
-
-## 1. Authentication & User Profile
+## 1. Authentication
 
 ### `POST /api/auth/register`
-Registers a new user account, initializes the session, and returns user details.
-- **Request Body**:
-  ```json
-  {
-    "email": "counsel@example.com",
-    "password": "SecurePassword123!",
-    "full_name": "Sarah Connor"
-  }
-  ```
-- **Response**: `201 Created`
-  ```json
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "email": "counsel@example.com",
-    "full_name": "Sarah Connor",
-    "role": "USER",
-    "created_at": "2026-11-17T20:00:00Z"
-  }
-  ```
-- **Error Codes**: `400 Bad Request` (email already exists, password < 8 characters).
-
----
+Creates an account and starts a logged-in session.
+- **Body**: `{"email": "user@example.com", "password": "Password123!", "full_name": "Jane Doe"}`
+- **Success**: `201 Created` with user object (`id`, `email`, `full_name`, `role`, `created_at`).
+- **Errors**: `400 Bad Request` (duplicate email, missing fields, password shorter than 8 characters).
 
 ### `POST /api/auth/login`
-Authenticates user credentials and establishes an active session cookie. Rate-limited to prevent brute-force attacks.
-- **Request Body**:
-  ```json
-  {
-    "email": "counsel@example.com",
-    "password": "SecurePassword123!"
-  }
-  ```
-- **Response**: `200 OK`
-  ```json
-  {
-    "message": "Login successful",
-    "user": {
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "email": "counsel@example.com",
-      "full_name": "Sarah Connor",
-      "role": "USER"
-    }
-  }
-  ```
-- **Error Codes**: `401 Unauthorized` (invalid email or password).
-
----
+Verifies email and password and sets the session cookie. Rate-limited.
+- **Body**: `{"email": "user@example.com", "password": "Password123!"}`
+- **Success**: `200 OK` with `{"message": "Login successful", "user": {...}}`.
+- **Errors**: `401 Unauthorized` on invalid credentials.
 
 ### `POST /api/auth/logout`
-Terminates the current session and clears cookies.
-- **Response**: `200 OK`
-  ```json
-  {
-    "message": "Logout successful"
-  }
-  ```
-
----
+Clears the current session.
+- **Success**: `200 OK` with `{"message": "Logout successful"}`.
 
 ### `GET /api/auth/profile`
-Returns metadata and statistics for the currently authenticated user.
-- **Response**: `200 OK`
-  ```json
-  {
-    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    "email": "counsel@example.com",
-    "full_name": "Sarah Connor",
-    "role": "USER",
-    "created_at": "2026-11-17T20:00:00Z"
-  }
-  ```
+Returns profile fields for the logged-in user.
+- **Success**: `200 OK` with `id`, `email`, `full_name`, `role`, `created_at`.
 
----
-
-## 2. Document Ingestion & Pipeline
+## 2. Documents
 
 ### `POST /api/documents/upload`
-Uploads and ingests a contract document (PDF, DOCX, or TXT, up to 10MB). Automatically runs layout-aware extraction, OCR if required, clause segmentation, and entity extraction.
-- **Content-Type**: `multipart/form-data`
-- **Form Data**:
-  - `file`: binary file payload
-- **Response**: `201 Created`
-  ```json
-  {
-    "id": "7b84494a-8742-45e3-8208-d6e245a44365",
-    "originalFilename": "rental_agreement.pdf",
-    "fileType": "PDF",
-    "fileSize": 2649,
-    "pageCount": 2,
-    "status": "COMPLETED",
-    "createdAt": "2026-11-17T20:05:00Z"
-  }
-  ```
-- **Error Codes**: `400 Bad Request` (duplicate file upload, file > 10MB, corrupted file, unsupported extension).
-
----
+Uploads a PDF, DOCX, or TXT file (max 10 MB), validates extension and magic bytes, checks for a duplicate SHA-256 hash for this user, extracts text, and runs the NLP analysis pipeline.
+- **Content-Type**: `multipart/form-data` with field `file`.
+- **Success**: `201 Created` with document metadata (`id`, `originalFilename`, `fileType`, `fileSize`, `pageCount`, `status`, `createdAt`).
+- **Errors**: `400 Bad Request` (unsupported format, invalid magic bytes, empty/corrupted/encrypted file, duplicate upload).
 
 ### `GET /api/documents`
-Lists all documents uploaded by the current user, ordered newest first.
-- **Response**: `200 OK`
-  ```json
-  [
-    {
-      "id": "7b84494a-8742-45e3-8208-d6e245a44365",
-      "originalFilename": "rental_agreement.pdf",
-      "fileType": "PDF",
-      "fileSize": 2649,
-      "pageCount": 2,
-      "status": "COMPLETED",
-      "createdAt": "2026-11-17T20:05:00Z"
-    }
-  ]
-  ```
+Lists documents owned by the logged-in user, newest first.
+- **Success**: `200 OK` with JSON array of document objects.
 
----
+### `GET /api/documents/<doc_id>`
+Returns metadata and status for a single document.
+- **Success**: `200 OK` with document object.
 
-### `GET /api/documents/<id>`
-Retrieves full metadata and processing status for a single document.
-- **Response**: `200 OK` (Document object)
-- **Error Codes**: `404 Not Found` (document does not exist or belongs to another user).
+### `GET /api/documents/<doc_id>/status`
+Returns current processing status (`id`, `status`, `pageCount`, `failureReason`).
 
----
+### `GET /api/documents/<doc_id>/text`
+Returns extracted text chunks with page numbers (`documentId`, `pageCount`, `pages`).
 
-### `GET /api/documents/<id>/status`
-Lightweight polling endpoint to inspect extraction status.
-- **Response**: `200 OK`
-  ```json
-  {
-    "id": "7b84494a-8742-45e3-8208-d6e245a44365",
-    "status": "COMPLETED",
-    "pageCount": 2,
-    "failureReason": null
-  }
-  ```
+### `DELETE /api/documents/<doc_id>`
+Deletes the uploaded file from disk and cascades deletion across analyses, clauses, risks, key info, chunks, and chat conversations.
+- **Success**: `200 OK` with `{"message": "Document deleted successfully"}`.
 
----
+## 3. Analysis, clauses, and risks
 
-### `GET /api/documents/<id>/text`
-Returns the extracted raw text partitioned by page number.
-- **Response**: `200 OK`
-  ```json
-  {
-    "documentId": "7b84494a-8742-45e3-8208-d6e245a44365",
-    "pageCount": 2,
-    "pages": [
-      {
-        "pageNumber": 1,
-        "text": "RESIDENTIAL LEASE AGREEMENT..."
-      },
-      {
-        "pageNumber": 2,
-        "text": "Section 5. Maintenance..."
-      }
-    ]
-  }
-  ```
+### `GET /api/documents/<doc_id>/clauses`
+Returns extracted clauses for the document.
+- **Optional query params**: `category` (e.g. `Payment Terms`, `Termination`), `importance` (`HIGH`, `MEDIUM`, `LOW`).
+- **Response fields per clause**: `id`, `title`, `category`, `sectionReference`, `originalText`, `importance`, `evidenceQuote`, `quoteVerified`, `sourcePage`, `clauseIndex`, and `simplified` (`simple`, `detailed`, `professional`).
 
----
+### `GET /api/documents/<doc_id>/key-info`
+Returns extracted financial terms, dates, notice periods, termination conditions, and obligations. Fields absent from the contract return `"Not specified"`.
 
-### `DELETE /api/documents/<id>`
-Permanently deletes the document, its physical storage, and all associated clauses, chunks, risks, and conversations.
-- **Response**: `200 OK`
-  ```json
-  {
-    "message": "Document deleted successfully"
-  }
-  ```
+### `GET /api/documents/<doc_id>/summary`
+Returns the extractive short and detailed summaries, document type, purpose, and detected parties.
 
----
+### `GET /api/documents/<doc_id>/risks`
+Returns detected risk findings (`id`, `ruleId`, `category`, `level`, `title`, `explanation`, `whyItMatters`, `possibleConsequences`, `suggestedQuestions`, `sourcePage`, `evidenceQuote`, `quoteVerified`).
 
-## 3. Clause Analysis & Grounded Risks
+### `GET /api/documents/<doc_id>/missing-provisions`
+Returns expected clauses not found in the document, each tagged with `"label": "Possible omission"`.
 
-### `GET /api/documents/<id>/clauses`
-Retrieves classified clauses for the document with optional category and importance filters.
-- **Query Parameters**:
-  - `category` (optional, e.g. `Payment Terms`, `Termination`, `Liability`)
-  - `importance` (optional: `HIGH`, `MEDIUM`, `LOW`)
-- **Response**: `200 OK`
-  ```json
-  [
-    {
-      "id": "c1a2b3c4-...",
-      "title": "Section 2. Monthly Rent and Payment Terms",
-      "category": "Payment Terms",
-      "sectionReference": "Section 2",
-      "originalText": "Tenant agrees to pay Landlord a monthly rent of $2,400.00...",
-      "importance": "HIGH",
-      "evidenceQuote": "monthly rent of $2,400.00, payable in advance on or before the first",
-      "quoteVerified": true,
-      "sourcePage": 1,
-      "clauseIndex": 2,
-      "simplified": {
-        "simple": "Tenant pays $2,400.00 monthly rent on the first of each month.",
-        "detailed": "...",
-        "professional": "..."
-      }
-    }
-  ]
-  ```
+### `GET /api/documents/<doc_id>/risk-distribution`
+Returns counts grouped by `byLevel` (`HIGH`, `MEDIUM`, `LOW`) and `byCategory` for Chart.js.
 
----
+## 4. Document Q&A
 
-### `GET /api/documents/<id>/risks`
-Returns all contractual risk findings grounded directly in verified source text.
-- **Response**: `200 OK`
-  ```json
-  [
-    {
-      "id": "r1a2b3...",
-      "ruleId": "FIN_SEVERE_LATE_FEE",
-      "category": "Financial",
-      "level": "HIGH",
-      "title": "Severe Late Charges and Accelerated Administrative Fees",
-      "explanation": "The payment window is unusually short, and late interest accrues at an elevated rate...",
-      "whyItMatters": "Even minor administrative delays could cause penalties and interest to compound rapidly.",
-      "possibleConsequences": "Substantial unexpected financial liabilities accumulating quickly.",
-      "suggestedQuestions": [
-        "Can the payment grace period be extended to 30 days?"
-      ],
-      "sourcePage": 1,
-      "evidenceQuote": "Late interest shall accrue at 2.5% per month, compounded daily",
-      "quoteVerified": true
-    }
-  ]
-  ```
+### `POST /api/documents/<doc_id>/chat`
+Answers a question from the document's extracted facts and text chunks.
+- **Body**: `{"message": "What is the monthly rent?", "conversation_id": null}`
+- **Success**: `200 OK` with `conversationId`, `messageId`, `role`, `answer`, `citations` (page number, section reference, quote, `quoteVerified`), `addressedInDocument`, `confidence`, and `createdAt`.
+- When no passage meets the confidence threshold, `addressedInDocument` is `false` and `answer` is `"The document does not appear to address this."`.
 
----
+### `GET /api/documents/<doc_id>/chat/conversations`
+Lists conversation threads for the document.
 
-### `GET /api/documents/<id>/missing-provisions`
-Returns missing standard provisions evaluated against the document type checklist.
-- **Response**: `200 OK`
-  ```json
-  [
-    {
-      "id": "m1a2b3...",
-      "clauseName": "Carve-outs from Confidential Information",
-      "riskLevel": "HIGH",
-      "whyItMatters": "Without explicit carve-outs for public domain or independently developed information...",
-      "label": "Possible omission"
-    }
-  ]
-  ```
+### `GET /api/documents/<doc_id>/chat/conversations/<conversation_id>/messages`
+Returns ordered messages and citations for a conversation.
 
----
+### `DELETE /api/documents/<doc_id>/chat/conversations/<conversation_id>`
+Deletes a conversation thread and its messages.
 
-### `GET /api/documents/<id>/risk-distribution`
-Aggregated counts of risks grouped by severity level and category for Chart.js rendering.
-- **Response**: `200 OK`
-  ```json
-  {
-    "byLevel": {
-      "HIGH": 3,
-      "MEDIUM": 2,
-      "LOW": 1
-    },
-    "byCategory": {
-      "Financial": 2,
-      "Liability": 2,
-      "Contractual": 2
-    }
-  }
-  ```
+## 5. Simplification studio
 
----
+### `POST /api/simplify`
+Simplifies an arbitrary legal clause without uploading a full document.
+- **Body**: `{"text": "...", "mode": "simple_english", "category": "INDEMNITY", "affected_party": "Tenant"}`
+- **Success**: `200 OK` with `simple`, `detailed`, `professional`, Flesch readability scores before and after, matched glossary terms, and trap warnings.
 
-## 4. Grounded Document Chat (Extractive Q&A)
+### `GET /api/glossary`
+Returns the local legal glossary entries from `data/glossary.yaml`.
 
-### `POST /api/documents/<id>/chat`
-Submits a user question about the document and returns a grounded extractive answer with page citations.
-- **Request Body**:
-  ```json
-  {
-    "message": "What is the monthly rent and when is it due?",
-    "conversation_id": null
-  }
-  ```
-- **Response**: `200 OK`
-  ```json
-  {
-    "conversationId": "chat-uuid-1234",
-    "messageId": "msg-uuid-5678",
-    "role": "ASSISTANT",
-    "answer": "The specified contract/payment amount is $2,400.00. Payment schedule/deadline: on or before the first (1st) day of each calendar month.",
-    "citations": [
-      {
-        "page": 1,
-        "sectionRef": "Page 1",
-        "quote": "$2,400.00",
-        "quoteVerified": true
-      }
-    ],
-    "addressedInDocument": true,
-    "confidence": 1.0,
-    "createdAt": "2026-11-17T20:10:00Z"
-  }
-  ```
+## 6. Reports and dashboard
 
----
+### `GET /api/documents/<doc_id>/report`
+Downloads the 10-section PDF report (`Content-Type: application/pdf`, `Content-Disposition: attachment`).
 
-### `GET /api/documents/<id>/chat/conversations`
-Lists all conversation threads for this document.
-- **Response**: `200 OK` (Array of conversation objects)
-
----
-
-### `GET /api/documents/<id>/chat/conversations/<conversation_id>/messages`
-Retrieves multi-turn message history for a specific conversation thread.
-- **Response**: `200 OK` (Array of user/assistant message objects with citations)
-
----
-
-### `DELETE /api/documents/<id>/chat/conversations/<conversation_id>`
-Deletes a conversation thread and its message history.
-- **Response**: `200 OK` `{"message": "Conversation deleted successfully"}`
-
----
-
-## 5. ReportLab PDF Dossier & Dashboard
-
-### `GET /api/documents/<id>/report`
-Generates and downloads the formal 10-section ReportLab PDF Legal Dossier.
-- **Response Headers**:
-  - `Content-Type: application/pdf`
-  - `Content-Disposition: attachment; filename="<filename>_Analysis_Report.pdf"`
-- **Response**: Raw PDF binary stream.
-
----
-
-### `GET /documents/<id>/report.pdf`
-Streams the 10-section ReportLab PDF directly to the browser for inline preview.
-- **Response Headers**:
-  - `Content-Type: application/pdf`
-  - `Content-Disposition: inline; filename="<filename>_Analysis_Report.pdf"`
-
----
+### `GET /documents/<doc_id>/report.pdf`
+Streams the same PDF report inline for browser preview (`Content-Disposition: inline`).
 
 ### `GET /api/dashboard/stats`
-Computes real SQL aggregate metrics filtered strictly on `current_user.id` (zero hardcoded numbers).
-- **Response**: `200 OK`
-  ```json
-  {
-    "totalDocuments": 3,
-    "analyzedDocuments": 3,
-    "failedDocuments": 0,
-    "totalClauses": 24,
-    "totalRisks": 7,
-    "averageVerificationRate": 100.0,
-    "riskDistributionByLevel": {
-      "HIGH": 3,
-      "MEDIUM": 3,
-      "LOW": 1
-    },
-    "riskDistributionByCategory": {
-      "Liability": 3,
-      "Contractual": 2,
-      "Financial": 2
-    }
-  }
-  ```
+Returns per-user SQL aggregates: `totalDocuments`, `analyzedDocuments`, `failedDocuments`, `totalClauses`, `totalRisks`, `averageVerificationRate`, `riskDistributionByLevel`, and `riskDistributionByCategory`.
