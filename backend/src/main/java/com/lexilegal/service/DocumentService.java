@@ -2,9 +2,11 @@ package com.lexilegal.service;
 
 import com.lexilegal.dto.response.*;
 import com.lexilegal.entity.Document;
+import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
 import com.lexilegal.entity.User;
 import com.lexilegal.exception.ResourceNotFoundException;
+import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.UserRepository;
@@ -24,6 +26,7 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
+    private final DocumentAnalysisRepository documentAnalysisRepository;
     private final UserRepository userRepository;
     private final DocumentStorageService storageService;
     private final DocumentAsyncPipeline asyncPipeline;
@@ -31,11 +34,13 @@ public class DocumentService {
     public DocumentService(
             DocumentRepository documentRepository,
             DocumentChunkRepository documentChunkRepository,
+            DocumentAnalysisRepository documentAnalysisRepository,
             UserRepository userRepository,
             DocumentStorageService storageService,
             DocumentAsyncPipeline asyncPipeline) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
+        this.documentAnalysisRepository = documentAnalysisRepository;
         this.userRepository = userRepository;
         this.storageService = storageService;
         this.asyncPipeline = asyncPipeline;
@@ -77,7 +82,7 @@ public class DocumentService {
 
         Document saved = documentRepository.save(document);
 
-        // Trigger asynchronous extraction pipeline
+        // Trigger asynchronous extraction + summarization pipeline
         asyncPipeline.processDocumentAsync(saved.getId());
 
         return new DocumentUploadResponse(
@@ -99,23 +104,23 @@ public class DocumentService {
 
         if (hasSearch && hasStatus) {
             pageResult = documentRepository.findByUserIdAndStatusAndOriginalFilenameContainingIgnoreCaseOrderByCreatedAtDesc(
-                    userId, status.toUpperCase(), search.trim(), pageable);
+                    userId, status.trim().toUpperCase(), search.trim(), pageable);
         } else if (hasSearch) {
             pageResult = documentRepository.findByUserIdAndOriginalFilenameContainingIgnoreCaseOrderByCreatedAtDesc(
                     userId, search.trim(), pageable);
         } else if (hasStatus) {
             pageResult = documentRepository.findByUserIdAndStatusOrderByCreatedAtDesc(
-                    userId, status.toUpperCase(), pageable);
+                    userId, status.trim().toUpperCase(), pageable);
         } else {
             pageResult = documentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
         }
 
-        List<DocumentResponse> list = pageResult.getContent().stream()
+        List<DocumentResponse> dtoList = pageResult.getContent().stream()
                 .map(this::mapToResponse)
-                .toList();
+                .collect(Collectors.toList());
 
         return new PageResponse<>(
-                list,
+                dtoList,
                 pageResult.getNumber(),
                 pageResult.getSize(),
                 pageResult.getTotalElements(),
@@ -132,11 +137,13 @@ public class DocumentService {
     public DocumentStatusResponse getStatus(UUID userId, UUID id) {
         Document doc = documentRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+        boolean hasAnalysis = documentAnalysisRepository.findByDocumentId(id).isPresent();
         return new DocumentStatusResponse(
                 doc.getId(),
                 doc.getStatus(),
                 doc.getPageCount(),
                 doc.getFailureReason(),
+                hasAnalysis,
                 doc.getUpdatedAt()
         );
     }
@@ -176,6 +183,40 @@ public class DocumentService {
         }
 
         return response;
+    }
+
+    public AnalysisSummaryResponse getAnalysis(UUID userId, UUID id) {
+        Document doc = documentRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(doc.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("analysis not found for this document"));
+
+        AnalysisSummaryResponse resp = new AnalysisSummaryResponse();
+        resp.setId(analysis.getId());
+        resp.setDocumentId(doc.getId());
+        resp.setTitle(analysis.getTitle());
+        resp.setDocumentType(analysis.getDocumentType());
+        resp.setPurpose(analysis.getPurpose());
+        resp.setParties(analysis.getParties());
+        resp.setShortSummary(analysis.getSummaryShort());
+        resp.setDetailedSummary(analysis.getSummaryDetailed());
+        resp.setMainConditions(analysis.getMainConditions());
+        resp.setObligationsSummary(analysis.getObligationsSummary());
+        resp.setFinancialTermsSummary(analysis.getFinancialTermsSummary());
+        resp.setVerificationRate(analysis.getVerificationRate());
+        resp.setLlmProvider(analysis.getLlmProvider());
+        resp.setLlmModel(analysis.getLlmModel());
+        resp.setCreatedAt(analysis.getCreatedAt());
+        resp.setUpdatedAt(analysis.getUpdatedAt());
+        return resp;
+    }
+
+    public void reanalyze(UUID userId, UUID id) {
+        Document doc = documentRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("document not found"));
+
+        asyncPipeline.reanalyzeDocumentAsync(doc.getId());
     }
 
     @Transactional

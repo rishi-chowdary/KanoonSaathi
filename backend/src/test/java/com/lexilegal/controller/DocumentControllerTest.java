@@ -5,6 +5,8 @@ import com.lexilegal.dto.request.RegisterRequest;
 import com.lexilegal.dto.response.AuthResponse;
 import com.lexilegal.entity.Document;
 import com.lexilegal.entity.User;
+import com.lexilegal.entity.DocumentAnalysis;
+import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.repository.UserRepository;
@@ -43,6 +45,9 @@ class DocumentControllerTest {
     @Autowired
     private DocumentChunkRepository documentChunkRepository;
 
+    @Autowired
+    private DocumentAnalysisRepository documentAnalysisRepository;
+
     private String userAToken;
     private User userA;
     private String userBToken;
@@ -50,6 +55,7 @@ class DocumentControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        documentAnalysisRepository.deleteAll();
         documentChunkRepository.deleteAll();
         documentRepository.deleteAll();
         userRepository.deleteAll();
@@ -265,6 +271,91 @@ class DocumentControllerTest {
         // Subsequent access should return 404
         mockMvc.perform(get("/api/documents/" + docId)
                         .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetAnalysisSuccess() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 sample for analysis".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "contract.pdf", "application/pdf", pdfContent);
+
+        MvcResult uploadResult = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        String docId = objectMapper.readTree(uploadResult.getResponse().getContentAsString()).get("id").asText();
+        Document doc = documentRepository.findById(UUID.fromString(docId)).orElseThrow();
+
+        // Create and save a DocumentAnalysis entity
+        DocumentAnalysis analysis = new DocumentAnalysis();
+        analysis.setDocument(doc);
+        analysis.setTitle("Sample NDA");
+        analysis.setDocumentType("Non-Disclosure Agreement (NDA)");
+        analysis.setPurpose("Protection of proprietary trade secrets");
+        analysis.setSummaryShort("A 2-year mutual non-disclosure agreement.");
+        analysis.setSummaryDetailed("This agreement establishes reciprocal covenants between the parties.");
+        analysis.setParties("[{\"name\":\"Acme Corp\",\"role\":\"Discloser\"}]");
+        analysis.setMainConditions("[{\"text\":\"Keep secret\",\"provenance\":\"EXTRACTED\"}]");
+        analysis.setObligationsSummary("[]");
+        analysis.setFinancialTermsSummary("[]");
+        analysis.setLlmProvider("mock");
+        analysis.setLlmModel("mock-v1");
+        analysis.setVerificationRate(new java.math.BigDecimal("100.00"));
+        documentAnalysisRepository.save(analysis);
+
+        // Fetch analysis as User A
+        mockMvc.perform(get("/api/documents/" + docId + "/analysis")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", is("Sample NDA")))
+                .andExpect(jsonPath("$.documentType", is("Non-Disclosure Agreement (NDA)")))
+                .andExpect(jsonPath("$.shortSummary", containsString("2-year mutual")))
+                .andExpect(jsonPath("$.llmProvider", is("mock")));
+    }
+
+    @Test
+    void testGetAnalysisCrossTenant404() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 sample for tenant isolation".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "tenant.pdf", "application/pdf", pdfContent);
+
+        MvcResult uploadResult = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        String docId = objectMapper.readTree(uploadResult.getResponse().getContentAsString()).get("id").asText();
+
+        // User B requesting User A's analysis must return 404
+        mockMvc.perform(get("/api/documents/" + docId + "/analysis")
+                        .header("Authorization", "Bearer " + userBToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testReanalyzeEndpoint() throws Exception {
+        byte[] pdfContent = "%PDF-1.4 sample for reanalyze".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "reanalyze.pdf", "application/pdf", pdfContent);
+
+        MvcResult uploadResult = mockMvc.perform(multipart("/api/documents/upload")
+                        .file(file)
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andReturn();
+
+        String docId = objectMapper.readTree(uploadResult.getResponse().getContentAsString()).get("id").asText();
+
+        // User A calls reanalyze -> 202 Accepted
+        mockMvc.perform(post("/api/documents/" + docId + "/reanalyze")
+                        .header("Authorization", "Bearer " + userAToken))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.status", is("ANALYZING")));
+
+        // User B calls reanalyze on User A's doc -> 404
+        mockMvc.perform(post("/api/documents/" + docId + "/reanalyze")
+                        .header("Authorization", "Bearer " + userBToken))
                 .andExpect(status().isNotFound());
     }
 }

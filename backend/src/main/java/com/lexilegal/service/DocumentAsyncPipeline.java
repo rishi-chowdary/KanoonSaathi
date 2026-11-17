@@ -1,10 +1,14 @@
 package com.lexilegal.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lexilegal.dto.ai.ChunkDto;
+import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
 import com.lexilegal.dto.ai.PageDto;
 import com.lexilegal.entity.Document;
+import com.lexilegal.entity.DocumentAnalysis;
 import com.lexilegal.entity.DocumentChunk;
+import com.lexilegal.repository.DocumentAnalysisRepository;
 import com.lexilegal.repository.DocumentChunkRepository;
 import com.lexilegal.repository.DocumentRepository;
 import com.lexilegal.service.client.AiEngineClient;
@@ -16,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -26,15 +30,21 @@ public class DocumentAsyncPipeline {
 
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
+    private final DocumentAnalysisRepository documentAnalysisRepository;
     private final AiEngineClient aiEngineClient;
+    private final ObjectMapper objectMapper;
 
     public DocumentAsyncPipeline(
             DocumentRepository documentRepository,
             DocumentChunkRepository documentChunkRepository,
-            AiEngineClient aiEngineClient) {
+            DocumentAnalysisRepository documentAnalysisRepository,
+            AiEngineClient aiEngineClient,
+            ObjectMapper objectMapper) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
+        this.documentAnalysisRepository = documentAnalysisRepository;
         this.aiEngineClient = aiEngineClient;
+        this.objectMapper = objectMapper;
     }
 
     @Async
@@ -46,6 +56,7 @@ public class DocumentAsyncPipeline {
         }
 
         try {
+            // Step 1: Extraction
             document.setStatus("EXTRACTING");
             document = documentRepository.save(document);
             log.info("extracting document {}: {}", documentId, document.getOriginalFilename());
@@ -55,7 +66,9 @@ public class DocumentAsyncPipeline {
 
             ExtractionResponseDto extraction = aiEngineClient.extract(resource, document.getOriginalFilename());
 
+            List<ChunkDto> chunksList = new ArrayList<>();
             if (extraction.getChunks() != null && !extraction.getChunks().isEmpty()) {
+                chunksList.addAll(extraction.getChunks());
                 for (ChunkDto chunkDto : extraction.getChunks()) {
                     DocumentChunk chunk = new DocumentChunk();
                     chunk.setDocument(document);
@@ -66,7 +79,6 @@ public class DocumentAsyncPipeline {
                     documentChunkRepository.save(chunk);
                 }
             } else if (extraction.getPages() != null && !extraction.getPages().isEmpty()) {
-                // If chunker returned empty chunks (e.g. text was very short), store pages directly
                 int idx = 0;
                 for (PageDto pageDto : extraction.getPages()) {
                     if (pageDto.getText() != null && !pageDto.getText().isBlank()) {
@@ -77,6 +89,14 @@ public class DocumentAsyncPipeline {
                         chunk.setContent(pageDto.getText());
                         chunk.setTokenCount(Math.max(1, pageDto.getText().length() / 4));
                         documentChunkRepository.save(chunk);
+
+                        ChunkDto cd = new ChunkDto();
+                        cd.setChunkIndex(chunk.getChunkIndex());
+                        cd.setPageStart(chunk.getPageNumber());
+                        cd.setPageEnd(chunk.getPageNumber());
+                        cd.setContent(chunk.getContent());
+                        cd.setTokenCount(chunk.getTokenCount());
+                        chunksList.add(cd);
                     }
                 }
             }
@@ -92,16 +112,106 @@ public class DocumentAsyncPipeline {
             document.setIsScanned(isScanned);
             document.setStatus("EXTRACTED");
             document.setFailureReason(null);
-            documentRepository.save(document);
+            document = documentRepository.save(document);
             log.info("document {} successfully extracted into {} pages", documentId, pageCount);
 
+            // Step 2: Analysis (Summary)
+            runAnalysis(document, extraction.getPages(), chunksList);
+
         } catch (Exception e) {
-            log.error("extraction pipeline failed for document {}", documentId, e);
+            log.error("pipeline failed for document {}", documentId, e);
             document.setStatus("FAILED");
-            document.setFailureReason("Extraction failed: " + e.getMessage());
+            document.setFailureReason(e.getMessage());
             documentRepository.save(document);
         }
-
         return CompletableFuture.completedFuture(null);
+    }
+
+    @Async
+    public CompletableFuture<Void> reanalyzeDocumentAsync(UUID documentId) {
+        Document document = documentRepository.findById(documentId).orElse(null);
+        if (document == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        try {
+            document.setStatus("ANALYZING");
+            document.setFailureReason(null);
+            document = documentRepository.save(document);
+
+            List<DocumentChunk> dbChunks = documentChunkRepository.findByDocumentIdOrderByChunkIndexAsc(documentId);
+            List<ChunkDto> chunksList = new ArrayList<>();
+            Map<Integer, StringBuilder> pageMap = new TreeMap<>();
+
+            for (DocumentChunk c : dbChunks) {
+                ChunkDto cd = new ChunkDto();
+                cd.setChunkIndex(c.getChunkIndex());
+                cd.setPageStart(c.getPageNumber());
+                cd.setPageEnd(c.getPageNumber());
+                cd.setContent(c.getContent());
+                cd.setTokenCount(c.getTokenCount());
+                chunksList.add(cd);
+
+                pageMap.computeIfAbsent(c.getPageNumber(), k -> new StringBuilder())
+                        .append(c.getContent()).append("\n\n");
+            }
+
+            List<PageDto> pagesList = new ArrayList<>();
+            for (Map.Entry<Integer, StringBuilder> entry : pageMap.entrySet()) {
+                PageDto pd = new PageDto();
+                pd.setPageNumber(entry.getKey());
+                pd.setText(entry.getValue().toString().trim());
+                pd.setOcrUsed(Boolean.TRUE.equals(document.getIsScanned()));
+                pagesList.add(pd);
+            }
+
+            runAnalysis(document, pagesList, chunksList);
+
+        } catch (Exception e) {
+            log.error("reanalysis failed for document {}", documentId, e);
+            document.setStatus("FAILED");
+            document.setFailureReason("Reanalysis failed: " + e.getMessage());
+            documentRepository.save(document);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+
+    private void runAnalysis(Document document, List<PageDto> pages, List<ChunkDto> chunks) throws Exception {
+        document.setStatus("ANALYZING");
+        documentRepository.save(document);
+        log.info("running summary analysis for document {}", document.getId());
+
+        DocumentSummaryResponseDto summaryDto = aiEngineClient.analyzeSummary(
+                document.getId().toString(),
+                pages != null ? pages : Collections.emptyList(),
+                chunks != null ? chunks : Collections.emptyList()
+        );
+
+        DocumentAnalysis analysis = documentAnalysisRepository.findByDocumentId(document.getId())
+                .orElseGet(() -> {
+                    DocumentAnalysis a = new DocumentAnalysis();
+                    a.setDocument(document);
+                    return a;
+                });
+
+        analysis.setTitle(summaryDto.getTitle());
+        analysis.setDocumentType(summaryDto.getDocumentType());
+        analysis.setPurpose(summaryDto.getPurpose());
+        analysis.setSummaryShort(summaryDto.getShortSummary());
+        analysis.setSummaryDetailed(summaryDto.getDetailedSummary());
+        analysis.setParties(objectMapper.writeValueAsString(summaryDto.getParties()));
+        analysis.setMainConditions(objectMapper.writeValueAsString(summaryDto.getMainConditions()));
+        analysis.setObligationsSummary(objectMapper.writeValueAsString(summaryDto.getObligations()));
+        analysis.setFinancialTermsSummary(objectMapper.writeValueAsString(summaryDto.getFinancialTerms()));
+        analysis.setLlmProvider(summaryDto.getLlmProvider() != null ? summaryDto.getLlmProvider() : "gemini");
+        analysis.setLlmModel(summaryDto.getLlmModel() != null ? summaryDto.getLlmModel() : "gemini-1.5-flash");
+        analysis.setVerificationRate(summaryDto.getVerificationRate() != null ? summaryDto.getVerificationRate() : java.math.BigDecimal.ZERO);
+
+        documentAnalysisRepository.save(analysis);
+
+        document.setStatus("COMPLETED");
+        document.setFailureReason(null);
+        documentRepository.save(document);
+        log.info("document {} analysis completed successfully, verification rate: {}%", document.getId(), analysis.getVerificationRate());
     }
 }

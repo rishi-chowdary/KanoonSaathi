@@ -1,7 +1,6 @@
 package com.lexilegal.controller;
 
 import com.lexilegal.dto.response.*;
-import com.lexilegal.entity.User;
 import com.lexilegal.security.UserPrincipal;
 import com.lexilegal.service.DocumentService;
 import org.springframework.http.HttpStatus;
@@ -11,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -65,6 +65,25 @@ public class DocumentController {
             @RequestParam(name = "page", required = false) Integer page) {
         DocumentTextResponse response = documentService.getText(principal.getId(), id, page);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/analysis")
+    public ResponseEntity<AnalysisSummaryResponse> getAnalysis(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        AnalysisSummaryResponse response = documentService.getAnalysis(principal.getId(), id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/reanalyze")
+    public ResponseEntity<Map<String, String>> reanalyze(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        documentService.reanalyze(principal.getId(), id);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                "status", "ANALYZING",
+                "message", "Document reanalysis triggered successfully"
+        ));
     }
 
     @DeleteMapping("/{id}")

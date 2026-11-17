@@ -11,7 +11,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 1 | Toolchain Setup & Project Scaffolding | Completed | 2026-11-16 |
 | Phase 2 | Database Schema, All Entities & Complete Auth Flow (Backend + Frontend) | Completed | 2026-11-16 |
 | Phase 3 | Document Extraction, OCR, Chunking, Upload Pipeline & Text Preview (Full Stack) | Completed | 2026-11-17 |
-| Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Not Started | - |
+| Phase 4 | FastAPI AI Engine: LLM Providers, Structured Analysis & Quote Verification | Completed | 2026-11-17 |
 | Phase 5 | Spring Boot Backend: Document Storage, Hash Caching & Async Pipeline | Not Started | - |
 | Phase 6 | Spring Boot Backend: Analysis Persistence & Full-Text Search Retrieval | Not Started | - |
 | Phase 7 | Spring Boot Backend: OpenPDF Report Generation & Dashboard Statistics | Not Started | - |
@@ -302,14 +302,81 @@ node frontend/test-phase3-full-verification.cjs
 ```
 
 ### Phase 4: FastAPI AI Engine — LLM Providers, Structured Analysis & Verification
-- [ ] Implement `LLMProvider` abstraction with `GeminiProvider` and `OllamaProvider`
-- [ ] Implement exponential backoff for rate limits and connection retries
-- [ ] Define Pydantic v2 validation schemas for summary, clauses, risks, key information, and missing clauses
-- [ ] Implement map-reduce analysis pipeline for long documents
-- [ ] Implement evidence quote verifier with normalized fuzzy matching (threshold >= 0.9)
-- [ ] Add prompt injection mitigation tests and delimiters
-- [ ] Create `/internal/analyze` and `/internal/chat` endpoints
-- [ ] Write unit tests for schemas, verification, and mock LLM flows
+- [x] Implement `LLMProvider` abstraction (`base.py`) with `GeminiProvider`, `OllamaProvider`, and `MockProvider` (strictly test-only)
+- [x] Implement exponential backoff for rate limits, connection retries, and timeout handling
+- [x] Define Pydantic v2 validation schemas for summary (`PartyItem`, `GroundedItem`, `ChunkSummaryExtraction`, `DocumentSummaryResponse`)
+- [x] Implement map-reduce analysis pipeline for long documents with chunk-level mapping and synthesis reduction
+- [x] Implement evidence quote verifier with normalized fuzzy matching (threshold >= 0.90) and sliding token window
+- [x] Add prompt injection mitigation tests and `<document_content>` untrusted data delimiters
+- [x] Expose protected `POST /internal/analyze/summary` and public `POST /analyze/summary` endpoints
+- [x] Write 7 unit tests in `tests/test_summary.py` (total 23 pytest tests passing)
+- [x] Extend Spring Boot `@Async` pipeline: `EXTRACTED` -> `ANALYZING` (progress percentage & step indicator) -> AI engine call -> `document_analyses` persistence -> `COMPLETED`
+- [x] Expose Spring Boot endpoints: `GET /api/documents/{id}/analysis` and `POST /api/documents/{id}/reanalyze` with strict tenant isolation (HTTP 404 for non-owners)
+- [x] Build frontend `SummaryTab.jsx`: short/detailed toggle ("Executive" / "Comprehensive"), identified parties, conditions, obligations, financial terms, grounding score badge, model & version pill, loading skeletons, error retry state, and reanalyze action
+- [x] Build frontend `ProvenanceBadge.jsx`: `EXTRACTED` ("Extracted"), `AI_INTERPRETATION` ("AI Interpretation"), page citation, verified checkmark, and "Unverified Quote" warning
+- [x] Integrate `SummaryTab` into `AnalysisPage.jsx` with real-time status polling
+- [x] Verify full stack end-to-end with Puppeteer browser test (`frontend/test-phase4-e2e.cjs`)
+
+**What was built:**
+- AI Engine (`ai-engine/`):
+  - `app/providers/base.py`: Abstract `LLMProvider` interface defining structured JSON generation with schema validation, temperature control, and provider naming.
+  - `app/providers/gemini_provider.py`: Google Gemini provider (`gemini-1.5-flash`) leveraging structured output schema mode via Google GenAI SDK with exponential backoff on HTTP 429/5xx and token/latency instrumentation.
+  - `app/providers/ollama_provider.py`: Local Ollama provider with native JSON schema grammar enforcement (`format: schema`), configurable timeout (180s), and token logging.
+  - `app/providers/mock_provider.py`: Deterministic mock provider exclusively for isolated unit tests.
+  - `app/prompts/v1/`: Versioned prompt templates (`system_prompt.txt`, `summary_chunk_prompt.txt`, `summary_reduce_prompt.txt`) wrapping document text in explicit `<document_content>` delimiters with anti-prompt-injection instructions.
+  - `app/services/quote_verifier.py`: Evidence quote grounder performing whitespace/case normalization, substring matching, sliding token window fuzzy matching (`SequenceMatcher >= 0.90`), and overall document verification rate calculation.
+  - `app/services/llm_validator.py`: `generate_with_retry` loop providing automated validation and error feedback retries.
+  - `app/services/summary_service.py`: Map-reduce orchestration: single-pass for short contracts or multi-chunk map extraction followed by executive synthesis reduction.
+  - `app/api/routes.py`: Mounted `POST /internal/analyze/summary` and `POST /analyze/summary`.
+  - `tests/test_summary.py`: 7 automated tests covering exact quote match, fuzzy quote match, hallucination rejection, verification rate calculation, mock provider generation, summary API route, and internal auth.
+- Backend (`backend/`):
+  - DTOs: `PartyItemDto`, `GroundedItemDto`, `DocumentSummaryRequestDto`, `DocumentSummaryResponseDto`, and `AnalysisSummaryResponse`.
+  - Extended `DocumentStatusResponse` with `progressPercentage`, `progressStep`, and `hasAnalysis`.
+  - `AiEngineClient`: Added `analyzeSummary(documentId, pages, chunks)` using RestClient with 180s read timeout and `X-Internal-Api-Key` service auth.
+  - `DocumentAsyncPipeline`: Extended pipeline state machine: `EXTRACTED` -> `ANALYZING` -> calls AI Engine summary analysis -> serializes JSON arrays into `document_analyses` table (`parties`, `main_conditions`, `obligations_summary`, `financial_terms_summary`, `verification_rate`) -> updates status to `COMPLETED`. Added asynchronous `reanalyzeDocumentAsync(documentId)`.
+  - `DocumentController` & `DocumentService`: Added `GET /api/documents/{id}/analysis` and `POST /api/documents/{id}/reanalyze` enforcing strict ownership (404 on cross-tenant access).
+  - `DocumentControllerTest`: Added 4 new integration tests verifying analysis retrieval, 404 for cross-tenant access, and reanalyze endpoint invocation (total 21 backend tests passing).
+- Frontend (`frontend/`):
+  - `ProvenanceBadge.jsx`: Visual provenance pill (`Extracted` vs `AI Interpretation`), page citation (`p. X`), verified badge (`Verified`), and warning badge (`Unverified Quote` for unverified quotes).
+  - `SummaryTab.jsx`: Tab workspace with executive/comprehensive summary toggle, identified parties grid with roles and evidence quotes, conditions list, obligations list, financial terms list, overall grounding score pill (`100% Grounded`), model/provider badges, loading skeleton state, failure/retry card, and re-run analysis button.
+  - `AnalysisPage.jsx`: Integrated `SummaryTab`, wired active status polling for `ANALYZING` state, and updated page text viewer checks.
+  - `UploadPage.jsx`: Enhanced status polling to transition cleanly when document reaches `ANALYZING` and `COMPLETED`.
+
+**How it was verified:**
+- Backend Integration Tests (`mvn test`):
+  - 21 tests passed across `AuthControllerTest`, `DocumentControllerTest`, and `LexiLegalApplicationTests`: 0 failures, 0 errors, 0 skipped (`BUILD SUCCESS`).
+  - Covers: analysis retrieval success, cross-tenant isolation (User B accessing User A analysis returns 404), reanalyze trigger, and all auth/document endpoints.
+- AI Engine Pytest (`pytest -v`):
+  - 23 tests passed across extraction, health, and summary test suites in 4.82s.
+  - Covers: exact quote verification, fuzzy quote verification (ratio >= 0.90), hallucination rejection (`quote_verified=False`), overall verification rate calculation, mock LLM generation, API route with authentication, and error codes.
+- Full Stack End-to-End Browser Flow (`node frontend/test-phase4-e2e.cjs`):
+  - Authenticated user in headless browser.
+  - Attached sample `clean_nda.pdf`, checked consent, and submitted upload.
+  - Watched stepper transition through extraction and chunking.
+  - Clicked "Open Document Analysis" navigating to `/documents/:id`.
+  - Switched to Summary tab and observed real-time polling during `ANALYZING` state.
+  - Verified summary load once synthesis finalized with live Ollama `qwen2.5:latest` inference.
+  - Toggled between "Executive" and "Comprehensive" summary views.
+  - Verified presence of "100% Grounded" badge, "Identified Parties (2)" section, and "Main Conditions" section.
+  - Test passed with exit code 0.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run AI Engine Unit Tests
+cd ai-engine
+.venv/bin/pytest -v
+
+# 2. Run Backend Unit & Integration Tests
+cd backend
+mvn test
+
+# 3. Build Frontend with Vite
+cd frontend
+npm run build
+
+# 4. Run Phase 4 End-to-End Browser Verification
+node frontend/test-phase4-e2e.cjs
+```
 
 ### Phase 5: Spring Boot Backend — Document Storage, Hash Caching & Async Pipeline
 - [ ] Implement Document entity and DocumentRepository

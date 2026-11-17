@@ -1,8 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from app.config import settings
 from app.schemas.extraction import ExtractionResponse, ExtractionErrorResponse
+from app.schemas.summary import DocumentSummaryRequest, DocumentSummaryResponse
 from app.services.extractor import process_document, ExtractionException
+from app.services.summary_service import analyze_document_summary
+from app.providers import get_llm_provider
 
 router = APIRouter()
 
@@ -44,4 +47,31 @@ async def extract_document(file: UploadFile = File(...)):
         return JSONResponse(
             status_code=500,
             content={"code": "INTERNAL_ERROR", "detail": f"unexpected error: {str(e)}"},
+        )
+
+
+@router.post(
+    "/internal/analyze/summary",
+    response_model=DocumentSummaryResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+@router.post(
+    "/analyze/summary",
+    response_model=DocumentSummaryResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+async def analyze_summary(request: DocumentSummaryRequest):
+    provider = get_llm_provider()
+    try:
+        summary = await analyze_document_summary(
+            document_id=request.document_id,
+            pages=request.pages,
+            chunks=request.chunks,
+            provider=provider,
+        )
+        return summary
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"code": "SUMMARY_GENERATION_FAILED", "detail": str(e)},
         )

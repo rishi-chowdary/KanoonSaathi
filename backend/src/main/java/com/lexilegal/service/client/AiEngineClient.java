@@ -1,6 +1,10 @@
 package com.lexilegal.service.client;
 
+import com.lexilegal.dto.ai.ChunkDto;
+import com.lexilegal.dto.ai.DocumentSummaryRequestDto;
+import com.lexilegal.dto.ai.DocumentSummaryResponseDto;
 import com.lexilegal.dto.ai.ExtractionResponseDto;
+import com.lexilegal.dto.ai.PageDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -13,6 +17,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,8 +31,8 @@ public class AiEngineClient {
             @Value("${app.ai-engine.internal-key:lexilegal_internal_service_key_secret_2026}") String internalApiKey) {
         this.internalApiKey = internalApiKey;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10000);
-        factory.setReadTimeout(60000);
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(180000);
         this.restClient = RestClient.builder()
                 .requestFactory(factory)
                 .baseUrl(aiEngineUrl)
@@ -65,6 +70,17 @@ public class AiEngineClient {
                 .body(body)
                 .retrieve()
                 .body(ExtractionResponseDto.class);
+    }
+
+    public DocumentSummaryResponseDto analyzeSummary(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
+        DocumentSummaryRequestDto req = new DocumentSummaryRequestDto(documentId, pages, chunks);
+        return restClient.post()
+                .uri("/internal/analyze/summary")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .body(DocumentSummaryResponseDto.class);
     }
 }
 

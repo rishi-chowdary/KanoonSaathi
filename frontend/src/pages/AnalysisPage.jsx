@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
+import SummaryTab from "../components/analysis/SummaryTab";
 import {
   FileText,
   ShieldAlert,
@@ -38,8 +39,12 @@ export default function AnalysisPage() {
         setDocument(resp.data);
         setError(null);
 
-        // If still extracting, poll status
-        if (resp.data.status === "EXTRACTING" || resp.data.status === "UPLOADED") {
+        // If still extracting or analyzing, poll status
+        if (
+          resp.data.status === "EXTRACTING" ||
+          resp.data.status === "UPLOADED" ||
+          resp.data.status === "ANALYZING"
+        ) {
           timer = setTimeout(loadDocument, 2000);
         }
       } catch (err) {
@@ -57,7 +62,15 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     async function loadPageText() {
-      if (!id || !document || document.status !== "EXTRACTED") return;
+      if (
+        !id ||
+        !document ||
+        document.status === "EXTRACTING" ||
+        document.status === "UPLOADED" ||
+        document.status === "FAILED"
+      ) {
+        return;
+      }
       try {
         setLoadingText(true);
         const resp = await api.get(`/documents/${id}/text`, {
@@ -170,6 +183,16 @@ export default function AnalysisPage() {
       </div>
 
       {/* Tab Content */}
+      {activeTab === "summary" && (
+        <SummaryTab
+          documentId={id}
+          documentStatus={document.status}
+          onStatusChange={(newStatus) =>
+            setDocument((prev) => (prev ? { ...prev, status: newStatus } : prev))
+          }
+        />
+      )}
+
       {activeTab === "preview" && (
         <div className="space-y-4">
           {document.status === "EXTRACTING" ? (
@@ -222,20 +245,20 @@ export default function AnalysisPage() {
         </div>
       )}
 
-      {activeTab !== "preview" && (
+      {activeTab !== "preview" && activeTab !== "summary" && (
         <div className="p-8 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-xs text-slate-500 space-y-2">
           <p className="font-medium text-slate-700 dark:text-slate-300">
             {activeTab.toUpperCase()} Module
           </p>
           <p>
-            Document text has been extracted and indexed into Postgres search chunks. Structured LLM analysis (summary, clause extraction, risk assessment, and chat Q&amp;A) will be processed in Phase 4 and Phase 5.
+            Document text has been extracted and executive summary analyzed. Structured extraction for {activeTab} will be activated in upcoming phases.
           </p>
           <button
             type="button"
-            onClick={() => setActiveTab("preview")}
+            onClick={() => setActiveTab("summary")}
             className="text-blue-600 dark:text-blue-400 hover:underline pt-2 inline-block"
           >
-            &larr; Switch to Document Text Preview
+            &larr; Switch to Summary Analysis
           </button>
         </div>
       )}

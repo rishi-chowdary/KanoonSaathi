@@ -76,7 +76,7 @@ export default function UploadPage() {
       const resp = await api.get(`/documents/${id}/status`);
       const { status, failureReason, pageCount } = resp.data;
 
-      if (status === "EXTRACTED") {
+      if (status === "EXTRACTED" || status === "ANALYZING" || status === "COMPLETED") {
         setProcessStep("EXTRACTED");
         setDocInfo((prev) => ({ ...prev, pageCount, status }));
       } else if (status === "FAILED") {
@@ -336,7 +336,7 @@ export default function UploadPage() {
                   to={`/documents/${docId}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded bg-blue-600 hover:bg-blue-700 text-white transition-colors"
                 >
-                  <span>View Extracted Text</span>
+                  <span>Open Document Analysis</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
