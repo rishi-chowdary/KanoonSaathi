@@ -63,7 +63,7 @@ def _run_contract_pipeline(
     from app.nlp.parties import detect_affected_party, extract_document_parties
     from app.nlp.risk_engine import detect_clause_risks
     from app.nlp.segmentation import create_chunks, segment_clauses
-    from app.nlp.simplifier import simplify_clause
+    from app.nlp.simplification import simplify_clause
     from app.nlp.summarizer import generate_extractive_summary
 
     ext = extract_document(contract_path.read_bytes(), contract_path.name)

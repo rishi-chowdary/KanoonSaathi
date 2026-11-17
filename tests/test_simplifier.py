@@ -5,7 +5,7 @@ from app.nlp.readability import (
     count_syllables_text,
     count_syllables_word,
 )
-from app.nlp.simplifier import (
+from app.nlp.simplification import (
     detect_traps_and_nuances,
     extract_clause_glossary,
     get_glossary,

@@ -11,7 +11,7 @@ from app.nlp.evidence import extract_evidence_quote
 from app.nlp.importance import calculate_clause_importance
 from app.nlp.parties import detect_affected_party, extract_document_parties
 from app.nlp.segmentation import SegmentedClause
-from app.nlp.simplifier import simplify_clause
+from app.nlp.simplification import simplify_clause
 
 logger = logging.getLogger("lexilegal.services.clause_service")
 

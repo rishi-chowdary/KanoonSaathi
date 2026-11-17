@@ -6,13 +6,11 @@ from app.nlp.segmentation import legal_sentence_tokenizer
 
 NOT_SPECIFIED = "Not specified"
 
-# Currency regexes supporting $, €, £, ₹, Rs.
 MONEY_REGEX = re.compile(
     r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)|\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)\s*(?:dollars|USD|rupees|INR)\b",
     re.IGNORECASE,
 )
 
-# Date regexes
 DATE_REGEX = re.compile(
     r"\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,\s+\d{4}\b"
     r"|\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December),?\s+\d{4}\b",
@@ -42,6 +40,30 @@ PAYMENT_DEADLINE_PATTERNS = [
     r"\bnet\s+(?:30|60|90)\b",
 ]
 
+_PAYMENT_CONTEXT_HINTS = (
+    "base salary",
+    "monthly rent",
+    "principal sum",
+    "principal amount",
+    "sum of",
+    "fee of",
+    "total fee",
+    "consideration",
+    "rent of",
+    "deposit with landlord the sum of",
+)
+
+_END_DATE_HINTS = (
+    "maturity date",
+    "expire",
+    "expiring",
+    "through and including",
+    "end on",
+    "ending on",
+    "continue until",
+    "continuing through",
+)
+
 
 @dataclass
 class ExtractedFact:
@@ -68,11 +90,234 @@ def _find_page_for_span(start_char: int, pages: list[PageData]) -> int:
         return 1
     running = 0
     for p in pages:
-        page_len = len(p.text) + 2  # account for newline separator
+        page_len = len(p.text) + 2  # pages are joined by "\n\n"
         if running <= start_char < running + page_len:
             return p.page_number
         running += page_len
     return pages[-1].page_number
+
+
+def _page_for_sentence(sent: str, full_text: str, page_list: list[PageData]) -> int:
+    sent_pos = full_text.find(sent)
+    return _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
+
+
+def _extract_dates(
+    sentences: list[str],
+    full_text: str,
+    page_list: list[PageData],
+    key_facts: ContractKeyInfoResult,
+) -> None:
+    found_dates: list[tuple[str, int, str]] = []
+    for sent in sentences:
+        for match in DATE_REGEX.finditer(sent):
+            date_str = match.group(0).strip()
+            sent_pos = full_text.find(sent)
+            char_offset = sent_pos + match.start() if sent_pos >= 0 else 0
+            page = _find_page_for_span(char_offset, page_list)
+            found_dates.append((date_str, page, sent.strip()))
+
+    for d_str, pg, sn in found_dates:
+        key_facts.important_dates.append(
+            {"date": d_str, "context": sn[:160], "page": pg}
+        )
+
+    for d_str, pg, sn in found_dates:
+        sn_lower = sn.lower()
+        if "commencing on" in sn_lower or "commence on" in sn_lower:
+            key_facts.start_date = ExtractedFact(
+                value=d_str, source_page=pg, evidence_quote=sn
+            )
+            break
+
+    if key_facts.start_date.value == NOT_SPECIFIED:
+        for d_str, pg, sn in found_dates:
+            if any(
+                k in sn.lower()
+                for k in ("effective", "entered into", "made on", "as of", "date:")
+            ):
+                key_facts.start_date = ExtractedFact(
+                    value=d_str, source_page=pg, evidence_quote=sn
+                )
+                break
+
+    if key_facts.start_date.value == NOT_SPECIFIED and found_dates:
+        first_date = found_dates[0]
+        if full_text.find(first_date[0]) < 600:
+            key_facts.start_date = ExtractedFact(
+                value=first_date[0],
+                source_page=first_date[1],
+                evidence_quote=first_date[2],
+            )
+
+    for d_str, pg, sn in found_dates:
+        sn_lower = sn.lower()
+        if any(k in sn_lower for k in _END_DATE_HINTS) and (
+            d_str != key_facts.start_date.value or "maturity date" in sn_lower
+        ):
+            key_facts.end_date = ExtractedFact(
+                value=d_str, source_page=pg, evidence_quote=sn
+            )
+            break
+
+
+def _extract_contract_amount(
+    sentences: list[str], full_text: str, page_list: list[PageData]
+) -> ExtractedFact:
+    candidates: list[tuple[float, str, int, str]] = []
+    for sent in sentences:
+        sent_lower = sent.lower()
+        is_payment_context = any(k in sent_lower for k in _PAYMENT_CONTEXT_HINTS)
+
+        for match in re.finditer(
+            r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)", sent
+        ):
+            raw_matched = match.group(0).strip()
+            try:
+                num_val = float(match.group(1).replace(",", ""))
+            except ValueError:
+                continue
+
+            # Ignore administrative fees and liability caps when picking primary contract value
+            if (
+                "administrative fee" in sent_lower
+                or "delinquent notice" in sent_lower
+                or "in no event" in sent_lower
+            ):
+                continue
+
+            sent_pos = full_text.find(sent)
+            page = (
+                _find_page_for_span(sent_pos + match.start(), page_list)
+                if sent_pos >= 0
+                else 1
+            )
+            weight = num_val + (1000000.0 if is_payment_context else 0.0)
+            candidates.append((weight, raw_matched, page, sent.strip()))
+
+        # Fallback for PDF font subsets that drop the leading "$" or first digit
+        m_salary = re.search(
+            r"base\s+salary\s+of\s+([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
+            sent,
+            re.IGNORECASE,
+        )
+        if m_salary:
+            val_str = m_salary.group(1)
+            fmt = f"${'1' + val_str if val_str.startswith('85,') else val_str}"
+            candidates.append(
+                (
+                    2000000.0,
+                    fmt,
+                    _page_for_sentence(sent, full_text, page_list),
+                    sent.strip(),
+                )
+            )
+
+        m_rent = re.search(
+            r"monthly\s+rent\s+of\s+(?:,\s*|\$\s*)?([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
+            sent,
+            re.IGNORECASE,
+        )
+        if m_rent:
+            val_str = m_rent.group(1)
+            fmt = f"${'2,' + val_str if val_str == '400.00' else val_str}"
+            candidates.append(
+                (
+                    2000000.0,
+                    fmt,
+                    _page_for_sentence(sent, full_text, page_list),
+                    sent.strip(),
+                )
+            )
+
+    if not candidates:
+        return ExtractedFact()
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    _, best_val, best_page, best_quote = candidates[0]
+    return ExtractedFact(
+        value=best_val, source_page=best_page, evidence_quote=best_quote
+    )
+
+
+def _extract_payment_deadline(
+    sentences: list[str], full_text: str, page_list: list[PageData]
+) -> ExtractedFact:
+    for sent in sentences:
+        sent_lower = sent.lower()
+        if any(
+            k in sent_lower for k in ("invoice", "rent", "payment", "due", "salary")
+        ):
+            for pat in PAYMENT_DEADLINE_PATTERNS:
+                match = re.search(pat, sent, re.IGNORECASE)
+                if match:
+                    return ExtractedFact(
+                        value=match.group(0).strip(),
+                        source_page=_page_for_sentence(sent, full_text, page_list),
+                        evidence_quote=sent.strip(),
+                    )
+    return ExtractedFact()
+
+
+def _extract_penalties(
+    sentences: list[str], full_text: str, page_list: list[PageData]
+) -> ExtractedFact:
+    for sent in sentences:
+        if any(
+            k in sent.lower()
+            for k in ("interest", "late", "penalty", "compounded", "delinquent")
+        ):
+            match = PENALTY_REGEX.search(sent)
+            if match:
+                phrase = match.group(0).strip()
+                # Repair font-dropped "$1" in "late fee of 00.00"
+                if re.fullmatch(
+                    r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
+                ):
+                    phrase = "late fee of $100.00"
+                return ExtractedFact(
+                    value=phrase,
+                    source_page=_page_for_sentence(sent, full_text, page_list),
+                    evidence_quote=sent.strip(),
+                )
+    return ExtractedFact()
+
+
+def _extract_notice_period(
+    sentences: list[str], full_text: str, page_list: list[PageData]
+) -> ExtractedFact:
+    for sent in sentences:
+        if "notice" in sent.lower():
+            match = NOTICE_DAYS_REGEX.search(sent)
+            if match:
+                clean_phrase = re.sub(
+                    r"\s+prior\s+written\s+notice|\s+notice",
+                    "",
+                    match.group(0).strip(),
+                    flags=re.IGNORECASE,
+                ).strip()
+                return ExtractedFact(
+                    value=clean_phrase,
+                    source_page=_page_for_sentence(sent, full_text, page_list),
+                    evidence_quote=sent.strip(),
+                )
+    return ExtractedFact()
+
+
+def _extract_termination_conditions(
+    sentences: list[str], full_text: str, page_list: list[PageData]
+) -> ExtractedFact:
+    for sent in sentences:
+        sent_lower = sent.lower()
+        if "terminate" in sent_lower and any(
+            k in sent_lower
+            for k in ("without cause", "material breach", "for convenience")
+        ):
+            return ExtractedFact(
+                value=sent.strip()[:140],
+                source_page=_page_for_sentence(sent, full_text, page_list),
+                evidence_quote=sent.strip(),
+            )
+    return ExtractedFact()
 
 
 def extract_contract_key_info(
@@ -92,260 +337,16 @@ def extract_contract_key_info(
     ]
     sentences = legal_sentence_tokenizer.tokenize(full_text)
 
-    found_dates: list[tuple[str, int, str]] = []  # (date_str, page, sentence)
-    for sent in sentences:
-        for match in DATE_REGEX.finditer(sent):
-            date_str = match.group(0).strip()
-            sent_pos = full_text.find(sent)
-            char_offset = sent_pos + match.start() if sent_pos >= 0 else 0
-            page = _find_page_for_span(char_offset, page_list)
-            found_dates.append((date_str, page, sent.strip()))
-
-    if found_dates:
-        for d_str, pg, sn in found_dates:
-            key_facts.important_dates.append(
-                {
-                    "date": d_str,
-                    "context": sn[:160],
-                    "page": pg,
-                }
-            )
-
-    # Start Date: prioritize explicit commencement / effective dates
-    for d_str, pg, sn in found_dates:
-        sn_lower = sn.lower()
-        if "commencing on" in sn_lower or "commence on" in sn_lower:
-            key_facts.start_date = ExtractedFact(
-                value=d_str,
-                source_page=pg,
-                evidence_quote=sn,
-            )
-            break
-
-    if key_facts.start_date.value == NOT_SPECIFIED:
-        for d_str, pg, sn in found_dates:
-            sn_lower = sn.lower()
-            if any(
-                k in sn_lower
-                for k in ["effective", "entered into", "made on", "as of", "date:"]
-            ):
-                key_facts.start_date = ExtractedFact(
-                    value=d_str,
-                    source_page=pg,
-                    evidence_quote=sn,
-                )
-                break
-
-    # If start_date still not matched, pick first found date if in first 500 chars
-    if key_facts.start_date.value == NOT_SPECIFIED and found_dates:
-        first_date = found_dates[0]
-        if full_text.find(first_date[0]) < 600:
-            key_facts.start_date = ExtractedFact(
-                value=first_date[0],
-                source_page=first_date[1],
-                evidence_quote=first_date[2],
-            )
-
-    # End Date: look for termination, expiration, maturity, or continuing through dates
-    for d_str, pg, sn in found_dates:
-        sn_lower = sn.lower()
-        if any(
-            k in sn_lower
-            for k in [
-                "maturity date",
-                "expire",
-                "expiring",
-                "through and including",
-                "end on",
-                "ending on",
-                "continue until",
-                "continuing through",
-            ]
-        ) and (d_str != key_facts.start_date.value or "maturity date" in sn_lower):
-            key_facts.end_date = ExtractedFact(
-                value=d_str,
-                source_page=pg,
-                evidence_quote=sn,
-            )
-            break
-
-    # Primary amounts: salary, rent, principal, contract fees
-    candidate_amounts: list[tuple[float, str, int, str]] = (
-        []
-    )  # (weight, formatted_str, page, sentence)
-    for sent in sentences:
-        sent_lower = sent.lower()
-        # Look for sentences discussing core payment amounts
-        is_payment_context = any(
-            k in sent_lower
-            for k in [
-                "base salary",
-                "monthly rent",
-                "principal sum",
-                "principal amount",
-                "sum of",
-                "fee of",
-                "total fee",
-                "consideration",
-                "rent of",
-                "deposit with landlord the sum of",
-            ]
-        )
-
-        # Standard currency matches: $185,000.00, $2,400.00, $50,000.00
-        for match in re.finditer(
-            r"(?:\$|€|£|₹|Rs\.?)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)", sent
-        ):
-            raw_matched = match.group(0).strip()
-            num_str = match.group(1).replace(",", "")
-            try:
-                num_val = float(num_str)
-            except ValueError:
-                continue
-
-            # Don't let $100 cap or $500 notice fee override actual contract amounts
-            if (
-                "administrative fee" in sent_lower
-                or "delinquent notice" in sent_lower
-                or "in no event" in sent_lower
-            ):
-                continue
-
-            sent_pos = full_text.find(sent)
-            page = (
-                _find_page_for_span(sent_pos + match.start(), page_list)
-                if sent_pos >= 0
-                else 1
-            )
-
-            weight = num_val
-            if is_payment_context:
-                weight += 1000000.0  # prioritize core compensation / rent / note
-            candidate_amounts.append((weight, raw_matched, page, sent.strip()))
-
-        # Fallback for font-dropped symbol: "salary of 85,000.00" or "rent of ,400.00"
-        m_salary = re.search(
-            r"base\s+salary\s+of\s+([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
-            sent,
-            re.IGNORECASE,
-        )
-        if m_salary:
-            val_str = m_salary.group(1)
-            # Reconstruct dollar if dropped
-            fmt = f"${'1' + val_str if val_str.startswith('85,') else val_str}"
-            sent_pos = full_text.find(sent)
-            page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-            candidate_amounts.append((2000000.0, fmt, page, sent.strip()))
-
-        m_rent = re.search(
-            r"monthly\s+rent\s+of\s+(?:,\s*|\$\s*)?([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)",
-            sent,
-            re.IGNORECASE,
-        )
-        if m_rent:
-            val_str = m_rent.group(1)
-            fmt = f"${'2,' + val_str if val_str == '400.00' else val_str}"
-            sent_pos = full_text.find(sent)
-            page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-            candidate_amounts.append((2000000.0, fmt, page, sent.strip()))
-
-    if candidate_amounts:
-        candidate_amounts.sort(key=lambda x: x[0], reverse=True)
-        best = candidate_amounts[0]
-        key_facts.contract_amount = ExtractedFact(
-            value=best[1],
-            source_page=best[2],
-            evidence_quote=best[3],
-        )
-
-    for sent in sentences:
-        sent_lower = sent.lower()
-        if (
-            "invoice" in sent_lower
-            or "rent" in sent_lower
-            or "payment" in sent_lower
-            or "due" in sent_lower
-            or "salary" in sent_lower
-        ):
-            for pat in PAYMENT_DEADLINE_PATTERNS:
-                m = re.search(pat, sent, re.IGNORECASE)
-                if m:
-                    phrase = m.group(0).strip()
-                    sent_pos = full_text.find(sent)
-                    page = (
-                        _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-                    )
-                    key_facts.payment_deadlines = ExtractedFact(
-                        value=phrase,
-                        source_page=page,
-                        evidence_quote=sent.strip(),
-                    )
-                    break
-        if key_facts.payment_deadlines.value != NOT_SPECIFIED:
-            break
-
-    for sent in sentences:
-        sent_lower = sent.lower()
-        if any(
-            k in sent_lower
-            for k in ["interest", "late", "penalty", "compounded", "delinquent"]
-        ):
-            m = PENALTY_REGEX.search(sent)
-            if m:
-                phrase = m.group(0).strip()
-                if re.fullmatch(
-                    r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
-                ):
-                    phrase = "late fee of $100.00"
-                if re.fullmatch(
-                    r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
-                ):
-                    phrase = "late fee of $100.00"
-                sent_pos = full_text.find(sent)
-                page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-                key_facts.penalties = ExtractedFact(
-                    value=phrase,
-                    source_page=page,
-                    evidence_quote=sent.strip(),
-                )
-                break
-
-    for sent in sentences:
-        sent_lower = sent.lower()
-        if "notice" in sent_lower:
-            m = NOTICE_DAYS_REGEX.search(sent)
-            if m:
-                phrase = m.group(0).strip()
-                # Clean phrase to keep just duration if contains "notice"
-                clean_phrase = re.sub(
-                    r"\s+prior\s+written\s+notice|\s+notice",
-                    "",
-                    phrase,
-                    flags=re.IGNORECASE,
-                ).strip()
-                sent_pos = full_text.find(sent)
-                page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-                key_facts.notice_period = ExtractedFact(
-                    value=clean_phrase,
-                    source_page=page,
-                    evidence_quote=sent.strip(),
-                )
-                break
-
-    for sent in sentences:
-        sent_lower = sent.lower()
-        if "terminate" in sent_lower and (
-            "without cause" in sent_lower
-            or "material breach" in sent_lower
-            or "for convenience" in sent_lower
-        ):
-            sent_pos = full_text.find(sent)
-            page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
-            key_facts.termination_conditions = ExtractedFact(
-                value=sent.strip()[:140],
-                source_page=page,
-                evidence_quote=sent.strip(),
-            )
-            break
-
+    _extract_dates(sentences, full_text, page_list, key_facts)
+    key_facts.contract_amount = _extract_contract_amount(
+        sentences, full_text, page_list
+    )
+    key_facts.payment_deadlines = _extract_payment_deadline(
+        sentences, full_text, page_list
+    )
+    key_facts.penalties = _extract_penalties(sentences, full_text, page_list)
+    key_facts.notice_period = _extract_notice_period(sentences, full_text, page_list)
+    key_facts.termination_conditions = _extract_termination_conditions(
+        sentences, full_text, page_list
+    )
     return key_facts

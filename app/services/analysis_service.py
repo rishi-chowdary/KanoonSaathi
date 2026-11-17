@@ -90,3 +90,66 @@ def process_key_info_and_summaries(
         doc.id,
     )
     return analysis, key_info
+
+
+def get_document_detail_context(doc: Document) -> dict:
+    """Load chunks, analysis, clauses, risks, key facts, and plain-language summary for a document."""
+    from app.models.chunk import DocumentChunk
+    from app.models.clause import ExtractedClause
+    from app.models.missing_warning import MissingClauseWarning
+    from app.models.risk import RiskFinding
+    from app.nlp.readability import calculate_readability
+    from app.nlp.simplification import simplify_simple_english
+
+    chunks = (
+        DocumentChunk.query.filter_by(document_id=doc.id)
+        .order_by(DocumentChunk.chunk_index.asc())
+        .all()
+    )
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    clauses = []
+    key_info = None
+    risks = []
+    missing_warnings = []
+    if analysis:
+        clauses = (
+            ExtractedClause.query.filter_by(analysis_id=analysis.id)
+            .order_by(
+                ExtractedClause.source_page.asc(), ExtractedClause.created_at.asc()
+            )
+            .all()
+        )
+        key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
+        risks = (
+            RiskFinding.query.filter_by(analysis_id=analysis.id)
+            .order_by(RiskFinding.source_page.asc(), RiskFinding.created_at.asc())
+            .all()
+        )
+        missing_warnings = MissingClauseWarning.query.filter_by(
+            analysis_id=analysis.id
+        ).all()
+
+    simplified_summary = None
+    summary_readability = None
+    if analysis and analysis.summary_short:
+        simplified_summary = simplify_simple_english(analysis.summary_short)
+        orig_metrics = calculate_readability(analysis.summary_short)
+        simp_metrics = calculate_readability(simplified_summary)
+        summary_readability = {
+            "original_fre": orig_metrics["flesch_reading_ease"],
+            "simplified_fre": simp_metrics["flesch_reading_ease"],
+            "original_grade": orig_metrics["flesch_kincaid_grade"],
+            "simplified_grade": simp_metrics["flesch_kincaid_grade"],
+        }
+
+    return {
+        "document": doc,
+        "chunks": chunks,
+        "analysis": analysis,
+        "clauses": clauses,
+        "key_info": key_info,
+        "risks": risks,
+        "missing_warnings": missing_warnings,
+        "simplified_summary": simplified_summary,
+        "summary_readability": summary_readability,
+    }

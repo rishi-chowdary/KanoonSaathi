@@ -24,15 +24,20 @@ def create_app(config_class=Config) -> Flask:
     if upload_dir:
         os.makedirs(upload_dir, exist_ok=True)
 
-    # Register blueprints
+    from app.blueprints.analysis import analysis_bp
     from app.blueprints.auth import auth_bp
+    from app.blueprints.chat import chat_bp
     from app.blueprints.documents import documents_bp
     from app.blueprints.main import main_bp
+    from app.blueprints.reports import reports_bp
     from app.blueprints.studio import studio_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(documents_bp)
+    app.register_blueprint(analysis_bp)
+    app.register_blueprint(chat_bp)
+    app.register_blueprint(reports_bp)
     app.register_blueprint(studio_bp)
 
     # Global template context

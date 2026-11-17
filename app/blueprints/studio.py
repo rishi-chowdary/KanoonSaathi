@@ -11,7 +11,7 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, render_template, request
 
 from app.extensions import csrf
-from app.nlp.simplifier import (
+from app.nlp.simplification import (
     get_sorted_glossary_terms,
     simplify_clause,
 )
