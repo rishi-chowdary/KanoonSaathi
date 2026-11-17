@@ -95,11 +95,11 @@
   "gold_key_info": {
     "contract_amount": "$2,400.00",
     "payment_deadlines": "first (1st) day of each calendar month",
-    "penalties": "Not specified",
+    "penalties": "late fee of $100.00",
     "start_date": "August 1, 2026",
     "end_date": "July 31, 2027",
     "renewal_date": "Not specified",
-    "notice_period": "Not specified"
+    "notice_period": "fourteen (14) days"
   },
   "gold_missing_provisions": [
     "Late Payment Fee Schedule",

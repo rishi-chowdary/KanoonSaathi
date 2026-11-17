@@ -54,15 +54,16 @@ def test_rule6_not_specified_consistency():
     doc = extract_document(path.read_bytes(), "clean_nda.pdf")
     info = extract_contract_key_info(doc.full_text, doc.pages)
 
-    # Clean NDA specifies no money, no penalties, no renewal date, no notice period
+    # Clean NDA specifies no money, no penalties, no renewal date, no end date
     assert info.contract_amount.value == NOT_SPECIFIED
     assert info.contract_amount.source_page is None
     assert info.penalties.value == NOT_SPECIFIED
     assert info.penalties.source_page is None
     assert info.renewal_date.value == NOT_SPECIFIED
     assert info.renewal_date.source_page is None
-    assert info.notice_period.value == NOT_SPECIFIED
-    assert info.notice_period.source_page is None
+    assert info.end_date.value == NOT_SPECIFIED
+    assert info.end_date.source_page is None
+    assert "thirty (30) days" in info.notice_period.value
 
 
 def test_key_facts_extraction_matching():
@@ -91,8 +92,9 @@ def test_key_facts_extraction_matching():
         "first (1st) day" in lease_info.payment_deadlines.value
         or "calendar month" in lease_info.payment_deadlines.value
     )
-    assert "July 15, 2026" in lease_info.start_date.value
-    assert lease_info.penalties.value == NOT_SPECIFIED
+    assert "August 1, 2026" in lease_info.start_date.value
+    assert "July 31, 2027" in lease_info.end_date.value
+    assert "$100.00" in lease_info.penalties.value
 
     # 3. One-Sided Predatory Agreement
     pred_path = Path("samples/contracts/one_sided_agreement.pdf")

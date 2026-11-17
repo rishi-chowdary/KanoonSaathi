@@ -53,10 +53,10 @@
     "contract_amount": "Not specified",
     "payment_deadlines": "Not specified",
     "penalties": "Not specified",
-    "start_date": "July 1, 2026",
+    "start_date": "January 15, 2026",
     "end_date": "Not specified",
     "renewal_date": "Not specified",
-    "notice_period": "Not specified",
+    "notice_period": "thirty (30) days",
     "termination_conditions": "Not specified"
   },
   "gold_missing_provisions": [

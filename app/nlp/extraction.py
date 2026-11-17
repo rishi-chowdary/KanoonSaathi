@@ -160,7 +160,7 @@ def extract_pdf(file_bytes: bytes) -> ExtractionResult:
     for idx in range(len(doc)):
         page = doc[idx]
         page_num = idx + 1
-        page_text = page.get_text() or ""
+        page_text = page.get_text("text", clip=fitz.INFINITE_RECT()) or ""
         ocr_used = False
 
         # If native text extraction yields sparse content, trigger OCR on the rasterized page

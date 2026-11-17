@@ -107,6 +107,22 @@ def detail(doc_id: str):
             analysis_id=analysis.id
         ).all()
 
+    simplified_summary = None
+    summary_readability = None
+    if analysis and analysis.summary_short:
+        from app.nlp.readability import calculate_readability
+        from app.nlp.simplifier import simplify_simple_english
+
+        simplified_summary = simplify_simple_english(analysis.summary_short)
+        orig_metrics = calculate_readability(analysis.summary_short)
+        simp_metrics = calculate_readability(simplified_summary)
+        summary_readability = {
+            "original_fre": orig_metrics["flesch_reading_ease"],
+            "simplified_fre": simp_metrics["flesch_reading_ease"],
+            "original_grade": orig_metrics["flesch_kincaid_grade"],
+            "simplified_grade": simp_metrics["flesch_kincaid_grade"],
+        }
+
     return render_template(
         "documents/detail.html",
         document=doc,
@@ -116,6 +132,8 @@ def detail(doc_id: str):
         key_info=key_info,
         risks=risks,
         missing_warnings=missing_warnings,
+        simplified_summary=simplified_summary,
+        summary_readability=summary_readability,
     )
 
 

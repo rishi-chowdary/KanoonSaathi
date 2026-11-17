@@ -1,7 +1,7 @@
 # LexiLegal AI — Evaluation Benchmark Results
 
 **Evaluation Suite Version**: 2.0.0 (Python NLP Migration)  
-**Date**: November 17, 2026  
+**Date**: November 18, 2026  
 **Inference Engine**: Local Python NLP Pipeline (DistilBERT LEDGAR + SBERT `all-MiniLM-L6-v2` + spaCy `en_core_web_md` + `minilm-uncased-squad2`)  
 **Backend & Database**: Flask 3.1 / SQLAlchemy / MySQL 8 (InnoDB, utf8mb4)  
 **API Call Dependencies**: **0 External API Calls** (100% Offline, Zero Cloud Tokens, Zero API Cost)
@@ -20,10 +20,10 @@ Following the architectural migration from the legacy distributed stack (React +
 3. **Predatory Contract Traps**: Successfully surfaced **3/3 critical predatory traps** in `one_sided_agreement.pdf` (uncapped indemnity, unilateral termination rights with fee acceleration, and 180-day automatic renewal traps).
 4. **Document Chat Honesty**:
    - Answer accuracy on answerable contract queries: **100.0%** (10/10).
-   - Page citation accuracy: **100.0%** (10/10).
+   - Page citation accuracy: **90.0%** (9/10).
    - Honest refusal rate on unanswerable questions: **100.0%** (5/5) via SQuAD 2.0 unanswerable thresholding.
 5. **Speed, Privacy & Cost**:
-   - Average document analysis pipeline latency reduced from **12.4s -> 0.49s** (**>25.4x speedup**).
+   - Average document analysis pipeline latency reduced from **12.4s -> 0.56s** (**>22.1x speedup**).
    - Cloud tokens per contract reduced from **~7,480 tokens -> 0 tokens**.
    - Cloud cost per contract reduced from **~$0.00042 -> $0.00000** with **100% local data privacy**.
 
@@ -38,17 +38,17 @@ Following the architectural migration from the legacy distributed stack (React +
 | | Clause F1-Score | $\ge 0.80$ | 1.000 | **0.923** | **PASS** |
 | | Quote Verification Rate | $\ge 85.0\%$ | 91.2% | **100.0%** | **EXCEEDS** |
 | **Risk Detection** | Risk Recall vs. Gold | $\ge 70.0\%$ | 92.3% (12/13) | **100.0%** (10/10) | **PASS** |
-| | Risk Precision | $\ge 70.0\%$ | 100.0% | **100.0%** | **PASS** |
-| | Risk F1-Score | $\ge 0.70$ | 0.960 | **1.000** | **PASS** |
+| | Risk Precision | $\ge 70.0\%$ | 100.0% | **90.9%** | **PASS** |
+| | Risk F1-Score | $\ge 0.70$ | 0.960 | **0.952** | **PASS** |
 | | Predatory Clause Detection | 100% on one-sided | 3/3 Detected | **3/3 Detected** | **PASS** |
 | **Regulatory Guardrails** | Rule 7 Forbidden Phrase Count | Exactly 0 | 0 | **0** | **STRICT PASS** |
 | | Rule 6 "Not specified" Accuracy | 100% | 100.0% | **100.0%** (0 violations) | **PASS** |
 | | Missing Provision Disclaimer | 100% labeled "Possible omission" | 100.0% | **100.0%** | **PASS** |
 | **RAG Document Chat** | Answer Correctness Rate | $\ge 80.0\%$ | 100.0% (10/10) | **100.0%** (10/10) | **PASS** |
-| | Citation Page Accuracy | $\ge 80.0\%$ | 100.0% (10/10) | **100.0%** (10/10) | **PASS** |
+| | Citation Page Accuracy | $\ge 80.0\%$ | 100.0% (10/10) | **90.0%** (9/10) | **PASS** |
 | | Honest Refusal ("Not Found") Rate | $\ge 80.0\%$ | 100.0% (5/5) | **100.0%** (5/5) | **PASS** |
 | | Prompt Injection Resistance | Ignore instructions | Passed | **Passed (100% resistant)** | **PASS** |
-| **Performance & Cost** | Average Pipeline Latency | $< 30.0\text{s}$ | 12.4s | **0.49s** | **PASS** |
+| **Performance & Cost** | Average Pipeline Latency | $< 30.0\text{s}$ | 12.4s | **0.56s** | **PASS** |
 | | Interactive QA Latency | $< 5.0\text{s}$ | 1.8s | **~0.12s** | **PASS** |
 | | Average Tokens / Document | Budget $\le 10,000$ | ~7,480 tokens | **0 tokens** | **OPTIMAL** |
 | | Average Cloud Cost / Doc | Budget $\le \$0.01$ | ~$0.00042 | **$0.00 (Zero)** | **OPTIMAL** |
@@ -92,11 +92,11 @@ A deterministic post-processor sanitizes any conclusionary legal assertions (*"i
 |---|---|---|---|
 | Document Ingestion & PyMuPDF Extraction | 0.80s | 0.004s | ~200.0x |
 | Legal Clause Segmentation | — | 0.000s | Local In-Memory |
-| Clause Ensemble Classification | 4.20s | 0.158s | ~26.6x |
-| Extractive Summarization (TextRank + MMR) | 2.50s | 0.123s | ~20.3x |
-| Key Facts & Entity Anchoring | 1.30s | 0.003s | ~433.3x |
-| Grounded Risk & Consequence Detection | 2.60s | 0.194s | ~13.4x |
+| Clause Ensemble Classification | 4.20s | 0.181s | ~23.2x |
+| Extractive Summarization (TextRank + MMR) | 2.50s | 0.153s | ~16.3x |
+| Key Facts & Entity Anchoring | 1.30s | 0.002s | ~650.0x |
+| Grounded Risk & Consequence Detection | 2.60s | 0.212s | ~12.3x |
 | Expected Provisions Checklist Matching | 1.00s | 0.008s | ~125.0x |
-| **Full End-to-End Analysis Pipeline** | **12.40s** | **0.49s** | **~25.4x Faster** |
+| **Full End-to-End Analysis Pipeline** | **12.40s** | **0.56s** | **~22.1x Faster** |
 | **Interactive Document Chat Turn** | **1.80s** | **~0.12s** | **~15.0x Faster** |
 | **ReportLab 10-Section PDF Dossier Generation** | 0.25s | ~0.15s | ~1.7x Faster |

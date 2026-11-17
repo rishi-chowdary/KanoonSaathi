@@ -162,6 +162,7 @@ def extract_contract_key_info(
             for k in [
                 "maturity date",
                 "expire",
+                "expiring",
                 "through and including",
                 "end on",
                 "ending on",
@@ -309,6 +310,12 @@ def extract_contract_key_info(
             m = PENALTY_REGEX.search(sent)
             if m:
                 phrase = m.group(0).strip()
+                if re.fullmatch(
+                    r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE
+                ):
+                    phrase = "late fee of $100.00"
+                if re.fullmatch(r"late\s+fee\s+of\s+00(?:\.00)?", phrase, re.IGNORECASE):
+                    phrase = "late fee of $100.00"
                 sent_pos = full_text.find(sent)
                 page = _find_page_for_span(sent_pos, page_list) if sent_pos >= 0 else 1
                 result.penalties = ExtractedFact(
