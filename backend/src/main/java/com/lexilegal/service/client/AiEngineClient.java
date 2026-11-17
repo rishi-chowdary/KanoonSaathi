@@ -1,5 +1,7 @@
 package com.lexilegal.service.client;
 
+import com.lexilegal.dto.ai.ChatRequestDto;
+import com.lexilegal.dto.ai.ChatResponseDto;
 import com.lexilegal.dto.ai.ChunkDto;
 import com.lexilegal.dto.ai.ClauseAnalysisRequestDto;
 import com.lexilegal.dto.ai.ClauseAnalysisResponseDto;
@@ -150,6 +152,16 @@ public class AiEngineClient {
                 .body(req)
                 .retrieve()
                 .body(MissingProvisionsResponseDto.class);
+    }
+
+    public ChatResponseDto chat(ChatRequestDto request) {
+        return restClient.post()
+                .uri("/internal/chat")
+                .header("X-Internal-Api-Key", internalApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(ChatResponseDto.class);
     }
 }
 

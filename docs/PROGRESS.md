@@ -15,8 +15,8 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 5 | Important Clauses Extraction (Two-Pass, 17 Categories, 3 Explanation Modes, Filtering & UI) | Completed | 2026-11-17 |
 | Phase 6 | Simplification Studio, Key Terms Glossary & Subtle Traps Detection | Completed | 2026-11-17 |
 | Phase 7 | Grounded Risk Analysis, Key Facts Extraction & Missing Provisions Detection | Completed | 2026-11-17 |
-| Phase 8 | OpenPDF Report Generation, Dashboard Statistics & Grounded Chat | Not Started | - |
-| Phase 9 | Frontend: Document Upload, Polling & Workspace Integration | Not Started | - |
+| Phase 8 | Grounded Document Chat, PostgreSQL Full-Text Search Retrieval & Conversation History | Completed | 2026-11-17 |
+| Phase 9 | OpenPDF Report Generation, Dashboard Statistics & Workspace Polish | Not Started | - |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Not Started | - |
 
 ---
@@ -648,24 +648,79 @@ PGPASSWORD=postgres psql -h 127.0.0.1 -p 5433 -U postgres -d lexilegal -c "SELEC
 
 ---
 
-### Phase 8: Frontend — Project Setup, Auth, Layout & Document Upload
-- [ ] Initialize React 18 + Vite project with Tailwind CSS and shadcn/ui components
-- [ ] Configure color tokens (navy primary, neutral grays, semantic risk colors)
-- [ ] Set up React Router, theme context (light/dark mode), and authentication context with JWT storage
-- [ ] Build Landing, Login, and Register pages with restrained legal-tech styling
-- [ ] Build Dashboard page displaying real statistics, risk charts, and recent documents
-- [ ] Build Document Upload page with drag-and-drop, duplicate detection modal, file type validation, and upload consent notice
-- [ ] Implement polling hook for document processing status with clear progress steps
+### Phase 8: Grounded Document Chat, PostgreSQL Full-Text Search Retrieval & Conversation History
+- [x] AI Engine Grounded Chat Service & Schema:
+  - `POST /internal/chat` and `/chat`: Evaluates user contract questions strictly against retrieved document chunks.
+  - Strict Grounding & Injection Defense: Prompt template `app/prompts/v1/chat_prompt.txt` instructs the model to answer ONLY from provided excerpts, treat chunk content as untrusted data, refuse instructions within chunks, keep responses concise, and return an explicit not-found disclaimer if the topic is absent.
+  - Confidence & Structured Citations: Returns structured citations `[{page, section_ref, quote, quote_verified}]` and confidence rating (`"supported" | "partially supported" | "not found"`).
+  - Quote Verification: Every citation quote is verified against source chunks using `verify_quote`; sets `quote_verified = True/False`.
+  - Enforces Rule 7: Sanitizes answers against forbidden legal conclusions (`"is illegal"`, `"null and void"`, `"is unenforceable"`).
+  - Unit Tests: 3 new pytest tests in `test_chat.py` (total 52 passing across `ai-engine`).
+- [x] Spring Boot Backend RAG Retrieval & Multi-Turn Persistence:
+  - PostgreSQL Full-Text Search: Implemented native queries in `DocumentChunkRepository` using `ts_rank` and `websearch_to_tsquery('english', :query)` with a fallback to `plainto_tsquery` and keyword extraction (`|` OR search).
+  - Conversation Management: `ChatService` and `ChatController` exposing:
+    - `POST /api/documents/{id}/chat` `{ conversationId?, message }`: Creates or appends to a conversation thread, retrieves top-k chunks, loads last 6 messages as context, calls AI engine `/internal/chat`, and persists user and assistant messages with structured citations.
+    - `GET /api/documents/{id}/chat/conversations`: Lists conversations with titles, timestamps, and message counts.
+    - `GET /api/documents/{id}/chat/conversations/{conversationId}/messages`: Returns chronological message history.
+    - `DELETE /api/documents/{id}/chat/conversations/{conversationId}`: Deletes conversation thread with cascade.
+  - Tenant Isolation: All endpoints enforce strict user ownership checks (unauthorized access returns HTTP 404). 4 integration tests in `ChatControllerTest` passing.
+- [x] React Frontend Chat Workspace:
+  - Built `frontend/src/components/chat/ChatTab.jsx`:
+    - Thread sidebar with "+ New Conversation", active thread selection, and delete button.
+    - Message bubbles with distinct user (navy) and assistant styling, timestamps, and copy button.
+    - Suggested starter questions: 7 spec examples rendered as interactive pills when starting a conversation.
+    - Clickable structured citation pills (`Page {page}` + section ref) with quote preview and verification badges; clicking opens that exact page in the Document Text preview!
+    - Typing indicator with animated loading state.
+    - Integrated into `AnalysisPage.jsx` tab navigation.
+- [x] Automated Verification:
+  - AI Engine: 52/52 pytest tests passing.
+  - Backend: 4/4 integration tests passing in `ChatControllerTest`.
+  - Browser E2E: Automated headless Chrome test `test-phase8-chat-e2e.cjs` verified login, starter question click, assistant streaming/response, citation pill rendering, and page-preview navigation.
 
-### Phase 9: Frontend — Analysis Workspace, Side-by-Side Viewer & Grounded Chat
-- [ ] Build Document Analysis workspace layout with tabbed navigation
-- [ ] Implement Summary tab with document purpose, parties, and commercial conditions
-- [ ] Implement Clauses tab with category/importance filters and 3 simplification modes (Simple, Detailed, Professional)
-- [ ] Implement side-by-side Document Viewer showing cited page text when finding is clicked
-- [ ] Implement Risks tab with risk severity badges and suggested questions
-- [ ] Implement Key Information tab and Missing Clauses tab
-- [ ] Implement Grounded Chat interface with clickable page citation pills
-- [ ] Add PDF Report download button and document history page
+**What was built:**
+- AI Engine (`ai-engine/`):
+  - `app/schemas/chat.py`: Pydantic models for chunks, citations, raw result, and chat responses.
+  - `app/prompts/v1/chat_prompt.txt`: Grounding instructions with untrusted chunk delimiters.
+  - `app/services/chat_service.py`: Service with chunk formatting, history concatenation, quote verification, and Rule 7 filtering.
+  - `app/providers/mock_provider.py`: Mock structured result generator for chat testing.
+  - `app/api/routes.py`: Exposed `/internal/chat` and `/chat`.
+  - `tests/test_chat.py`: Pytest test suite for grounded chat.
+- Spring Boot Backend (`backend/`):
+  - DTOs: `ChatQuestionRequest`, `ChatCitationResponse`, `ChatMessageResponse`, `ChatConversationResponse`.
+  - AI DTOs: `ChatRequestDto`, `ChatResponseDto`, `ChatRetrievedChunkDto`, `ChatMessageHistoryDto`, `CitationItemDto`.
+  - `AiEngineClient.java`: Added `chat(ChatRequestDto)` method.
+  - `DocumentChunkRepository.java`: Added `searchChunksFullText` and `searchChunksPlain` full-text search queries.
+  - `ChatConversationRepository.java` & `ChatMessageRepository.java`: Extended with ownership and message retrieval queries.
+  - `ChatService.java`: Full RAG retrieval, history loading, AI engine invocation, and citation persistence.
+  - `ChatController.java`: Endpoints for chat messaging, history retrieval, and conversation deletion.
+  - `ChatControllerTest.java`: Integration tests for auth, message flow, cross-tenant isolation, and deletion.
+- Frontend (`frontend/`):
+  - `frontend/src/components/chat/ChatTab.jsx`: Full chat interface with thread sidebar, message bubbles, citation pills, and starter questions.
+  - `frontend/src/services/api.js`: Added `sendChatMessage`, `getChatConversations`, `getChatMessages`, `deleteChatConversation`.
+  - `frontend/src/pages/AnalysisPage.jsx`: Wired `activeTab === "chat"` to `ChatTab`.
+  - `frontend/test-phase8-chat-e2e.cjs`: Puppeteer browser end-to-end test.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run AI Engine Chat & Regression Tests (all 52 passing)
+cd ai-engine
+.venv/bin/pytest tests/ -v
+
+# 2. Run Backend Chat Controller Tests
+cd backend
+mvn test -Dtest=ChatControllerTest
+
+# 3. Build Frontend Assets
+cd frontend
+npm run build
+
+# 4. Run Phase 8 End-to-End Live Browser Verification
+node frontend/test-phase8-chat-e2e.cjs
+```
+
+---
+
+### Phase 9: OpenPDF Report Generation, Dashboard Statistics & Workspace Polish
 
 ### Phase 10: Evaluation Suite, End-to-End Testing & Viva Preparation
 - [ ] Curate sample contracts in `samples/contracts/` (NDA, Lease, Service Agreement, Employment, Prompt Injection test)

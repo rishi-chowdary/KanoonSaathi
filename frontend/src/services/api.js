@@ -66,4 +66,28 @@ export const getDocumentMissingProvisions = async (documentId) => {
   return response.data;
 };
 
+export const sendChatMessage = async (documentId, payload) => {
+  const response = await api.post(`/documents/${documentId}/chat`, payload, { timeout: 180000 });
+  return response.data;
+};
+
+export const getChatConversations = async (documentId) => {
+  const response = await api.get(`/documents/${documentId}/chat/conversations`);
+  return response.data;
+};
+
+export const getChatMessages = async (documentId, conversationId) => {
+  const response = await api.get(
+    `/documents/${documentId}/chat/conversations/${conversationId}/messages`
+  );
+  return response.data;
+};
+
+export const deleteChatConversation = async (documentId, conversationId) => {
+  const response = await api.delete(
+    `/documents/${documentId}/chat/conversations/${conversationId}`
+  );
+  return response.data;
+};
+
 export default api;

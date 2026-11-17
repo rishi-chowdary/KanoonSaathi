@@ -8,6 +8,7 @@ from app.schemas.simplify import SimplifyRequest, SimplifyResponse
 from app.schemas.risk import RiskAnalysisRequest, RiskAnalysisResponse
 from app.schemas.key_info import KeyInfoRequest, KeyInfoResponse
 from app.schemas.missing import MissingProvisionsRequest, MissingProvisionsResponse
+from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.extractor import process_document, ExtractionException
 from app.services.summary_service import analyze_document_summary
 from app.services.clause_service import analyze_document_clauses
@@ -15,6 +16,7 @@ from app.services.simplify_service import simplify_text
 from app.services.risk_service import analyze_risks
 from app.services.key_info_service import extract_key_info
 from app.services.missing_service import analyze_missing_provisions
+from app.services.chat_service import answer_chat_question
 from app.providers import get_llm_provider
 
 router = APIRouter()
@@ -203,6 +205,29 @@ async def analyze_document_missing_provisions(request: MissingProvisionsRequest)
             status_code=500,
             content={"code": "MISSING_ANALYSIS_FAILED", "detail": str(e)},
         )
+
+
+@router.post(
+    "/internal/chat",
+    response_model=ChatResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    responses={400: {"model": ExtractionErrorResponse}},
+)
+async def chat_with_document(request: ChatRequest):
+    provider = get_llm_provider()
+    try:
+        response = await answer_chat_question(request=request, provider=provider)
+        return response
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"code": "CHAT_GENERATION_FAILED", "detail": str(e)},
+        )
+
 
 
 

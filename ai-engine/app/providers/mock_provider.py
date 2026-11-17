@@ -248,6 +248,42 @@ class MockProvider(LLMProvider):
                 ]
             )  # type: ignore
 
+        if schema.__name__ == "RawChatResult":
+            from app.schemas.chat import RawChatResult, StructuredCitation
+            q_lower = prompt.lower()
+            if "notice period" in q_lower or "termination" in q_lower:
+                return RawChatResult(
+                    answer="The agreement requires thirty (30) days prior written notice for termination without cause.",
+                    citations=[
+                        StructuredCitation(
+                            page=2,
+                            section_ref="Section 6",
+                            quote="thirty (30) days prior written notice",
+                            quote_verified=True,
+                        )
+                    ],
+                    confidence="supported",
+                )  # type: ignore
+            elif "unrelated" in q_lower or "dog" in q_lower or "weather" in q_lower:
+                return RawChatResult(
+                    answer="The document does not appear to address this question.",
+                    citations=[],
+                    confidence="not found",
+                )  # type: ignore
+            else:
+                return RawChatResult(
+                    answer="Based on the agreement terms, the obligations and commercial conditions apply as specified.",
+                    citations=[
+                        StructuredCitation(
+                            page=1,
+                            section_ref="Section 1",
+                            quote="shall perform all duties",
+                            quote_verified=True,
+                        )
+                    ],
+                    confidence="supported",
+                )  # type: ignore
+
         if schema.__name__ == "RawKeyInfoResult":
             from app.schemas.key_info import FactItem, ImportantDateItem, RawKeyInfoResult
             return RawKeyInfoResult(

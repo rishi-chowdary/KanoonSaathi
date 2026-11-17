@@ -6,6 +6,7 @@ import ClausesTab from "../components/clauses/ClausesTab";
 import RisksTab from "../components/risks/RisksTab";
 import KeyInfoTab from "../components/keyinfo/KeyInfoTab";
 import MissingProvisionsTab from "../components/missing/MissingProvisionsTab";
+import ChatTab from "../components/chat/ChatTab";
 import {
   FileText,
   ShieldAlert,
@@ -233,6 +234,16 @@ export default function AnalysisPage() {
         />
       )}
 
+      {activeTab === "chat" && (
+        <ChatTab
+          documentId={id}
+          onSelectPage={(page) => {
+            setCurrentPage(page);
+            setActiveTab("preview");
+          }}
+        />
+      )}
+
       {activeTab === "preview" && (
         <div className="space-y-4">
           {document.status === "EXTRACTING" ? (
@@ -290,7 +301,8 @@ export default function AnalysisPage() {
         activeTab !== "clauses" &&
         activeTab !== "risks" &&
         activeTab !== "key-info" &&
-        activeTab !== "missing" && (
+        activeTab !== "missing" &&
+        activeTab !== "chat" && (
         <div className="p-8 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-xs text-slate-500 space-y-2">
           <p className="font-medium text-slate-700 dark:text-slate-300">
             {activeTab.toUpperCase()} Module
