@@ -778,6 +778,16 @@ python evaluation/verify_phase8_auth.py
   - Spring Boot Integration Tests: 4/4 passing in `DashboardAndReportTest` (`mvn test -Dtest=DashboardAndReportTest`).
   - Frontend Build: `npm run build` bundled cleanly in 6.36s with zero errors.
   - Full-Stack Live Browser E2E: `frontend/test-phase9-e2e.cjs` verified user registration, initial dashboard stats, contract upload and pipeline processing, updated dashboard metrics and recent table, Report Dossier tab with 10 sections, and binary PDF generation (valid `%PDF-` header, 11,782 bytes, 5 pages).
+  - Automated Phase 9 Verification Suite (`evaluation/verify_phase9.py`):
+    1. Seeding & SQL Verification: Two isolated users seeded via `database/sample-data/seed_phase9.py`. Dashboard metrics matched manual database SQL queries with 100% accuracy (User A: 2 docs, 12 clauses, 1 medium risk; User B: 1 doc, 6 clauses, 3 high risks). Zero cross-tenant leakage.
+    2. Document Deletion & Instant Refresh: Deleted Document 2 for User A; dashboard stats immediately updated to 1 document and 7 clauses.
+    3. OpenPDF 10-Section Dossier & Unicode Rendering (3 Samples):
+       - Sample 1 (`rental_agreement.pdf`): 4 pages, all 10 sections present, running headers and footers with page numbers.
+       - Sample 2 (`clean_nda.pdf`): 3 pages, 0 risks handled gracefully with informative placeholder ("No specific risks identified in this agreement.").
+       - Sample 3 (`one_sided_agreement.pdf`): 4 pages, tested Unicode preservation with TrueType embedding: Rupee symbol (`₹`), Section symbol (`§`), Curly quotes (`“ ” ‘ ’`), and Em-dash (`—`) all preserved without corruption; long clause (1,200+ chars) wrapped cleanly.
+       - Rendered all 11 pages to PNGs in `evaluation/results/report_renders/`.
+    4. Endpoint Authorization: Cross-tenant access strictly returned HTTP 404; unauthenticated access strictly returned HTTP 401.
+    5. Brand-New User Empty-State: Verified fresh user dashboard reports 0 documents, 0 clauses, 0 risks, and empty recent lists.
 
 **What was built:**
 - Backend (`backend/`):
@@ -809,8 +819,11 @@ npm run build
 # 3. Run Phase 9 End-to-End Live Browser & PDF Verification
 node frontend/test-phase9-e2e.cjs
 
-# 4. Inspect Sample Generated PDF Report
-python -c 'import fitz; doc=fitz.open("evaluation/results/sample_report.pdf"); print(f"Pages: {len(doc)}")'
+# 4. Run Comprehensive Phase 9 Verification Suite (SQL check, Unicode, 3 PDF samples, Auth)
+python evaluation/verify_phase9.py
+
+# 5. Inspect Rendered Report Pages (PNG images)
+ls -la evaluation/results/report_renders/
 ```
 
 ### Phase 10: Evaluation Suite, End-to-End Testing & Viva Preparation

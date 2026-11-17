@@ -23,6 +23,7 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
@@ -70,17 +71,51 @@ public class ReportPdfService {
     private static final Color COLOR_RISK_INFO = new Color(37, 99, 235);
     private static final Color COLOR_RISK_INFO_BG = new Color(239, 246, 255);
 
+    // Unicode TrueType Fonts with Helvetica fallback
+    private static BaseFont baseFont;
+    private static BaseFont baseFontBold;
+    private static BaseFont baseFontItalic;
+
+    static {
+        try {
+            String notoPath = "/usr/share/fonts/google-noto-vf/NotoSans[wght].ttf";
+            String notoItalicPath = "/usr/share/fonts/google-noto-vf/NotoSans-Italic[wght].ttf";
+            if (new java.io.File(notoPath).exists()) {
+                baseFont = BaseFont.createFont(notoPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                baseFontBold = baseFont;
+                baseFontItalic = new java.io.File(notoItalicPath).exists()
+                        ? BaseFont.createFont(notoItalicPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED)
+                        : baseFont;
+            } else {
+                baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                baseFontBold = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                baseFontItalic = BaseFont.createFont(BaseFont.HELVETICA_OBLIQUE, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+            }
+        } catch (Exception e) {
+            try {
+                baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                baseFontBold = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+                baseFontItalic = BaseFont.createFont(BaseFont.HELVETICA_OBLIQUE, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public static Font font(float size, int style, Color color) {
+        BaseFont bf = (style == Font.BOLD) ? baseFontBold : (style == Font.ITALIC ? baseFontItalic : baseFont);
+        return new Font(bf, size, style, color);
+    }
+
     // Fonts
-    private static final Font FONT_TITLE = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20, COLOR_PRIMARY);
-    private static final Font FONT_SUBTITLE = FontFactory.getFont(FontFactory.HELVETICA, 10, COLOR_TEXT_MUTED);
-    private static final Font FONT_H1 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13, COLOR_PRIMARY);
-    private static final Font FONT_H2 = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10.5f, COLOR_TEXT_MAIN);
-    private static final Font FONT_BODY = FontFactory.getFont(FontFactory.HELVETICA, 9.5f, COLOR_TEXT_MAIN);
-    private static final Font FONT_BODY_BOLD = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9.5f, COLOR_TEXT_MAIN);
-    private static final Font FONT_SMALL = FontFactory.getFont(FontFactory.HELVETICA, 8.5f, COLOR_TEXT_MUTED);
-    private static final Font FONT_SMALL_BOLD = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8.5f, COLOR_TEXT_MAIN);
-    private static final Font FONT_PROVENANCE_EXT = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8f, new Color(14, 116, 144));
-    private static final Font FONT_PROVENANCE_AI = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8f, new Color(109, 40, 217));
+    private static final Font FONT_TITLE = font(20, Font.BOLD, COLOR_PRIMARY);
+    private static final Font FONT_SUBTITLE = font(10, Font.NORMAL, COLOR_TEXT_MUTED);
+    private static final Font FONT_H1 = font(13, Font.BOLD, COLOR_PRIMARY);
+    private static final Font FONT_H2 = font(10.5f, Font.BOLD, COLOR_TEXT_MAIN);
+    private static final Font FONT_BODY = font(9.5f, Font.NORMAL, COLOR_TEXT_MAIN);
+    private static final Font FONT_BODY_BOLD = font(9.5f, Font.BOLD, COLOR_TEXT_MAIN);
+    private static final Font FONT_SMALL = font(8.5f, Font.NORMAL, COLOR_TEXT_MUTED);
+    private static final Font FONT_SMALL_BOLD = font(8.5f, Font.BOLD, COLOR_TEXT_MAIN);
+    private static final Font FONT_PROVENANCE_EXT = font(8f, Font.BOLD, new Color(14, 116, 144));
+    private static final Font FONT_PROVENANCE_AI = font(8f, Font.BOLD, new Color(109, 40, 217));
 
     public ReportPdfService(DocumentRepository documentRepository,
                             DocumentAnalysisRepository documentAnalysisRepository,
@@ -175,7 +210,7 @@ public class ReportPdfService {
 
         PdfPCell leftCell = new PdfPCell();
         leftCell.setBorder(Rectangle.NO_BORDER);
-        leftCell.addElement(new Paragraph("LEXILEGAL AI", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, COLOR_ACCENT)));
+        leftCell.addElement(new Paragraph("LEXILEGAL AI", font(10, Font.BOLD, COLOR_ACCENT)));
         leftCell.addElement(new Paragraph(analysis.getTitle() != null ? analysis.getTitle() : document.getOriginalFilename(), FONT_TITLE));
         leftCell.addElement(new Paragraph("Comprehensive Contract Review & Risk Intelligence Dossier", FONT_SUBTITLE));
         headerTable.addCell(leftCell);
@@ -194,6 +229,11 @@ public class ReportPdfService {
 
         doc.add(headerTable);
         doc.add(createDivider());
+
+        Paragraph sec1 = new Paragraph("1. Document Overview & Metadata", FONT_H2);
+        sec1.setSpacingBefore(2f);
+        sec1.setSpacingAfter(4f);
+        doc.add(sec1);
 
         // Overview Key Metadata Grid
         PdfPTable gridTable = new PdfPTable(4);
@@ -337,7 +377,7 @@ public class ReportPdfService {
             if (quote.length() > 300) {
                 quote = quote.substring(0, 300) + "...";
             }
-            c4.addElement(new Paragraph("\"" + quote + "\"", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8.5f, COLOR_TEXT_MAIN)));
+            c4.addElement(new Paragraph("\"" + quote + "\"", font(8.5f, Font.ITALIC, COLOR_TEXT_MAIN)));
             table.addCell(c4);
         }
 
@@ -433,7 +473,7 @@ public class ReportPdfService {
 
             // Header line
             Paragraph h = new Paragraph();
-            h.add(new Chunk("[" + r.getLevel().toUpperCase() + "] ", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9.5f, levelColor)));
+            h.add(new Chunk("[" + r.getLevel().toUpperCase() + "] ", font(9.5f, Font.BOLD, levelColor)));
             h.add(new Chunk(r.getTitle() + " ", FONT_H2));
             h.add(new Chunk("(" + r.getCategory() + " • Page " + r.getSourcePage() + ") ", FONT_SMALL));
             h.add(new Chunk("[AI_INTERPRETATION]", FONT_PROVENANCE_AI));
@@ -460,13 +500,13 @@ public class ReportPdfService {
                 Paragraph pQuote = new Paragraph();
                 pQuote.setSpacingBefore(3f);
                 pQuote.add(new Chunk("Evidence Quote [EXTRACTED]: ", FONT_PROVENANCE_EXT));
-                pQuote.add(new Chunk("\"" + r.getEvidenceQuote() + "\"", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8.5f, COLOR_TEXT_MAIN)));
+                pQuote.add(new Chunk("\"" + r.getEvidenceQuote() + "\"", font(8.5f, Font.ITALIC, COLOR_TEXT_MAIN)));
                 cell.addElement(pQuote);
             }
 
             // Jurisdiction caveat
             if (r.getJurisdictionCaveat() != null && !r.getJurisdictionCaveat().isBlank()) {
-                Paragraph pCav = new Paragraph("Note: " + r.getJurisdictionCaveat(), FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8f, COLOR_TEXT_MUTED));
+                Paragraph pCav = new Paragraph("Note: " + r.getJurisdictionCaveat(), font(8f, Font.ITALIC, COLOR_TEXT_MUTED));
                 pCav.setSpacingBefore(2f);
                 cell.addElement(pCav);
             }
@@ -556,7 +596,7 @@ public class ReportPdfService {
 
         Paragraph note = new Paragraph(
                 "Notice: Items below are marked as 'Possible omission' based on standard industry contracts. Absence does not automatically imply a defect.",
-                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8.5f, COLOR_TEXT_MUTED)
+                font(8.5f, Font.ITALIC, COLOR_TEXT_MUTED)
         );
         note.setSpacingAfter(5f);
         doc.add(note);
@@ -573,7 +613,7 @@ public class ReportPdfService {
             cell.setPadding(6f);
 
             Paragraph h = new Paragraph();
-            h.add(new Chunk("[Possible omission] ", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9f, COLOR_RISK_MED)));
+            h.add(new Chunk("[Possible omission] ", font(9f, Font.BOLD, COLOR_RISK_MED)));
             h.add(new Chunk(w.getClauseName() + " ", FONT_H2));
             h.add(new Chunk("(" + w.getCategory() + " • Risk: " + w.getRiskLevel() + ")", FONT_SMALL));
             cell.addElement(h);
@@ -629,7 +669,7 @@ public class ReportPdfService {
         for (String q : questions) {
             Paragraph qPara = new Paragraph();
             qPara.setSpacingBefore(3f);
-            qPara.add(new Chunk("? ", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10f, COLOR_ACCENT)));
+            qPara.add(new Chunk("? ", font(10f, Font.BOLD, COLOR_ACCENT)));
             qPara.add(new Chunk(q, FONT_BODY));
             cell.addElement(qPara);
         }
@@ -655,7 +695,7 @@ public class ReportPdfService {
         cell.setBackgroundColor(COLOR_BG_ALT);
         cell.setPadding(10f);
 
-        Paragraph disTitle = new Paragraph("NOT FORMAL LEGAL COUNSEL — AUTOMATED INFORMATIONAL AID", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, COLOR_PRIMARY));
+        Paragraph disTitle = new Paragraph("NOT FORMAL LEGAL COUNSEL — AUTOMATED INFORMATIONAL AID", font(10, Font.BOLD, COLOR_PRIMARY));
         cell.addElement(disTitle);
 
         Paragraph disBody = new Paragraph(
@@ -664,7 +704,7 @@ public class ReportPdfService {
                 "This report does not establish an attorney-client relationship, nor does it guarantee the legality, enforceability, or validity of any clause under local, state, or federal laws. " +
                 "Legal outcomes depend on governing jurisdiction, factual circumstances, and applicable statutory frameworks. " +
                 "Before signing, executing, modifying, or relying on any contract terms analyzed in this report, you must consult with a licensed attorney admitted to practice in the relevant jurisdiction.",
-                FontFactory.getFont(FontFactory.HELVETICA, 8.5f, COLOR_TEXT_MAIN)
+                font(8.5f, Font.NORMAL, COLOR_TEXT_MAIN)
         );
         disBody.setSpacingBefore(4f);
         cell.addElement(disBody);
@@ -724,7 +764,7 @@ public class ReportPdfService {
             case "LOW" -> COLOR_RISK_LOW;
             default -> COLOR_RISK_MED;
         };
-        return new Paragraph(imp, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8.5f, c));
+        return new Paragraph(imp, font(8.5f, Font.BOLD, c));
     }
 
     private Color getRiskLevelColor(String level) {
@@ -779,7 +819,7 @@ public class ReportPdfService {
             if (writer.getPageNumber() > 1) {
                 ColumnText.showTextAligned(
                         cb, Element.ALIGN_LEFT,
-                        new Phrase("LexiLegal AI • Contract Analysis Report", FontFactory.getFont(FontFactory.HELVETICA, 8, COLOR_TEXT_MUTED)),
+                        new Phrase("LexiLegal AI • Contract Analysis Report", font(8, Font.NORMAL, COLOR_TEXT_MUTED)),
                         document.left(), document.top() + 10, 0
                 );
             }
@@ -787,13 +827,13 @@ public class ReportPdfService {
             // Running footer on all pages
             ColumnText.showTextAligned(
                     cb, Element.ALIGN_LEFT,
-                    new Phrase("CONFIDENTIAL • INFORMATIONAL ONLY • NOT LEGAL ADVICE", FontFactory.getFont(FontFactory.HELVETICA, 7.5f, COLOR_TEXT_MUTED)),
+                    new Phrase("CONFIDENTIAL • INFORMATIONAL ONLY • NOT LEGAL ADVICE", font(7.5f, Font.NORMAL, COLOR_TEXT_MUTED)),
                     document.left(), document.bottom() - 15, 0
             );
 
             ColumnText.showTextAligned(
                     cb, Element.ALIGN_RIGHT,
-                    new Phrase("Page " + writer.getPageNumber(), FontFactory.getFont(FontFactory.HELVETICA, 8, COLOR_TEXT_MUTED)),
+                    new Phrase("Page " + writer.getPageNumber(), font(8, Font.NORMAL, COLOR_TEXT_MUTED)),
                     document.right(), document.bottom() - 15, 0
             );
         }
