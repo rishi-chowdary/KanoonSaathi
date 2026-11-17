@@ -52,3 +52,4 @@ async def generate_with_retry(
             raise
 
     raise RuntimeError(f"failed to generate valid structured response after {max_retries} attempts: {last_error}")
+

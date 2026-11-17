@@ -102,3 +102,4 @@ class GeminiProvider(LLMProvider):
             except Exception as e:
                 logger.error("unexpected error during gemini call: %s", e)
                 raise
+

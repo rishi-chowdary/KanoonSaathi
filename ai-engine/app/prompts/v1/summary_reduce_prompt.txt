@@ -25,3 +25,4 @@ Rules:
 - Never use words like "illegal", "void", or "unenforceable".
 - Every condition, obligation, and financial term must include verbatim `evidence_quote` and `source_page`.
 - Return valid JSON matching the schema.
+

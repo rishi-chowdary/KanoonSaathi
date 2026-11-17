@@ -43,3 +43,4 @@ public class DocumentSummaryRequestDto {
         this.chunks = chunks;
     }
 }
+

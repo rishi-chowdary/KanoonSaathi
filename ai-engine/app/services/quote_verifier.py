@@ -119,3 +119,4 @@ def verify_summary_quotes(
 
     summary.verification_rate = round(rate, 2)
     return summary
+

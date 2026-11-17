@@ -46,3 +46,4 @@ class DocumentSummaryRequest(BaseModel):
     document_id: str
     pages: list[PageExtraction] = Field(default_factory=list)
     chunks: list[ChunkExtraction] = Field(default_factory=list)
+

@@ -123,3 +123,4 @@ class MockProvider(LLMProvider):
             return schema.model_validate({})
         except Exception:
             return schema.construct()  # type: ignore
+

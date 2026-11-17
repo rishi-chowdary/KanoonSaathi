@@ -30,3 +30,4 @@ class LLMProvider(ABC):
     ) -> T:
         """Execute a prompt and return a validated Pydantic model instance."""
         pass
+

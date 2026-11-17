@@ -147,3 +147,4 @@ public class DocumentSummaryResponseDto {
         this.warnings = warnings;
     }
 }
+
