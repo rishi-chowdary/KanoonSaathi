@@ -19,8 +19,11 @@ from app.services.quote_verifier import normalize_text, verify_quote
 logger = logging.getLogger("ai_engine.clause_service")
 
 DATE_MONTH_REGEX = re.compile(
-    r"\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b",
+    r"\b(?:january|february|march|april|june|july|august|september|october|november|december)\b",
     re.IGNORECASE,
+)
+MAY_DATE_REGEX = re.compile(
+    r"\bMay\s+(?:\d{1,2}(?:st|nd|rd|th)?|\d{4})\b|\b(?:\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?May)\b"
 )
 NUMBER_REGEX = re.compile(r"\b(?:\$|€|£)?\d+(?:,\d+)*(?:\.\d+)?%?\b")
 
@@ -53,8 +56,11 @@ def validate_numbers_and_dates(
                     f"Number '{num}' in {mode} explanation was not found in original clause text"
                 )
 
-        # Check explicit month dates
+        # Check explicit month dates (excluding modal verb 'may' unless accompanied by date digits)
         found_months = DATE_MONTH_REGEX.findall(text)
+        if MAY_DATE_REGEX.search(text):
+            found_months.append("May")
+
         for month in found_months:
             if month.lower() not in norm_original:
                 is_verified = False

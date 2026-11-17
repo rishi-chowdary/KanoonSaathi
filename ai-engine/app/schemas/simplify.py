@@ -17,7 +17,11 @@ class SimplifyRequest(BaseModel):
 
 
 class LLMSimplifyResult(BaseModel):
-    explanation: str = Field(..., description="Simplified explanation in the requested mode, preserving conditions/exceptions")
+    explanation: str = Field(
+        ...,
+        min_length=15,
+        description="Comprehensive plain-language explanation in the requested mode, fully preserving all conditions and exceptions. Must be a full narrative paragraph, never a single word or label."
+    )
     glossary: list[GlossaryTerm] = Field(default_factory=list, description="Key legal terms and concepts defined in plain language")
     what_could_be_missed: list[str] = Field(
         default_factory=list,
