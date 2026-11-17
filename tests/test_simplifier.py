@@ -1,5 +1,8 @@
 """Tests for rule-based simplification, readability scoring, and trap detection."""
 
+import json
+from pathlib import Path
+
 from app.nlp.readability import (
     calculate_readability,
     count_syllables_text,
@@ -15,128 +18,12 @@ from app.nlp.simplification import (
     verify_preservation,
 )
 
-# 20 diverse legal clauses spanning 8 standard contract categories
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
 LEGAL_TEST_CLAUSES = [
-    # 1. Indemnity
-    (
-        "The Tenant shall indemnify, defend, and hold harmless the Landlord from and against any and all claims, liabilities, damages, losses, costs, and expenses (including reasonable attorneys' fees) resulting from the Tenant's use, occupancy, or conduct on the Leased Premises, or from any breach by the Tenant in the performance of any agreement herein, provided that the Landlord gives prompt written notice of such claim within thirty (30) days.",
-        "INDEMNITY",
-        "Tenant",
-    ),
-    # 2. Confidentiality
-    (
-        "The Receiving Party agrees that it shall not disclose, reproduce, summarize, or distribute any Confidential Information to any third party without the express prior written consent of the Disclosing Party, and shall use such information solely for the Purpose.",
-        "CONFIDENTIALITY",
-        "Receiving Party",
-    ),
-    # 3. Non-Compete
-    (
-        "During the Employment Term and for a period of one (1) year following termination of employment, the Employee shall not, directly or indirectly, engage in, perform services for, or contribute knowledge to any business that competes with the Company within the territory.",
-        "NON_COMPETE",
-        "Employee",
-    ),
-    # 4. Termination
-    (
-        "Either party may terminate this Agreement immediately upon written notice to the other party in the event that the other party breaches any material term or condition of this Agreement and fails to cure such breach within thirty (30) calendar days after receipt of written notice specifying the default.",
-        "TERMINATION",
-        "Either party",
-    ),
-    # 5. Governing Law
-    (
-        "This Agreement and any dispute arising out of or related to this Agreement shall be governed by, and construed in accordance with, the laws of the State of Delaware, without giving effect to any principles of conflicts of law.",
-        "GOVERNING_LAW",
-        "Both parties",
-    ),
-    # 6. Severability
-    (
-        "In the event that any provision of this Agreement is determined by a court of competent jurisdiction to be illegal, invalid, or otherwise unenforceable, such provision shall be deemed severed and deleted, and the remaining provisions of this Agreement shall continue in full force and effect.",
-        "SEVERABILITY",
-        "Both parties",
-    ),
-    # 7. Payment Terms
-    (
-        "Client shall pay all invoiced amounts due to Vendor within thirty (30) days of the date of Vendor's invoice. Unpaid amounts shall accrue interest at the rate of 1.5% per month or the highest legal rate.",
-        "PAYMENT",
-        "Client",
-    ),
-    # 8. Limitation of Liability
-    (
-        "In no event shall either party be liable to the other for any indirect, incidental, consequential, special, or punitive damages arising out of or in connection with this Agreement, even if advised of the possibility of such damages.",
-        "LIABILITY",
-        "Both parties",
-    ),
-    # 9. Force Majeure
-    (
-        "Neither party shall be liable for any failure or delay in the performance of its obligations hereunder by reason of acts of God, flood, fire, war, terrorism, or other events beyond its reasonable control.",
-        "FORCE_MAJEURE",
-        "Neither party",
-    ),
-    # 10. Non-Solicitation
-    (
-        "For a period of two (2) years following the Effective Date, the Consultant covenants and agrees not to solicit, entice, or induce any employee, contractor, or customer of the Company to terminate their relationship with the Company.",
-        "NON_SOLICITATION",
-        "Consultant",
-    ),
-    # 11. Intellectual Property
-    (
-        "All inventions, improvements, software, designs, and patentable works conceived or developed by Employee during employment shall be deemed work made for hire and shall belong exclusively to the Company.",
-        "INTELLECTUAL_PROPERTY",
-        "Employee",
-    ),
-    # 12. Entire Agreement
-    (
-        "This Agreement constitutes the entire and sole agreement between the parties with respect to the subject matter hereof and supersedes all prior agreements, representations, and understandings, whether written or oral.",
-        "ENTIRE_AGREEMENT",
-        "Both parties",
-    ),
-    # 13. Notice Requirements
-    (
-        "All notices, requests, consents, and other communications hereunder shall be in writing and shall be deemed to have been duly given when delivered by hand or sent by certified mail, postage prepaid, return receipt requested.",
-        "NOTICES",
-        "Both parties",
-    ),
-    # 14. Survival
-    (
-        "The provisions of Sections 4 (Confidentiality), 6 (Indemnification), and 8 (Limitation of Liability) shall survive the termination or expiration of this Agreement for any reason.",
-        "SURVIVAL",
-        "Both parties",
-    ),
-    # 15. Waiver
-    (
-        "No waiver of any breach or default of any term, condition, or covenant of this Agreement shall be deemed to constitute a waiver of any other subsequent breach or default.",
-        "WAIVER",
-        "Both parties",
-    ),
-    # 16. Cumulative Remedies
-    (
-        "All rights and remedies provided in this Agreement are cumulative and not exclusive of any other rights or remedies that may be available to the parties at law or in equity.",
-        "REMEDIES",
-        "Both parties",
-    ),
-    # 17. Assignment
-    (
-        "Neither party may assign or transfer any of its rights or delegate any of its duties under this Agreement without the prior written consent of the other party, which consent shall not be unreasonably withheld.",
-        "ASSIGNMENT",
-        "Neither party",
-    ),
-    # 18. Amendments
-    (
-        "No supplement, modification, amendment, or alteration of this Agreement shall be binding unless executed in writing by authorized representatives of both parties.",
-        "AMENDMENT",
-        "Both parties",
-    ),
-    # 19. Dispute Resolution / Arbitration
-    (
-        "Any dispute, controversy, or claim arising out of or relating to this contract, or the breach thereof, shall be settled by binding arbitration in accordance with the Commercial Arbitration Rules of the American Arbitration Association.",
-        "DISPUTE_RESOLUTION",
-        "Both parties",
-    ),
-    # 20. Warranty Disclaimer
-    (
-        "Except as expressly set forth herein, the Provider disclaims all warranties, express or implied, including the implied warranties of merchantability and fitness for a particular purpose.",
-        "WARRANTY",
-        "Provider",
-    ),
+    (entry["text"], entry["category"], entry["party"])
+    for entry in json.loads(
+        (FIXTURES_DIR / "sample_clauses.json").read_text(encoding="utf-8")
+    )
 ]
 
 
@@ -251,8 +138,8 @@ class TestSimplificationEngine:
         assert res["preservation_verified"] is True
         assert len(res["glossary_terms"]) >= 1
 
-    def test_readability_improvement_gate_across_20_clauses(self):
-        """Hard Gate: On average, Flesch Reading Ease score must improve across 20 legal clauses."""
+    def test_readability_improves_across_sample_clauses(self):
+        """Flesch Reading Ease should improve on average across the 20 sample clauses."""
         improvements = []
         verified_count = 0
 

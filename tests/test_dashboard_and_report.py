@@ -17,27 +17,21 @@ from app.services.document_service import (
 from app.services.report_service import generate_pdf_report
 
 
-def test_seed_two_users_dashboard_numbers_no_leak(app):
-    """Seed two users with different contracts and confirm dashboard numbers match manual SQL without leaking."""
+def test_dashboard_counts_stay_isolated_per_user(app):
+    """Dashboard aggregates stay isolated per user and match direct SQL counts."""
     with app.app_context():
         from app.extensions import db
 
-        # 1. Create User 1
-        u1 = User.query.filter_by(email="user_one_m8@example.com").first()
+        u1 = User.query.filter_by(email="user_one@example.com").first()
         if not u1:
-            u1 = User(
-                email="user_one_m8@example.com", full_name="User One", role="USER"
-            )
+            u1 = User(email="user_one@example.com", full_name="User One", role="USER")
             u1.set_password("Password123!")
             db.session.add(u1)
             db.session.commit()
 
-        # 2. Create User 2
-        u2 = User.query.filter_by(email="user_two_m8@example.com").first()
+        u2 = User.query.filter_by(email="user_two@example.com").first()
         if not u2:
-            u2 = User(
-                email="user_two_m8@example.com", full_name="User Two", role="USER"
-            )
+            u2 = User(email="user_two@example.com", full_name="User Two", role="USER")
             u2.set_password("Password123!")
             db.session.add(u2)
             db.session.commit()
@@ -126,10 +120,10 @@ def test_delete_document_dashboard_counts_update(app):
     with app.app_context():
         from app.extensions import db
 
-        u_del = User.query.filter_by(email="delete_user_m8@example.com").first()
+        u_del = User.query.filter_by(email="delete_user@example.com").first()
         if not u_del:
             u_del = User(
-                email="delete_user_m8@example.com",
+                email="delete_user@example.com",
                 full_name="Delete User",
                 role="USER",
             )
@@ -161,11 +155,11 @@ def test_pdf_report_generation_10_sections_and_unicode(app):
     with app.app_context():
         from app.extensions import db
 
-        test_u = User.query.filter_by(email="report_tester_m8@example.com").first()
+        test_u = User.query.filter_by(email="report_tester@example.com").first()
         if not test_u:
             test_u = User(
-                email="report_tester_m8@example.com",
-                full_name="Report Tester M8",
+                email="report_tester@example.com",
+                full_name="Report Tester",
                 role="USER",
             )
             test_u.set_password("SecurePassword123!")
@@ -317,8 +311,8 @@ def test_report_endpoint_authorization(client, app):
     assert len(resp_owner.data) > 10000
 
 
-def test_empty_state_dashboard_brand_new_user(client, app):
-    """Empty-state dashboard for a brand-new user returns 0s and displays clean onboarding UI."""
+def test_empty_dashboard_for_new_user(client, app):
+    """Brand-new user sees zero metrics and an empty-state prompt."""
     with app.app_context():
         from app.extensions import db
 

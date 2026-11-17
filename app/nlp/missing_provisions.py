@@ -1,9 +1,8 @@
-"""LexiLegal AI — Expected Provisions Checklist & Missing Clauses Detector.
+"""Expected-provisions checklist and missing-clause detector.
 
-Compares extracted document clauses against industry-standard contract checklists:
-- SBERT prototype cosine similarity + keyword presence rules
-- Identifies omitted protections (carve-outs, deposit return timelines, cure periods)
-- Strictly applies Rule 7 disclaimer and "Possible omission" label
+Compares extracted document clauses against document-type checklists using
+keyword rules and SBERT prototype similarity, tagging omissions as
+"Possible omission" and filtering out definitive legal claims.
 """
 
 from __future__ import annotations
@@ -132,12 +131,7 @@ def detect_missing_provisions(
     document_type: str = "",
     full_text: str = "",
 ) -> list[dict[str, Any]]:
-    """Determine which standard contractual provisions are omitted.
-
-    Strict Invariant:
-    - Every missing provision record has label: 'Possible omission'
-    - Text strictly passes Rule 7 legal conclusion filter
-    """
+    """Return expected provisions missing from the document, labeled 'Possible omission'."""
     checklists = load_expected_provisions()
     checklist_key = normalize_document_type(document_type)
 

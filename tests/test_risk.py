@@ -144,7 +144,6 @@ class TestPredatoryTermsAndRiskDetection:
         )
         assert has_liab_cap, f"Liability cap disproportion not flagged in {risk_titles}"
 
-        # 5. Check Rule 7 across all outputs
         for r in risks:
             assert count_disallowed_legal_claims(r["explanation"]) == 0
             assert count_disallowed_legal_claims(r["why_it_matters"]) == 0
@@ -174,7 +173,6 @@ class TestMissingProvisionsDetection:
             len(missing) >= 2
         ), f"Expected at least 2 missing provisions, found {len(missing)}"
 
-        # Verify strict "Possible omission" labeling and Rule 7 compliance
         for m in missing:
             assert m["label"] == "Possible omission"
             assert count_disallowed_legal_claims(m["why_it_matters"]) == 0
@@ -252,7 +250,7 @@ class TestRiskServiceAndAPI:
         assert "byCategory" in dist_data
         assert dist_data["byLevel"]["HIGH"] >= 3
 
-    def test_tenant_isolation_risks_and_missing_returns_404(self, client, test_user):
+    def test_user_b_gets_404_for_user_a_risks(self, client, test_user):
         # Log in as User A
         client.post(
             "/api/auth/login",

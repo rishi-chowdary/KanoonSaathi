@@ -61,29 +61,25 @@ def test_extract_scanned_pdf_with_ocr():
     assert "DEED" in res.full_text.upper()
 
 
-def test_corrupted_file_rejection():
-    """Corrupted binary files must be rejected with descriptive error."""
+def test_rejects_corrupted_pdf():
     file_bytes = (SAMPLES_DIR / "corrupted_contract.pdf").read_bytes()
     with pytest.raises(ValueError, match="Unable to parse PDF|Corrupted"):
         extract_document(file_bytes, "corrupted_contract.pdf")
 
 
-def test_empty_file_rejection():
-    """Zero-byte files must be rejected immediately."""
+def test_rejects_empty_file():
     file_bytes = (SAMPLES_DIR / "empty_contract.pdf").read_bytes()
     with pytest.raises(ValueError, match="File is empty"):
         validate_file(file_bytes, "empty_contract.pdf")
 
 
-def test_fake_extension_rejection():
-    """Executables disguised as PDF must be rejected by magic bytes inspection."""
+def test_rejects_wrong_magic_bytes():
     file_bytes = (SAMPLES_DIR / "malicious_renamed.exe.pdf").read_bytes()
     with pytest.raises(ValueError, match="Corrupted PDF"):
         validate_file(file_bytes, "malicious_renamed.exe.pdf")
 
 
-def test_oversized_file_rejection():
-    """Files exceeding 10MB limit must be rejected."""
+def test_rejects_oversized_file():
     oversized = b"%PDF-1.4 " + b"x" * (10 * 1024 * 1024 + 10)
     with pytest.raises(ValueError, match="10MB"):
         validate_file(oversized, "huge.pdf")

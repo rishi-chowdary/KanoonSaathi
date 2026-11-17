@@ -1,4 +1,4 @@
-"""Tests for Phase M7: Hybrid Retrieval & Extractive QA Document Chat."""
+"""Tests for hybrid retrieval and extractive QA document chat."""
 
 import json
 from pathlib import Path
