@@ -82,7 +82,13 @@
 
 <!-- Tabs Navigation -->
 <div class="tabs-nav">
-  <button type="button" class="tab-btn active" data-tab="clauses-tab">
+  <button type="button" class="tab-btn active" data-tab="summary-tab">
+    Executive Summary
+  </button>
+  <button type="button" class="tab-btn" data-tab="keyinfo-tab">
+    Key Information
+  </button>
+  <button type="button" class="tab-btn" data-tab="clauses-tab">
     Extracted Clauses ({{ clauses|length if clauses else 0 }})
   </button>
   <button type="button" class="tab-btn" data-tab="chunks-tab">
@@ -90,8 +96,269 @@
   </button>
 </div>
 
-<!-- Tab 1: Extracted Clauses -->
-<div id="clauses-tab" class="tab-content active">
+<!-- Tab 1: Executive Summary -->
+<div id="summary-tab" class="tab-content active">
+  {% if analysis %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <h2 class="card-title">Contract Purpose & Overview</h2>
+        <p class="card-subtitle">Synthesized from contractual recitals and SBERT TextRank centrality</p>
+      </div>
+      <p style="font-size: 1.05rem; line-height: 1.6; color: var(--text-main); margin-bottom: 1.25rem;">
+        {{ analysis.purpose }}
+      </p>
+
+      {% if analysis.summary_short %}
+        <div style="background: var(--bg-surface-alt); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 0.95rem; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 0.5rem 0;">
+            Extractive Executive Summary
+          </h3>
+          <p style="margin: 0; line-height: 1.6; color: var(--text-main);">
+            {{ analysis.summary_short }}
+          </p>
+          <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--color-success);">
+            &#10003; 100% grounded — sentences extracted verbatim from source text
+          </div>
+        </div>
+      {% endif %}
+
+      {% if analysis.summary_detailed %}
+        <div style="margin-top: 1.5rem;">
+          <h3 style="font-size: 1.1rem; font-family: var(--font-serif); margin-bottom: 0.75rem;">
+            Detailed Extractive Summary (SBERT TextRank + MMR)
+          </h3>
+          <div style="white-space: pre-wrap; line-height: 1.65; color: var(--text-main); font-size: 0.95rem;">
+            {{ analysis.summary_detailed }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Structured Highlights -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      {% if analysis.obligations_summary and analysis.obligations_summary|length > 0 %}
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">Core Obligations</h3>
+          </div>
+          <ul style="padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+            {% for item in analysis.obligations_summary %}
+              <li>
+                {{ item.text }}
+                <span class="badge" style="font-size: 0.7rem; margin-left: 0.35rem;">Page {{ item.source_page }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if analysis.main_conditions and analysis.main_conditions|length > 0 %}
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">Key Conditions & Terms</h3>
+          </div>
+          <ul style="padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+            {% for item in analysis.main_conditions %}
+              <li>
+                {{ item.text }}
+                <span class="badge" style="font-size: 0.7rem; margin-left: 0.35rem;">Page {{ item.source_page }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+      <p style="color: var(--text-muted);">Analysis is currently processing.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Tab 2: Key Information -->
+<div id="keyinfo-tab" class="tab-content">
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">
+      <h2 class="card-title">Commercial & Operational Terms</h2>
+      <p class="card-subtitle">Exact extracted facts with strict Rule 6 ("Not specified") ground truth guarantees</p>
+    </div>
+
+    {% if key_info %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 28%;">Parameter</th>
+              <th style="width: 52%;">Extracted Value</th>
+              <th style="width: 20%;">Source Attribution</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Contract Amount</strong></td>
+              <td>
+                {% if key_info.contract_amount != 'Not specified' %}
+                  <strong style="color: var(--color-primary); font-size: 1.05rem;">{{ key_info.contract_amount }}</strong>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.contract_amount_page %}
+                  <span class="badge badge-info">Page {{ key_info.contract_amount_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Payment Deadlines</strong></td>
+              <td>
+                {% if key_info.payment_deadlines != 'Not specified' %}
+                  {{ key_info.payment_deadlines }}
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.payment_deadlines_page %}
+                  <span class="badge badge-info">Page {{ key_info.payment_deadlines_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Late Penalties & Interest</strong></td>
+              <td>
+                {% if key_info.penalties != 'Not specified' %}
+                  <span style="color: var(--color-danger); font-weight: 500;">{{ key_info.penalties }}</span>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.penalties_page %}
+                  <span class="badge badge-info">Page {{ key_info.penalties_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Effective / Start Date</strong></td>
+              <td>
+                {% if key_info.start_date != 'Not specified' %}
+                  <strong>{{ key_info.start_date }}</strong>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.start_date_page %}
+                  <span class="badge badge-info">Page {{ key_info.start_date_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Expiration / End Date</strong></td>
+              <td>
+                {% if key_info.end_date != 'Not specified' %}
+                  <strong>{{ key_info.end_date }}</strong>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.end_date_page %}
+                  <span class="badge badge-info">Page {{ key_info.end_date_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Renewal Date</strong></td>
+              <td>
+                {% if key_info.renewal_date != 'Not specified' %}
+                  {{ key_info.renewal_date }}
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.renewal_date_page %}
+                  <span class="badge badge-info">Page {{ key_info.renewal_date_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Notice Period</strong></td>
+              <td>
+                {% if key_info.notice_period != 'Not specified' %}
+                  <span class="badge badge-warning" style="font-size: 0.85rem;">{{ key_info.notice_period }}</span>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.notice_period_page %}
+                  <span class="badge badge-info">Page {{ key_info.notice_period_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Termination Conditions</strong></td>
+              <td>
+                {% if key_info.termination_conditions != 'Not specified' %}
+                  <span style="font-size: 0.9rem;">{{ key_info.termination_conditions }}</span>
+                {% else %}
+                  <span class="badge" style="color: var(--text-muted); background: var(--bg-surface-alt);">Not specified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if key_info.termination_conditions_page %}
+                  <span class="badge badge-info">Page {{ key_info.termination_conditions_page }}</span>
+                {% else %}
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Important Dates Timeline -->
+      {% if key_info.important_dates and key_info.important_dates|length > 0 %}
+        <div style="margin-top: 2rem;">
+          <h3 class="card-title" style="font-size: 1.1rem; margin-bottom: 0.75rem;">Important Dates Found ({{ key_info.important_dates|length }})</h3>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for item in key_info.important_dates %}
+              <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-alt); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div>
+                  <strong style="color: var(--color-primary); margin-right: 0.75rem;">{{ item.date }}</strong>
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">{{ item.context }}</span>
+                </div>
+                <span class="badge badge-info">Page {{ item.page }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Key information has not been extracted for this document yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tab 3: Extracted Clauses -->
+<div id="clauses-tab" class="tab-content">
   {% if clauses and clauses|length > 0 %}
     <!-- Filter Bar -->
     <div class="clause-filters">
@@ -203,7 +470,7 @@
   {% endif %}
 </div>
 
-<!-- Tab 2: Text Chunks -->
+<!-- Tab 4: Text Chunks -->
 <div id="chunks-tab" class="tab-content">
   <div class="card">
     <div class="card-header">

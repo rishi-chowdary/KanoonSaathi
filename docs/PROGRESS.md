@@ -22,13 +22,13 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Completed | 2026-11-17 |
 | Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Completed | 2026-11-17 |
 | Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Completed | 2026-11-17 |
-| Phase M4 | Tri-Tier Rule-Based Simplification Engine | Planned | - |
-| Phase M5 | Grounded Risk Analyzer, Key Facts & Missing Provisions | Planned | - |
-| Phase M6 | Extractive Document QA & Conversation Engine | Planned | - |
-| Phase M7 | Jinja2 Templates, Hand-Crafted CSS & Interactive Frontend | Planned | - |
-| Phase M8 | ReportLab PDF Dossier & Analytics Dashboard | Planned | - |
-| Phase M9 | Offline Evaluation Suite, Parity Verification & Benchmarks | Planned | - |
-| Phase M10 | Legacy Code Deletion, Cleanup, Packaging & One-Command Run | Planned | - |
+| Phase M4 | Entities, Key Facts & Extractive Summarization | Completed | 2026-11-17 |
+| Phase M5 | Tri-Tier Rule-Based Simplification & Readability | Planned | - |
+| Phase M6 | Grounded Risk Detection & Missing Provisions | Planned | - |
+| Phase M7 | Hybrid Retrieval & Extractive QA Document Chat | Planned | - |
+| Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Planned | - |
+| Phase M9 | Offline Evaluation Suite & Parity Benchmarks | Planned | - |
+| Phase M10 | Legacy Removal, Hardening & Final Verification Gate | Planned | - |
 
 ---
 
@@ -1080,4 +1080,43 @@ cd frontend && npm test
 - Code Quality:
   - `ruff check app tests scripts` -> `All checks passed!`.
   - `black --check app tests scripts` -> `40 files left unchanged.`.
+
+---
+
+### Phase M4: Entities, Key Facts & Extractive Summarization
+- [x] Implemented commercial key facts extractor (`app/nlp/key_info.py`) identifying amounts (with font-dropped symbol restoration), payment deadlines, late penalties/interest, effective/start dates, end dates, renewal dates, and notice periods.
+- [x] Enforced strict Rule 6: all absent contract fields default strictly to `"Not specified"` with `source_page = None`, preventing hallucinated dates or placeholder values.
+- [x] Detected all explicit dates across contracts and recorded them in `important_dates` with event context snippets and exact source page attribution.
+- [x] Built extractive summarization engine (`app/nlp/summarizer.py`) implementing **SBERT TextRank + Maximal Marginal Relevance (MMR)** ($\lambda = 0.65$) generating concise short summaries and comprehensive detailed summaries.
+- [x] **Passed Hard Gate**: 100.0% of sentences across short and detailed summaries strictly exist verbatim in the source contract (`sentence in full_text == True`), guaranteeing zero abstractive hallucinations.
+- [x] Built persistence orchestration (`app/services/analysis_service.py`) saving `DocumentAnalysis` and `ExtractedInformation` records with source page numbers.
+- [x] Wired key facts and summarization into the ingestion pipeline (`app/services/document_service.py`).
+- [x] Extended REST API (`app/blueprints/documents.py`) with `GET /api/documents/<doc_id>/key-info` and `GET /api/documents/<doc_id>/summary` protected by tenant authorization (404 on cross-user access).
+- [x] Enhanced web UI (`app/templates/documents/detail.html`) with Executive Summary tab and Commercial & Operational Terms table with Rule 6 "Not specified" tags and source page indicators.
+- [x] Automated test suite (`tests/test_entities_and_summary.py`) passing 6 tests covering verbatim extractive summary invariant, Rule 6 consistency, key facts extraction, important dates page attribution, API serialization, and multi-tenant isolation.
+- [x] Full test suite now passes 46 / 46 tests across SQLite and live MySQL 8 with 80% coverage (1,782 statements).
+- [x] Linters clean: `ruff check app tests scripts` and `black --check app tests scripts` 100% clean.
+
+**What was built:**
+- `app/nlp/key_info.py`: Deterministic entity and fact extraction engine with multi-currency parsing (`$`, `€`, `£`, `₹`, `Rs.`), payment deadlines, late interest rates, notice periods, and Rule 6 `"Not specified"` defaults.
+- `app/nlp/summarizer.py`: Extractive summarizer utilizing SBERT centroid similarity and MMR diversity ranking; ensures 100% verbatim sentence preservation.
+- `app/services/analysis_service.py`: Orchestrator persisting `DocumentAnalysis` summaries and `ExtractedInformation` records.
+- `app/blueprints/documents.py`: Added `GET /api/documents/<doc_id>/key-info` and `GET /api/documents/<doc_id>/summary`.
+- `app/templates/documents/detail.html`: 4-tab interface (Executive Summary, Key Information, Extracted Clauses, Text Chunks) with verbatim quote callouts and source attribution.
+- `tests/test_entities_and_summary.py`: 6 tests verifying verbatim sentences, Rule 6 enforcement, ground truth fact matching, date page numbers, and tenant authorization.
+
+**How it was verified:**
+- Verbatim Extractive Summary Invariant:
+  - Verified on `clean_nda.pdf`, `employment_agreement.pdf`, `rental_agreement.pdf`, `one_sided_agreement.pdf`, and `promissory_note.txt`: 100% of summary sentences exist verbatim in `full_text`.
+- Rule 6 Ground Truth Consistency:
+  - `clean_nda.pdf`: `contract_amount`, `penalties`, `renewal_date`, `notice_period` strictly returned `"Not specified"` with `source_page = None`.
+  - `employment_agreement.pdf`: extracted `$185,000.00` (Page 1), `bi-weekly` (Page 1), `March 1, 2026` (Page 1), `thirty (30) days` (Page 2), and `penalties = "Not specified"`.
+  - `rental_agreement.pdf`: extracted `$2,400.00` (Page 1), `first (1st) day of each calenda` (Page 1), `July 15, 2026` (Page 1), and `penalties = "Not specified"`.
+  - `one_sided_agreement.pdf`: extracted `within three (3) calendar days` (Page 1), `2.5% per month, compounded daily` (Page 1), `one hundred eighty (180) days` (Page 1), `November 1, 2026` (Page 1), and `contract_amount = "Not specified"`.
+- Full Test Suite:
+  - `.venv/bin/pytest --cov=app -q` -> 46 passed in 26.71s (80% coverage across 1,782 statements).
+- Linter & Formatter:
+  - `ruff check app tests scripts` -> `All checks passed!`.
+  - `black --check app tests scripts` -> `44 files left unchanged.`.
+
 

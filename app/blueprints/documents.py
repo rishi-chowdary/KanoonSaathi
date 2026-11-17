@@ -14,6 +14,7 @@ from app.extensions import csrf
 from app.models.analysis import DocumentAnalysis
 from app.models.chunk import DocumentChunk
 from app.models.clause import ExtractedClause
+from app.models.key_info import ExtractedInformation
 from app.services.document_service import (
     delete_document_for_user,
     get_document_for_user,
@@ -82,6 +83,7 @@ def detail(doc_id: str):
     )
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     clauses = []
+    key_info = None
     if analysis:
         clauses = (
             ExtractedClause.query.filter_by(analysis_id=analysis.id)
@@ -90,12 +92,15 @@ def detail(doc_id: str):
             )
             .all()
         )
+        key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
+
     return render_template(
         "documents/detail.html",
         document=doc,
         chunks=chunks,
         analysis=analysis,
         clauses=clauses,
+        key_info=key_info,
     )
 
 
@@ -315,3 +320,57 @@ def api_analysis(doc_id: str):
     data = analysis.to_dict()
     data["clauses"] = [c.to_dict() for c in clauses]
     return jsonify(data), 200
+
+
+@documents_bp.route("/api/documents/<doc_id>/key-info", methods=["GET"])
+@csrf.exempt
+def api_key_info(doc_id: str):
+    """Retrieve structured commercial metadata and important dates with Rule 6 defaults."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
+    if not key_info:
+        return jsonify({"error": "Key info not ready"}), 404
+
+    return jsonify(key_info.to_dict()), 200
+
+
+@documents_bp.route("/api/documents/<doc_id>/summary", methods=["GET"])
+@csrf.exempt
+def api_summary(doc_id: str):
+    """Retrieve short and detailed extractive summaries and structured provisions."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    return (
+        jsonify(
+            {
+                "documentId": doc.id,
+                "documentType": analysis.document_type,
+                "shortSummary": analysis.summary_short,
+                "detailedSummary": analysis.summary_detailed,
+                "purpose": analysis.purpose,
+                "mainConditions": analysis.main_conditions or [],
+                "obligationsSummary": analysis.obligations_summary or [],
+                "financialTermsSummary": analysis.financial_terms_summary or [],
+            }
+        ),
+        200,
+    )

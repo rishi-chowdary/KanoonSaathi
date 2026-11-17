@@ -105,13 +105,17 @@ def save_and_extract_document(
     )
     db.session.commit()
 
-    # Automatically classify clauses, importance, and evidence quotes
+    # Automatically classify clauses, importance, key facts, and summaries
     try:
+        from app.services.analysis_service import process_key_info_and_summaries
         from app.services.clause_service import process_document_clauses
 
         process_document_clauses(doc, extraction.full_text, clauses_data)
+        process_key_info_and_summaries(doc, extraction.full_text, extraction.pages)
     except Exception as exc:  # noqa: BLE001 - non-blocking clause extraction failure
-        current_app.logger.warning("Automatic clause processing error: %s", exc)
+        current_app.logger.warning(
+            "Automatic clause and analysis processing error: %s", exc
+        )
         doc.status = "COMPLETED_WITH_WARNINGS"
         db.session.commit()
 
