@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Contract — LexiLegal AI{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 600px;">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">Upload Contract</h1>
+      <p class="card-subtitle">Upload a PDF, Word DOCX, or TXT contract for local NLP extraction</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="file" class="form-label">Select Document</label>
+        <input
+          type="file"
+          id="file"
+          name="file"
+          class="form-input"
+          accept=".pdf,.docx,.txt"
+          required
+        >
+        <small style="color: var(--text-muted); display: block; margin-top: 0.4rem;">
+          Supported formats: <strong>PDF</strong>, <strong>DOCX</strong>, <strong>TXT</strong> (up to 10MB).
+          Scanned documents are automatically processed via optical character recognition.
+        </small>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        Extract & Ingest Document
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

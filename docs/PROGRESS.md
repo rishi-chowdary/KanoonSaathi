@@ -20,7 +20,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Completed | 2026-11-17 |
 | Phase M0 | Migration Preparation, Toolchain Audit & Baseline LLM Capture | Completed | 2026-11-17 |
 | Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Completed | 2026-11-17 |
-| Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Planned | - |
+| Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Completed | 2026-11-17 |
 | Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Planned | - |
 | Phase M4 | Tri-Tier Rule-Based Simplification Engine | Planned | - |
 | Phase M5 | Grounded Risk Analyzer, Key Facts & Missing Provisions | Planned | - |
@@ -982,3 +982,45 @@ cd frontend && npm test
 - Code Quality:
   - `ruff check app tests` -> `All checks passed!`.
   - `black --check app tests` -> `All done! 23 files left unchanged.`.
+
+---
+
+### Phase M2: Document Extraction, OCR, Segmentation & Chunk Storage
+- [x] Ported document extraction across PDF (PyMuPDF), DOCX (python-docx), and TXT (`app/nlp/extraction.py`).
+- [x] Integrated Tesseract OCR via `pytesseract` and Pillow for scanned documents and low-text rasterized pages.
+- [x] Implemented SHA-256 digest computation and user-scoped file deduplication.
+- [x] Implemented page-level text chunking with overlap and token count heuristics (`create_chunks`).
+- [x] Implemented clause segmentation (`segment_clauses`) combining heading detection and legal-aware NLTK punkt tokenization.
+- [x] **Passed Gate**: 100.0% of extracted clauses across all evaluation samples strictly match exact source slices (`full_text[c.start_offset : c.end_offset] == c.original_text`).
+- [x] Built document persistence and ingestion pipeline (`app/services/document_service.py`).
+- [x] Built web UI views for document upload, listing, and inspection (`app/blueprints/documents.py`, `app/templates/documents/`).
+- [x] Implemented full suite of REST API endpoints for document upload, metadata, text retrieval, status polling, and cascade deletion.
+- [x] Automated test suite (`tests/test_extraction.py`, `tests/test_segmentation.py`, `tests/test_ingestion_api.py`) passing 18 new tests (30/30 total tests passing) with 81% test coverage across SQLite and live MySQL 8.
+- [x] Linter and formatter checks clean (`ruff` and `black`).
+
+**What was built:**
+- `app/nlp/extraction.py`: Extraction dispatch supporting PDF, Word DOCX, and TXT files, magic byte validation (`%PDF-`, `PK\x03\x04`), and Tesseract OCR page rasterization.
+- `app/nlp/segmentation.py`: Legal-aware clause segmenter with custom abbreviation dictionary (`Sec.`, `Art.`, `Para.`, `Inc.`, `v.`), exact character offset mapping, page bounds calculation, and page-level chunking.
+- `app/services/document_service.py`: Document storage service handling user-scoped hashing, safe file storage under `uploads/{user_id}/`, chunk creation, and atomic MySQL transactions.
+- `app/blueprints/documents.py`: Blueprint for upload, document list, text inspector, and deletion views + REST API equivalents.
+- `app/templates/documents/`:
+  - `upload.html`: Drag-and-drop file upload form with validation.
+  - `list.html`: Document management table with OCR badges and status indicators.
+  - `detail.html`: Extracted chunk inspector with page numbers and estimated token counts.
+- `tests/`:
+  - `test_extraction.py`: 10 tests covering clean PDF, multi-page rental, DOCX, TXT, scanned deed OCR, corrupted files, empty files, executable disguises, oversized uploads, and SHA-256 digests.
+  - `test_segmentation.py`: 3 tests validating the 100% exact character slice gate across all 6 sample contracts, chunk page bounds, and legal abbreviation preservation.
+  - `test_ingestion_api.py`: 5 tests validating API upload, duplicate detection, text endpoints, user isolation (404), and cascade file/DB cleanup.
+
+**How it was verified:**
+- Gate Verification:
+  - `tests/test_segmentation.py::test_gate_100_percent_extracted_clauses_are_exact_slices` ran against all 6 contracts (`rental_agreement.pdf`, `clean_nda.pdf`, `employment_agreement.pdf`, `one_sided_agreement.pdf`, `service_agreement.docx`, `promissory_note.txt`).
+  - 40 total clauses extracted across all files. All 40 clauses (100.0%) confirmed exact character slices.
+- Scanned Document OCR:
+  - `samples/contracts/scanned_deed.pdf` extracted using Tesseract OCR -> `is_scanned: True`, 190 characters extracted correctly identifying Quitclaim Deed and Section 1 property description.
+- Test Suite:
+  - `.venv/bin/pytest --cov=app tests/ -v` -> 30 passed in 8.74s (81% coverage).
+  - Live MySQL 8: `TEST_DATABASE_URL="mysql+pymysql://lexilegal:lexilegal@127.0.0.1:3306/lexilegal?charset=utf8mb4" .venv/bin/pytest tests/ -v` -> 30 passed in 12.44s.
+- Linter & Formatter:
+  - `ruff check app tests` -> `All checks passed!`.
+  - `black --check app tests` -> `30 files left unchanged.`.
