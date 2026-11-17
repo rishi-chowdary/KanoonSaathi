@@ -90,4 +90,25 @@ export const deleteChatConversation = async (documentId, conversationId) => {
   return response.data;
 };
 
+export const getDashboardStats = async () => {
+  const response = await api.get("/dashboard/stats");
+  return response.data;
+};
+
+export const downloadReportPdf = async (documentId, filename = "lexilegal_report.pdf") => {
+  const response = await api.get(`/documents/${documentId}/report.pdf`, {
+    responseType: "blob",
+  });
+  const blob = new Blob([response.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+  return true;
+};
+
 export default api;

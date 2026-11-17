@@ -18,9 +18,12 @@ import java.util.UUID;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final com.lexilegal.service.ReportPdfService reportPdfService;
 
-    public DocumentController(DocumentService documentService) {
+    public DocumentController(DocumentService documentService,
+                              com.lexilegal.service.ReportPdfService reportPdfService) {
         this.documentService = documentService;
+        this.reportPdfService = reportPdfService;
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -114,6 +117,17 @@ public class DocumentController {
             @PathVariable("id") UUID id) {
         java.util.List<MissingClauseWarningResponse> response = documentService.getMissingClauseWarnings(principal.getId(), id);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = {"/{id}/report.pdf", "/{id}/report"}, produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getReportPdf(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") UUID id) {
+        byte[] pdfBytes = reportPdfService.generatePdfReport(principal.getId(), id);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"lexilegal_report_" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     @PostMapping("/{id}/clauses/{clauseId}/re-explain")

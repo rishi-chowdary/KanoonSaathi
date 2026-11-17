@@ -16,7 +16,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 6 | Simplification Studio, Key Terms Glossary & Subtle Traps Detection | Completed | 2026-11-17 |
 | Phase 7 | Grounded Risk Analysis, Key Facts Extraction & Missing Provisions Detection | Completed | 2026-11-17 |
 | Phase 8 | Grounded Document Chat, PostgreSQL Full-Text Search Retrieval & Conversation History | Completed | 2026-11-17 |
-| Phase 9 | OpenPDF Report Generation, Dashboard Statistics & Workspace Polish | Not Started | - |
+| Phase 9 | OpenPDF Report Generation, Dashboard Statistics & Workspace Polish | Completed | 2026-11-17 |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Not Started | - |
 
 ---
@@ -741,6 +741,77 @@ python evaluation/verify_phase8_auth.py
 ---
 
 ### Phase 9: OpenPDF Report Generation, Dashboard Statistics & Workspace Polish
+- [x] Backend Dashboard Statistics Service & Controller (`GET /api/dashboard/stats`):
+  - Pure SQL aggregates for authenticated user only (`user.id = :userId`): `totalDocuments`, `analyzedDocuments`, `failedDocuments`, `totalClauses`, `totalRisks`, `riskDistributionByLevel`, `riskDistributionByCategory`, `recentDocuments` (top 5), `recentAnalyses` (top 5).
+  - Multi-tenant isolation verified with automated tests: User B gets 0 documents/risks when inspecting dashboard.
+- [x] Backend OpenPDF Report Generation Engine (`GET /api/documents/{id}/report.pdf` & `/report`):
+  - Dependency: `com.github.librepdf:openpdf:2.0.3` added to `backend/pom.xml`.
+  - 10 structured sections per CLAUDE.md:
+    1. Cover / Overview (document title, type, date, parties list, page count, quote verification rate).
+    2. Executive Summary (concise summary + detailed summary).
+    3. Important Clauses Table (category, importance badges, citations, evidence quotes).
+    4. Plain-Language Explanations (Simple English, Detailed breakdown, Professional summary).
+    5. Risk Analysis & Exposure (color-coded HIGH, MEDIUM, LOW severity, explanations, consequences, source page).
+    6. Financial Terms & Payment Schedule (amounts, deadlines, late fees).
+    7. Important Dates & Deadlines (start, end, renewal notice, termination conditions).
+    8. Missing & Ambiguous Provisions (labeled "Possible omission", why it matters, standard provision).
+    9. Suggested Questions to Ask (actionable negotiation and clarification questions).
+    10. Legal Notice & Disclaimer (prominent boxed disclaimer that report is automated and not formal legal advice).
+  - Professional typography, running header ("LexiLegal AI • Contract Analysis Report"), running footer ("CONFIDENTIAL • INFORMATIONAL ONLY • NOT LEGAL ADVICE" and "Page X of Y"), cell paddings, and page breaks.
+  - Multi-tenant check: Non-owners strictly receive HTTP 404.
+- [x] React Frontend Dashboard & Report Dossier:
+  - `frontend/src/pages/DashboardPage.jsx`:
+    - 4 Stat cards with real database counts.
+    - Recharts PieChart for Risk Distribution by Level with semantic colors (`#DC2626`, `#D97706`, `#16A34A`, `#2563EB`).
+    - Recharts BarChart for Risks by Legal Category.
+    - Recent Documents table with live search filter, status badges, and quick link to `/documents/:id`.
+    - Quick Upload button leading to `/upload`.
+  - `frontend/src/components/report/ReportTab.jsx`:
+    - 10-section dossier breakdown preview.
+    - "Download PDF Report" button with loading state / spinner.
+    - Prominent legal disclaimer banner.
+  - `frontend/src/pages/AnalysisPage.jsx`:
+    - Added "Report Dossier" tab to tab bar.
+    - Connected header "Download Report" button with direct PDF download and loading state.
+  - `frontend/src/services/api.js`: Added `getDashboardStats()` and `downloadReportPdf()`.
+- [x] Automated Verification:
+  - Spring Boot Integration Tests: 4/4 passing in `DashboardAndReportTest` (`mvn test -Dtest=DashboardAndReportTest`).
+  - Frontend Build: `npm run build` bundled cleanly in 6.36s with zero errors.
+  - Full-Stack Live Browser E2E: `frontend/test-phase9-e2e.cjs` verified user registration, initial dashboard stats, contract upload and pipeline processing, updated dashboard metrics and recent table, Report Dossier tab with 10 sections, and binary PDF generation (valid `%PDF-` header, 11,782 bytes, 5 pages).
+
+**What was built:**
+- Backend (`backend/`):
+  - `backend/pom.xml`: Added OpenPDF 2.0.3 dependency.
+  - `DashboardStatsResponse.java`: Response DTO with total stats, distributions, and recent items.
+  - `DocumentRepository.java`, `ExtractedClauseRepository.java`, `RiskFindingRepository.java`, `DocumentAnalysisRepository.java`: Extended with user-scoped aggregation queries.
+  - `DashboardService.java`: Business logic computing real user aggregates.
+  - `DashboardController.java`: Exposed `GET /api/dashboard/stats`.
+  - `ReportPdfService.java`: 10-section document report builder with OpenPDF formatting, headers, footers, and provenance badges.
+  - `DocumentController.java`: Exposed `GET /api/documents/{id}/report.pdf` and `/report`.
+  - `DashboardAndReportTest.java`: 4 integration tests for stats, PDF output, and multi-tenant isolation.
+- Frontend (`frontend/`):
+  - `frontend/src/pages/DashboardPage.jsx`: Real dashboard with 4 stat cards, Recharts pie and bar charts, search filter, and recent documents table.
+  - `frontend/src/components/report/ReportTab.jsx`: Report Dossier tab with section outline, download button, and disclaimer.
+  - `frontend/src/pages/AnalysisPage.jsx`: Added Report tab and wired header download button.
+  - `frontend/src/services/api.js`: Added `getDashboardStats` and `downloadReportPdf`.
+  - `frontend/test-phase9-e2e.cjs`: Live browser verification script.
+
+**Exact commands to run and test:**
+```bash
+# 1. Run Spring Boot Dashboard and Report Tests (all 4 passing)
+cd backend
+mvn test -Dtest=DashboardAndReportTest
+
+# 2. Build Frontend Assets
+cd frontend
+npm run build
+
+# 3. Run Phase 9 End-to-End Live Browser & PDF Verification
+node frontend/test-phase9-e2e.cjs
+
+# 4. Inspect Sample Generated PDF Report
+python -c 'import fitz; doc=fitz.open("evaluation/results/sample_report.pdf"); print(f"Pages: {len(doc)}")'
+```
 
 ### Phase 10: Evaluation Suite, End-to-End Testing & Viva Preparation
 - [ ] Curate sample contracts in `samples/contracts/` (NDA, Lease, Service Agreement, Employment, Prompt Injection test)

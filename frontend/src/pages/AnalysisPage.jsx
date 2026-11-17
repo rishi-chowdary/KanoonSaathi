@@ -7,6 +7,8 @@ import RisksTab from "../components/risks/RisksTab";
 import KeyInfoTab from "../components/keyinfo/KeyInfoTab";
 import MissingProvisionsTab from "../components/missing/MissingProvisionsTab";
 import ChatTab from "../components/chat/ChatTab";
+import ReportTab from "../components/report/ReportTab";
+import { downloadReportPdf } from "../services/api";
 import {
   FileText,
   ShieldAlert,
@@ -29,11 +31,25 @@ export default function AnalysisPage() {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [downloadingReport, setDownloadingReport] = useState(false);
 
   // Text preview state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageText, setPageText] = useState("");
   const [loadingText, setLoadingText] = useState(false);
+
+  const handleHeaderDownloadReport = async () => {
+    if (!document || document.status !== "COMPLETED") return;
+    try {
+      setDownloadingReport(true);
+      const baseName = document.originalFilename ? document.originalFilename.replace(/\.[^/.]+$/, "") : "contract";
+      await downloadReportPdf(id, `lexilegal_${baseName}_report.pdf`);
+    } catch (err) {
+      console.error("Failed to download report:", err);
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
 
   useEffect(() => {
     let timer = null;
@@ -102,6 +118,7 @@ export default function AnalysisPage() {
     { id: "key-info", label: "Key Information", icon: Key },
     { id: "missing", label: "Missing Clauses", icon: HelpCircle },
     { id: "chat", label: "Document Chat", icon: MessageSquare },
+    { id: "report", label: "Report Dossier", icon: Download },
   ];
 
   if (loading) {
@@ -156,11 +173,27 @@ export default function AnalysisPage() {
 
         <button
           type="button"
-          disabled
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
-          title="PDF report generation will be activated in Phase 7"
+          onClick={handleHeaderDownloadReport}
+          disabled={document.status !== "COMPLETED" || downloadingReport}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border transition-colors ${
+            document.status !== "COMPLETED"
+              ? "border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
+              : downloadingReport
+              ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300"
+              : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm"
+          }`}
+          title={
+            document.status === "COMPLETED"
+              ? "Download 10-section PDF report"
+              : "Report will be available once analysis is completed"
+          }
         >
-          <Download className="w-3.5 h-3.5" /> Download Report
+          {downloadingReport ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
+          )}
+          {downloadingReport ? "Generating..." : "Download Report"}
         </button>
       </div>
 
@@ -241,6 +274,13 @@ export default function AnalysisPage() {
             setCurrentPage(page);
             setActiveTab("preview");
           }}
+        />
+      )}
+
+      {activeTab === "report" && (
+        <ReportTab
+          documentId={id}
+          document={document}
         />
       )}
 
