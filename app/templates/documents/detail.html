@@ -105,6 +105,9 @@
   <button type="button" class="tab-btn" data-tab="chunks-tab">
     Text Chunks ({{ chunks|length if chunks else 0 }})
   </button>
+  <button type="button" class="tab-btn" data-tab="chat-tab">
+    Document Q&A
+  </button>
 </div>
 
 
@@ -697,6 +700,68 @@
   </div>
 </div>
 
+<!-- Tab 7: Document Q&A -->
+<div id="chat-tab" class="tab-content">
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 class="card-title" style="margin-bottom: 0.25rem;">Document Q&A & Semantic Inquiries</h2>
+        <p class="card-subtitle" style="margin: 0;">Extractive, page-grounded question answering powered by Hybrid Retrieval (SBERT + BM25) and MiniLM SQuAD 2.0</p>
+      </div>
+      <button type="button" id="chat-clear-btn" class="btn btn-secondary btn-sm" style="font-size: 0.8rem;">
+        Clear Conversation
+      </button>
+    </div>
+
+    <!-- Quick Question Starters -->
+    <div style="margin-bottom: 1rem;">
+      <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">
+        Suggested Questions:
+      </span>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="chat-quick-btn badge" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: normal;">
+          What is the rent or contract amount?
+        </button>
+        <button type="button" class="chat-quick-btn badge" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: normal;">
+          When does this agreement start?
+        </button>
+        <button type="button" class="chat-quick-btn badge" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: normal;">
+          What is the required notice period?
+        </button>
+        <button type="button" class="chat-quick-btn badge" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: normal;">
+          What are the penalties or late fees?
+        </button>
+        <button type="button" class="chat-quick-btn badge" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-main); border: 1px solid var(--border-color); padding: 0.35rem 0.65rem; font-size: 0.82rem; font-weight: normal;">
+          Who are the parties to this agreement?
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Message Feed -->
+    <div id="chat-messages-container" style="min-height: 280px; max-height: 480px; overflow-y: auto; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem;">
+      <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+        <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
+        <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="chat-loading" style="display: none; align-items: center; gap: 0.5rem; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+      <span class="spinner" style="width: 14px; height: 14px; border: 2px solid var(--border-color); border-top-color: var(--color-primary); border-radius: 50%; display: inline-block; animation: spin 0.8s linear infinite;"></span>
+      Searching passages and extracting verifiable answer...
+    </div>
+
+    <!-- Chat Input Form -->
+    <form id="chat-form" style="display: flex; gap: 0.75rem;">
+      <input type="text" id="chat-input" class="form-control" placeholder="Ask a question about this contract..." autocomplete="off" style="flex: 1;" required>
+      <button type="submit" id="chat-submit-btn" class="btn btn-primary" style="white-space: nowrap;">
+        Ask Question
+      </button>
+    </form>
+  </div>
+</div>
+
 <script>
   // Tab switching logic
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -852,6 +917,178 @@
   if (risksTabBtn) {
     risksTabBtn.addEventListener('click', () => {
       setTimeout(initRiskCharts, 100);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Document Q&A & Chat Logic
+  // ---------------------------------------------------------------------------
+  let currentConversationId = null;
+  let chatLoaded = false;
+  const chatContainer = document.getElementById('chat-messages-container');
+  const chatLoading = document.getElementById('chat-loading');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatSubmitBtn = document.getElementById('chat-submit-btn');
+  const chatClearBtn = document.getElementById('chat-clear-btn');
+  const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat-tab"]');
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function renderChatMessage(msg) {
+    const emptyState = document.getElementById('chat-empty-state');
+    if (emptyState) emptyState.remove();
+
+    const isUser = msg.role === 'user';
+    const msgEl = document.createElement('div');
+
+    if (isUser) {
+      msgEl.style.cssText = 'align-self: flex-end; max-width: 80%; background: var(--color-primary); color: #ffffff; padding: 0.75rem 1rem; border-radius: var(--radius-sm) var(--radius-sm) 0 var(--radius-sm); font-size: 0.95rem; line-height: 1.5; word-break: break-word;';
+      msgEl.textContent = msg.content;
+    } else {
+      msgEl.style.cssText = 'align-self: flex-start; max-width: 85%; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.85rem 1.15rem; border-radius: var(--radius-sm) var(--radius-sm) var(--radius-sm) 0; font-size: 0.95rem; line-height: 1.6; color: var(--text-main); word-break: break-word; box-shadow: 0 1px 3px rgba(0,0,0,0.04);';
+      
+      let html = `<div style="font-weight: 500;">${escapeHtml(msg.content)}</div>`;
+
+      if (msg.citations && msg.citations.length > 0) {
+        html += '<div style="margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); font-size: 0.85rem; color: var(--text-muted);">';
+        msg.citations.forEach(c => {
+          html += `<div style="margin-bottom: 0.35rem; display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap;">
+            <span class="badge badge-success" style="font-size: 0.75rem; font-weight: 600;">&#10003; Page ${c.page}</span>
+            <span style="font-style: italic; color: var(--text-main);">${escapeHtml(c.quote || c.text || '')}</span>
+          </div>`;
+        });
+        html += '</div>';
+      } else if (msg.addressedInDocument === false) {
+        html += `<div style="margin-top: 0.65rem;">
+          <span class="badge badge-warning" style="font-size: 0.78rem;">Notice: Not explicitly addressed in document</span>
+        </div>`;
+      }
+
+      msgEl.innerHTML = html;
+    }
+
+    chatContainer.appendChild(msgEl);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function loadActiveChat() {
+    if (chatLoaded) return;
+    fetch('/api/documents/{{ document.id }}/chat/conversations')
+      .then(res => res.json())
+      .then(conversations => {
+        chatLoaded = true;
+        if (conversations && conversations.length > 0) {
+          const conv = conversations[0];
+          currentConversationId = conv.id;
+          return fetch(`/api/documents/{{ document.id }}/chat/conversations/${conv.id}/messages`);
+        }
+        return null;
+      })
+      .then(res => res ? res.json() : null)
+      .then(messages => {
+        if (messages && messages.length > 0) {
+          const emptyState = document.getElementById('chat-empty-state');
+          if (emptyState) emptyState.remove();
+          messages.forEach(renderChatMessage);
+        }
+      })
+      .catch(err => console.log('Chat load error:', err));
+  }
+
+  if (chatTabBtn) {
+    chatTabBtn.addEventListener('click', () => {
+      setTimeout(loadActiveChat, 100);
+    });
+  }
+
+  // Quick Starter Chips
+  document.querySelectorAll('.chat-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (chatInput) {
+        chatInput.value = btn.textContent.trim();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+  });
+
+  // Chat Form Submission
+  if (chatForm) {
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const question = (chatInput.value || '').trim();
+      if (!question) return;
+
+      // Render user turn immediately
+      renderChatMessage({ role: 'user', content: question });
+      chatInput.value = '';
+      chatSubmitBtn.disabled = true;
+      if (chatLoading) chatLoading.style.display = 'flex';
+
+      fetch('/api/documents/{{ document.id }}/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: question,
+          conversationId: currentConversationId
+        })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to get answer');
+          return res.json();
+        })
+        .then(data => {
+          if (data.conversationId) {
+            currentConversationId = data.conversationId;
+          }
+          renderChatMessage(data);
+        })
+        .catch(err => {
+          renderChatMessage({
+            role: 'assistant',
+            content: 'An error occurred while answering your question. Please try again.',
+            addressedInDocument: false,
+            citations: []
+          });
+        })
+        .finally(() => {
+          chatSubmitBtn.disabled = false;
+          if (chatLoading) chatLoading.style.display = 'none';
+          chatInput.focus();
+        });
+    });
+  }
+
+  // Clear Chat Handler
+  if (chatClearBtn) {
+    chatClearBtn.addEventListener('click', () => {
+      if (!confirm('Clear all messages in this conversation?')) return;
+      if (currentConversationId) {
+        fetch(`/api/documents/{{ document.id }}/chat/conversations/${currentConversationId}`, {
+          method: 'DELETE'
+        })
+          .then(() => {
+            currentConversationId = null;
+            chatContainer.innerHTML = `
+              <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+                <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
+                <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+              </div>`;
+          })
+          .catch(err => console.log('Clear chat error:', err));
+      } else {
+        chatContainer.innerHTML = `
+          <div id="chat-empty-state" style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💬</div>
+            <p style="margin: 0; font-size: 0.95rem;">Ask any question about this contract above or click a suggested prompt.</p>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Every answer is strictly extracted from document text with page citations.</p>
+          </div>`;
+      }
     });
   }
 </script>

@@ -61,8 +61,17 @@ class TestConfigurationIntegrity:
         assert len(rules) >= 10, f"Expected at least 10 rules, found {len(rules)}"
 
         categories = {r["category"] for r in rules}
-        required_cats = {"Financial", "Legal", "Privacy", "Contractual", "Employment", "Liability"}
-        assert required_cats.issubset(categories), f"Missing categories: {required_cats - categories}"
+        required_cats = {
+            "Financial",
+            "Legal",
+            "Privacy",
+            "Contractual",
+            "Employment",
+            "Liability",
+        }
+        assert required_cats.issubset(
+            categories
+        ), f"Missing categories: {required_cats - categories}"
 
         for r in rules:
             assert "id" in r
@@ -98,7 +107,10 @@ class TestConfigurationIntegrity:
                 assert count_rule7_violations(p["why_it_matters"]) == 0
 
     def test_document_type_normalization(self):
-        assert normalize_document_type("Non-Disclosure Agreement") == "NON_DISCLOSURE_AGREEMENT"
+        assert (
+            normalize_document_type("Non-Disclosure Agreement")
+            == "NON_DISCLOSURE_AGREEMENT"
+        )
         assert normalize_document_type("NDA") == "NON_DISCLOSURE_AGREEMENT"
         assert normalize_document_type("Commercial Lease") == "LEASE_AGREEMENT"
         assert normalize_document_type("Employment Agreement") == "EMPLOYMENT_AGREEMENT"
@@ -117,7 +129,9 @@ class TestPredatoryTermsAndRiskDetection:
         clauses = segment_clauses(doc_res.full_text, doc_res.pages, doc_res.sections)
 
         risks = detect_clause_risks(clauses, full_text=doc_res.full_text)
-        assert len(risks) >= 5, f"Expected at least 5 risks in one-sided agreement, found {len(risks)}"
+        assert (
+            len(risks) >= 5
+        ), f"Expected at least 5 risks in one-sided agreement, found {len(risks)}"
 
         risk_titles = [r["title"].lower() for r in risks]
 
@@ -127,15 +141,21 @@ class TestPredatoryTermsAndRiskDetection:
         assert has_indemnity, f"Uncapped indemnity not flagged in {risk_titles}"
 
         # 2. Unilateral modification detected as HIGH
-        has_unilateral_mod = any("unilateral modification" in t or "modify" in t for t in risk_titles)
-        assert has_unilateral_mod, f"Unilateral modification not flagged in {risk_titles}"
+        has_unilateral_mod = any(
+            "unilateral modification" in t or "modify" in t for t in risk_titles
+        )
+        assert (
+            has_unilateral_mod
+        ), f"Unilateral modification not flagged in {risk_titles}"
 
         # 3. Severe late charges / compounding interest detected as HIGH
         has_late_fees = any("late charges" in t or "fee" in t for t in risk_titles)
         assert has_late_fees, f"Severe late charges not flagged in {risk_titles}"
 
         # 4. Disproportionate liability cap detected as HIGH
-        has_liab_cap = any("liability" in t or "disproportion" in t for t in risk_titles)
+        has_liab_cap = any(
+            "liability" in t or "disproportion" in t for t in risk_titles
+        )
         assert has_liab_cap, f"Liability cap disproportion not flagged in {risk_titles}"
 
         # 5. Check Rule 7 across all outputs
@@ -159,10 +179,14 @@ class TestMissingProvisionsDetection:
         clauses = segment_clauses(doc_res.full_text, doc_res.pages, doc_res.sections)
 
         missing = detect_missing_provisions(
-            clauses, document_type="Non-Disclosure Agreement", full_text=doc_res.full_text
+            clauses,
+            document_type="Non-Disclosure Agreement",
+            full_text=doc_res.full_text,
         )
 
-        assert len(missing) >= 2, f"Expected at least 2 missing provisions, found {len(missing)}"
+        assert (
+            len(missing) >= 2
+        ), f"Expected at least 2 missing provisions, found {len(missing)}"
 
         # Verify strict "Possible omission" labeling and Rule 7 compliance
         for m in missing:
@@ -211,7 +235,6 @@ class TestRiskServiceAndAPI:
         assert upload_resp.status_code == 201
         doc_json = upload_resp.get_json()
         doc_id = doc_json["id"]
-
 
         # 1. Test GET /api/documents/<id>/risks
         risks_resp = client.get(f"/api/documents/{doc_id}/risks")
@@ -271,11 +294,18 @@ class TestRiskServiceAndAPI:
         assert reg_b.status_code == 201
         login_b = client.post(
             "/api/auth/login",
-            json={"email": user_b_payload["email"], "password": user_b_payload["password"]},
+            json={
+                "email": user_b_payload["email"],
+                "password": user_b_payload["password"],
+            },
         )
         assert login_b.status_code == 200
 
         # User B cannot access User A's risks or missing provisions (must return 404)
         assert client.get(f"/api/documents/{doc_id}/risks").status_code == 404
-        assert client.get(f"/api/documents/{doc_id}/missing-provisions").status_code == 404
-        assert client.get(f"/api/documents/{doc_id}/risk-distribution").status_code == 404
+        assert (
+            client.get(f"/api/documents/{doc_id}/missing-provisions").status_code == 404
+        )
+        assert (
+            client.get(f"/api/documents/{doc_id}/risk-distribution").status_code == 404
+        )

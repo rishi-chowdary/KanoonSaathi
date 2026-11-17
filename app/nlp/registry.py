@@ -10,6 +10,8 @@ _spacy_nlp: Any | None = None
 _sentence_model: Any | None = None
 _clause_hf_model: Any | None = None
 _clause_hf_tokenizer: Any | None = None
+_qa_model: Any | None = None
+_qa_tokenizer: Any | None = None
 
 
 def get_spacy():
@@ -96,3 +98,27 @@ def get_clause_hf_classifier() -> tuple[Any | None, Any | None]:
                 return None, None
 
     return _clause_hf_model, _clause_hf_tokenizer
+
+
+def get_qa_model() -> tuple[Any, Any]:
+    """Retrieve the shared Hugging Face extractive question answering model and tokenizer.
+
+    Uses deepset/minilm-uncased-squad2 for fast, CPU-friendly extractive QA with
+    SQuAD 2.0 unanswerable thresholding.
+    """
+    global _qa_model, _qa_tokenizer
+    if _qa_model is not None and _qa_tokenizer is not None:
+        return _qa_model, _qa_tokenizer
+
+    with _lock:
+        if _qa_model is None:
+            from transformers import AutoModelForQuestionAnswering, AutoTokenizer
+
+            model_name = "deepset/minilm-uncased-squad2"
+            logger.info("Loading QA model: %s", model_name)
+            _qa_tokenizer = AutoTokenizer.from_pretrained(model_name)
+            _qa_model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+            _qa_model.eval()
+            logger.info("QA model loaded successfully.")
+
+    return _qa_model, _qa_tokenizer
