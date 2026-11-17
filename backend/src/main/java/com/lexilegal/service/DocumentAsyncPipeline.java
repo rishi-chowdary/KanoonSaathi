@@ -238,6 +238,8 @@ public class DocumentAsyncPipeline {
 
         analysis = documentAnalysisRepository.save(analysis);
 
+        List<String> warnings = new ArrayList<>();
+
         // Run clause extraction pass
         log.info("running clause extraction for document {}", document.getId());
         try {
@@ -276,6 +278,7 @@ public class DocumentAsyncPipeline {
             }
         } catch (Exception e) {
             log.error("clause extraction failed for document {}: {}", document.getId(), e.getMessage(), e);
+            warnings.add("Clause extraction failed: " + e.getMessage());
         }
 
         // Step 3: Risk analysis
@@ -317,6 +320,7 @@ public class DocumentAsyncPipeline {
             }
         } catch (Exception e) {
             log.error("risk analysis failed for document {}: {}", document.getId(), e.getMessage(), e);
+            warnings.add("Risk analysis failed: " + e.getMessage());
         }
 
         // Step 4: Key information extraction
@@ -374,6 +378,7 @@ public class DocumentAsyncPipeline {
             }
         } catch (Exception e) {
             log.error("key info extraction failed for document {}: {}", document.getId(), e.getMessage(), e);
+            warnings.add("Key info extraction failed: " + e.getMessage());
         }
 
         // Step 5: Missing provisions analysis
@@ -387,7 +392,7 @@ public class DocumentAsyncPipeline {
             );
             missingClauseWarningRepository.deleteByAnalysisId(analysis.getId());
             if (missingResponse != null && missingResponse.getMissingProvisions() != null && !missingResponse.getMissingProvisions().isEmpty()) {
-                List<MissingClauseWarning> warnings = new ArrayList<>();
+                List<MissingClauseWarning> warningsList = new ArrayList<>();
                 for (MissingProvisionItemDto item : missingResponse.getMissingProvisions()) {
                     MissingClauseWarning w = new MissingClauseWarning();
                     w.setAnalysis(analysis);
@@ -397,17 +402,25 @@ public class DocumentAsyncPipeline {
                     w.setTypicalProvision(item.getTypicalProvision() != null ? item.getTypicalProvision() : "");
                     w.setRiskLevel(item.getRiskLevel() != null ? item.getRiskLevel() : "MEDIUM");
                     w.setLabel(item.getLabel() != null ? item.getLabel() : "Possible omission");
-                    warnings.add(w);
+                    warningsList.add(w);
                 }
-                missingClauseWarningRepository.saveAll(warnings);
-                log.info("persisted {} missing clause warnings for document {}", warnings.size(), document.getId());
+                missingClauseWarningRepository.saveAll(warningsList);
+                log.info("persisted {} missing clause warnings for document {}", warningsList.size(), document.getId());
             }
         } catch (Exception e) {
             log.error("missing provisions analysis failed for document {}: {}", document.getId(), e.getMessage(), e);
+            warnings.add("Missing provisions analysis failed: " + e.getMessage());
         }
 
-        document.setStatus("COMPLETED");
-        document.setFailureReason(null);
+        if (!warnings.isEmpty()) {
+            document.setStatus("COMPLETED_WITH_WARNINGS");
+            document.setFailureReason(String.join("; ", warnings));
+            log.warn("document {} completed with warnings: {}", document.getId(), document.getFailureReason());
+        } else {
+            document.setStatus("COMPLETED");
+            document.setFailureReason(null);
+            log.info("document {} analysis completed successfully, verification rate: {}%", document.getId(), analysis.getVerificationRate());
+        }
         documentRepository.save(document);
         log.info("document {} analysis completed successfully, verification rate: {}%", document.getId(), analysis.getVerificationRate());
     }

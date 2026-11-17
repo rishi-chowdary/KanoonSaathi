@@ -37,7 +37,7 @@ public class DashboardService {
         DashboardStatsResponse response = new DashboardStatsResponse();
 
         long totalDocuments = documentRepository.countByUserId(userId);
-        long completedAnalyses = documentRepository.countByUserIdAndStatus(userId, "COMPLETED");
+        long completedAnalyses = documentRepository.countByUserIdAndStatusIn(userId, List.of("COMPLETED", "COMPLETED_WITH_WARNINGS"));
         long failedDocuments = documentRepository.countByUserIdAndStatus(userId, "FAILED");
         long totalClauses = extractedClauseRepository.countByUserId(userId);
         long totalRisks = riskFindingRepository.countByUserId(userId);

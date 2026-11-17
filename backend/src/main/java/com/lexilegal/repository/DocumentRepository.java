@@ -19,5 +19,7 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     Optional<Document> findByUserIdAndFileHash(UUID userId, String fileHash);
     long countByUserId(UUID userId);
     long countByUserIdAndStatus(UUID userId, String status);
+    long countByUserIdAndStatusIn(UUID userId, java.util.Collection<String> statuses);
+    java.util.List<Document> findByStatusIn(java.util.Collection<String> statuses);
     java.util.List<Document> findTop5ByUserIdOrderByCreatedAtDesc(UUID userId);
 }

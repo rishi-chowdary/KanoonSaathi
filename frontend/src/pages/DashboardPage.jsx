@@ -108,6 +108,12 @@ export default function DashboardPage() {
             <CheckCircle2 className="w-3 h-3" /> Completed
           </span>
         );
+      case "COMPLETED_WITH_WARNINGS":
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <AlertTriangle className="w-3 h-3" /> Warnings
+          </span>
+        );
       case "FAILED":
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800">

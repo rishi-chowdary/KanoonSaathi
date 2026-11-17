@@ -18,6 +18,7 @@ import {
   Download,
   Loader2,
   AlertCircle,
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   BookOpen,
@@ -38,8 +39,10 @@ export default function AnalysisPage() {
   const [pageText, setPageText] = useState("");
   const [loadingText, setLoadingText] = useState(false);
 
+  const isFinished = document?.status === "COMPLETED" || document?.status === "COMPLETED_WITH_WARNINGS";
+
   const handleHeaderDownloadReport = async () => {
-    if (!document || document.status !== "COMPLETED") return;
+    if (!document || !isFinished) return;
     try {
       setDownloadingReport(true);
       const baseName = document.originalFilename ? document.originalFilename.replace(/\.[^/.]+$/, "") : "contract";
@@ -174,16 +177,16 @@ export default function AnalysisPage() {
         <button
           type="button"
           onClick={handleHeaderDownloadReport}
-          disabled={document.status !== "COMPLETED" || downloadingReport}
+          disabled={!isFinished || downloadingReport}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded border transition-colors ${
-            document.status !== "COMPLETED"
+            !isFinished
               ? "border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed"
               : downloadingReport
               ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300"
               : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm"
           }`}
           title={
-            document.status === "COMPLETED"
+            isFinished
               ? "Download 10-section PDF report"
               : "Report will be available once analysis is completed"
           }
@@ -196,6 +199,16 @@ export default function AnalysisPage() {
           {downloadingReport ? "Generating..." : "Download Report"}
         </button>
       </div>
+
+      {document?.status === "COMPLETED_WITH_WARNINGS" && (
+        <div className="mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded p-3 text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <span className="font-semibold">Analysis completed with warnings:</span>{" "}
+            {document.failureReason || "Some secondary analyzers encountered issues, but the core analysis and clauses are available."}
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto">

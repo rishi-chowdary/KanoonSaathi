@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import api from "../services/api";
 
-const AuthContext = createContext({
+export const AuthContext = createContext({
   user: null,
   token: null,
   loading: true,

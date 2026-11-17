@@ -10,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping({"/api/users", "/api/auth/profile"})
 public class UserController {
 
     private final UserService userService;
@@ -19,13 +19,13 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/me")
+    @GetMapping({"/me", ""})
     public ResponseEntity<UserProfileResponse> getCurrentUser(@AuthenticationPrincipal UserPrincipal principal) {
         UserProfileResponse response = userService.getProfile(principal.getId());
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/me")
+    @PutMapping({"/me", ""})
     public ResponseEntity<UserProfileResponse> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody UpdateProfileRequest request) {

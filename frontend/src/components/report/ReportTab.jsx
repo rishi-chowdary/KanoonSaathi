@@ -57,7 +57,7 @@ export default function ReportTab({ documentId, document, analysis }) {
     }
   };
 
-  const isCompleted = document?.status === "COMPLETED";
+  const isCompleted = document?.status === "COMPLETED" || document?.status === "COMPLETED_WITH_WARNINGS";
 
   return (
     <div className="space-y-6 max-w-4xl">

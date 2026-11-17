@@ -383,6 +383,189 @@
           }
         }
       ]
+    },
+    {
+      "name": "Analysis & Clauses",
+      "item": [
+        {
+          "name": "Get Document Analysis",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/analysis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "analysis"]
+            }
+          }
+        },
+        {
+          "name": "Get Clauses (Paged)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/clauses?page=0&size=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "clauses"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Risk Findings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/risks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "risks"]
+            }
+          }
+        },
+        {
+          "name": "Get Key Information",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/key-info",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "key-info"]
+            }
+          }
+        },
+        {
+          "name": "Get Missing Clauses",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/missing",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "missing"]
+            }
+          }
+        },
+        {
+          "name": "Re-Explain Clause",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/clauses/{{clause_id}}/re-explain?mode=simple_english",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "clauses", "{{clause_id}}", "re-explain"],
+              "query": [{ "key": "mode", "value": "simple_english" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Document Chat (RAG)",
+      "item": [
+        {
+          "name": "Send Chat Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are the termination conditions?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/chat",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "chat"]
+            }
+          }
+        },
+        {
+          "name": "List Conversations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/chat/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "chat", "conversations"]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/chat/conversations/{{conversation_id}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "chat", "conversations", "{{conversation_id}}", "messages"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Reports",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Download PDF Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/documents/{{document_id}}/report.pdf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "documents", "{{document_id}}", "report.pdf"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simplification Studio",
+      "item": [
+        {
+          "name": "Simplify Legal Text",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"The Lessee shall indemnify and hold harmless the Lessor from and against all liabilities.\",\n  \"mode\": \"simple_english\",\n  \"documentContext\": \"Commercial Lease Agreement\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/simplify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "simplify"]
+            }
+          }
+        }
+      ]
     }
   ]
 }

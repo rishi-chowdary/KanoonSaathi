@@ -34,6 +34,10 @@ import java.util.Map;
 @Service
 public class AiEngineClient {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AiEngineClient.class);
+    private static final int MAX_RETRIES = 2; // Up to 2 retries (3 total attempts)
+    private static final long INITIAL_BACKOFF_MS = 1000L;
+
     private final RestClient restClient;
     private final String internalApiKey;
 
@@ -50,13 +54,40 @@ public class AiEngineClient {
                 .build();
     }
 
+    private <T> T executeWithRetry(java.util.function.Supplier<T> action, String operationName) {
+        int attempt = 0;
+        long backoff = INITIAL_BACKOFF_MS;
+        while (true) {
+            attempt++;
+            try {
+                return action.get();
+            } catch (Exception ex) {
+                boolean isTransient = ex instanceof org.springframework.web.client.ResourceAccessException
+                        || ex instanceof org.springframework.web.client.HttpServerErrorException;
+                if (!isTransient || attempt > MAX_RETRIES) {
+                    log.error("AI engine operation '{}' failed after {} attempt(s): {}", operationName, attempt, ex.getMessage());
+                    throw ex;
+                }
+                log.warn("AI engine operation '{}' transient failure on attempt {}/{} ({}), retrying in {}ms...",
+                        operationName, attempt, MAX_RETRIES + 1, ex.getMessage(), backoff);
+                try {
+                    Thread.sleep(backoff);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted during AI engine retry backoff", ie);
+                }
+                backoff *= 2;
+            }
+        }
+    }
+
     public Map<String, Object> checkHealth() {
-        return restClient.get()
+        return executeWithRetry(() -> restClient.get()
                 .uri("/internal/health")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {}), "checkHealth");
     }
 
     public ExtractionResponseDto extract(Resource fileResource, String filename) {
@@ -74,35 +105,35 @@ public class AiEngineClient {
             throw new RuntimeException("failed to read file content for extraction", e);
         }
 
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/extract")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(body)
                 .retrieve()
-                .body(ExtractionResponseDto.class);
+                .body(ExtractionResponseDto.class), "extract");
     }
 
     public DocumentSummaryResponseDto analyzeSummary(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
         DocumentSummaryRequestDto req = new DocumentSummaryRequestDto(documentId, pages, chunks);
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/analyze/summary")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(DocumentSummaryResponseDto.class);
+                .body(DocumentSummaryResponseDto.class), "analyzeSummary");
     }
 
     public ClauseAnalysisResponseDto analyzeClauses(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
         ClauseAnalysisRequestDto req = new ClauseAnalysisRequestDto(documentId, pages, chunks);
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/analyze/clauses")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(ClauseAnalysisResponseDto.class);
+                .body(ClauseAnalysisResponseDto.class), "analyzeClauses");
     }
 
     public SimplifyResponseDto simplify(String text, String mode, String documentContext) {
@@ -112,56 +143,56 @@ public class AiEngineClient {
         if (documentContext != null) {
             req.put("document_context", documentContext);
         }
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/simplify")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(SimplifyResponseDto.class);
+                .body(SimplifyResponseDto.class), "simplify");
     }
 
     public RiskAnalysisResponseDto analyzeRisks(String documentId, List<PageDto> pages, List<ChunkDto> chunks, Boolean governingLawFound) {
         RiskAnalysisRequestDto req = new RiskAnalysisRequestDto(documentId, pages, chunks, governingLawFound);
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/analyze/risks")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(RiskAnalysisResponseDto.class);
+                .body(RiskAnalysisResponseDto.class), "analyzeRisks");
     }
 
     public KeyInfoResponseDto extractKeyInfo(String documentId, List<PageDto> pages, List<ChunkDto> chunks) {
         KeyInfoRequestDto req = new KeyInfoRequestDto(documentId, pages, chunks);
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/analyze/key-info")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(KeyInfoResponseDto.class);
+                .body(KeyInfoResponseDto.class), "extractKeyInfo");
     }
 
     public MissingProvisionsResponseDto analyzeMissingProvisions(String documentId, List<PageDto> pages, List<ChunkDto> chunks, String documentTypeHint) {
         MissingProvisionsRequestDto req = new MissingProvisionsRequestDto(documentId, pages, chunks, documentTypeHint);
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/analyze/missing")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
-                .body(MissingProvisionsResponseDto.class);
+                .body(MissingProvisionsResponseDto.class), "analyzeMissingProvisions");
     }
 
     public ChatResponseDto chat(ChatRequestDto request) {
-        return restClient.post()
+        return executeWithRetry(() -> restClient.post()
                 .uri("/internal/chat")
                 .header("X-Internal-Api-Key", internalApiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
                 .retrieve()
-                .body(ChatResponseDto.class);
+                .body(ChatResponseDto.class), "chat");
     }
 }
 
