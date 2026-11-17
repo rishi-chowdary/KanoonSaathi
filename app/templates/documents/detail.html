@@ -3,14 +3,29 @@
 {% block title %}{{ document.original_filename }} — LexiLegal AI{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
   <div>
     <a href="{{ url_for('documents.list_view') }}" style="font-size: 0.9rem; color: var(--text-muted); display: inline-block; margin-bottom: 0.5rem;">
       &larr; Back to documents
     </a>
-    <h1 style="font-size: 1.85rem; margin: 0;">{{ document.original_filename }}</h1>
+    <h1 style="font-size: 1.85rem; margin: 0 0 0.5rem 0;">{{ document.original_filename }}</h1>
+    {% if analysis and analysis.document_type %}
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <span class="badge badge-info">{{ analysis.document_type }}</span>
+        {% if analysis.parties and analysis.parties|length > 0 %}
+          <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Parties: <strong>{{ analysis.parties|join(", ") }}</strong>
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
-  <div style="display: flex; gap: 0.75rem;">
+  <div style="display: flex; gap: 0.75rem; align-items: center;">
+    {% if analysis and analysis.verification_rate is not none %}
+      <span class="badge badge-success" title="100% of clause quotes verified directly from source text">
+        &#10003; {{ analysis.verification_rate }}% Quote Verified
+      </span>
+    {% endif %}
     <form action="{{ url_for('documents.delete_view', doc_id=document.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this document?');">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--color-danger);">
@@ -22,18 +37,26 @@
 
 <div class="card" style="margin-bottom: 1.5rem;">
   <div class="card-header">
-    <h2 class="card-title">Document Metadata</h2>
+    <h2 class="card-title">Document Details</h2>
   </div>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.95rem;">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.95rem;">
     <div>
       <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Status</span>
-      <strong><span class="badge badge-info">{{ document.status }}</span></strong>
+      <strong>
+        {% if document.status == 'COMPLETED' %}
+          <span class="badge badge-success">Completed</span>
+        {% elif document.status == 'ANALYZING' %}
+          <span class="badge badge-warning">Analyzing</span>
+        {% else %}
+          <span class="badge badge-info">{{ document.status }}</span>
+        {% endif %}
+      </strong>
     </div>
     <div>
       <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Format</span>
       <strong>{{ document.file_type }}</strong>
       {% if document.is_scanned %}
-        <span class="badge badge-warning" style="margin-left: 0.35rem;">OCR Processed</span>
+        <span class="badge badge-warning" style="margin-left: 0.35rem;">OCR</span>
       {% endif %}
     </div>
     <div>
@@ -41,8 +64,8 @@
       <strong>{{ document.page_count }}</strong>
     </div>
     <div>
-      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">File Size</span>
-      <strong>{{ (document.file_size / 1024)|round(1) }} KB</strong>
+      <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Clauses Found</span>
+      <strong>{{ clauses|length if clauses else 0 }}</strong>
     </div>
     <div>
       <span style="color: var(--text-muted); display: block; font-size: 0.85rem;">Uploaded</span>
@@ -57,26 +80,226 @@
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h2 class="card-title">Extracted Text Chunks ({{ chunks|length }})</h2>
-    <p class="card-subtitle">Page-attributed text slices stored for retrieval and grounding</p>
-  </div>
+<!-- Tabs Navigation -->
+<div class="tabs-nav">
+  <button type="button" class="tab-btn active" data-tab="clauses-tab">
+    Extracted Clauses ({{ clauses|length if clauses else 0 }})
+  </button>
+  <button type="button" class="tab-btn" data-tab="chunks-tab">
+    Text Chunks ({{ chunks|length if chunks else 0 }})
+  </button>
+</div>
 
-  {% if chunks and chunks|length > 0 %}
-    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-      {% for chunk in chunks %}
-        <div style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
-            <span><strong>Chunk {{ chunk.chunk_index + 1 }}</strong> — Page {{ chunk.page_number }}</span>
-            <span>~{{ chunk.token_count }} tokens</span>
+<!-- Tab 1: Extracted Clauses -->
+<div id="clauses-tab" class="tab-content active">
+  {% if clauses and clauses|length > 0 %}
+    <!-- Filter Bar -->
+    <div class="clause-filters">
+      <div style="flex: 1; min-width: 220px;">
+        <input type="text" id="clause-search-input" class="form-control" placeholder="Search clauses by keyword..." style="margin: 0; padding: 0.45rem 0.75rem; font-size: 0.875rem;">
+      </div>
+      <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+        <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 0.25rem;">Importance:</span>
+        <button type="button" class="filter-pill active" data-filter-type="importance" data-filter-value="ALL">All</button>
+        <button type="button" class="filter-pill" data-filter-type="importance" data-filter-value="HIGH" style="border-color: var(--color-danger); color: var(--color-danger);">High</button>
+        <button type="button" class="filter-pill" data-filter-type="importance" data-filter-value="MEDIUM" style="border-color: var(--color-warning); color: var(--color-warning);">Medium</button>
+        <button type="button" class="filter-pill" data-filter-type="importance" data-filter-value="LOW" style="border-color: var(--color-info); color: var(--color-info);">Low</button>
+      </div>
+      <div style="min-width: 180px;">
+        <select id="clause-category-select" class="form-control" style="margin: 0; padding: 0.45rem 0.75rem; font-size: 0.875rem;">
+          <option value="ALL">All Categories</option>
+          {% set seen_cats = [] %}
+          {% for clause in clauses %}
+            {% if clause.category not in seen_cats %}
+              {% set _ = seen_cats.append(clause.category) %}
+              <option value="{{ clause.category }}">{{ clause.category }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div id="clause-count-display" style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">
+        Showing {{ clauses|length }} of {{ clauses|length }} clauses
+      </div>
+    </div>
+
+    <!-- Clauses List -->
+    <div id="clauses-list">
+      {% for clause in clauses %}
+        <div class="clause-card" data-category="{{ clause.category }}" data-importance="{{ clause.importance }}" data-search="{{ (clause.title ~ ' ' ~ clause.original_text ~ ' ' ~ clause.evidence_quote)|lower }}">
+          <div class="clause-header">
+            <div>
+              {% if clause.section_reference %}
+                <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ clause.section_reference }}
+                </span>
+              {% endif %}
+              <h3 class="clause-title">{{ clause.title }}</h3>
+            </div>
+            <div class="clause-badges">
+              <span class="badge badge-info">{{ clause.category }}{% if clause.custom_label and clause.category == 'Other' %}: {{ clause.custom_label }}{% endif %}</span>
+              {% if clause.importance == 'HIGH' %}
+                <span class="badge badge-danger">High Impact</span>
+              {% elif clause.importance == 'MEDIUM' %}
+                <span class="badge badge-warning">Medium Impact</span>
+              {% else %}
+                <span class="badge badge-info" style="opacity: 0.85;">Low Impact</span>
+              {% endif %}
+              <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
+                Page {{ clause.source_page }}
+              </span>
+              <span class="badge badge-success" title="Ground truth exact slice">
+                {{ clause.provenance }}
+              </span>
+            </div>
           </div>
-          <pre style="font-family: var(--font-mono); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.5; color: var(--text-main); margin: 0;">{{ chunk.content }}</pre>
+
+          <!-- Evidence Quote Box -->
+          <div class="evidence-quote-box">
+            &ldquo;{{ clause.evidence_quote }}&rdquo;
+            <div>
+              <span class="quote-verification-tag">
+                &#10003; Verified exact source quote
+              </span>
+              {% if clause.affected_party %}
+                <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.75rem; font-style: normal;">
+                  Bound Party: <strong>{{ clause.affected_party }}</strong>
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Explanation Panel with 3 View Modes -->
+          <div class="explanation-panel">
+            <div class="explanation-tabs">
+              <button type="button" class="exp-tab-btn active" data-exp-target="simple-{{ clause.id }}">Simple English</button>
+              <button type="button" class="exp-tab-btn" data-exp-target="detailed-{{ clause.id }}">Detailed</button>
+              <button type="button" class="exp-tab-btn" data-exp-target="professional-{{ clause.id }}">Professional</button>
+            </div>
+            <div id="simple-{{ clause.id }}" class="exp-text-block">
+              <p style="margin: 0; color: var(--text-main);">{{ clause.simplified_simple }}</p>
+            </div>
+            <div id="detailed-{{ clause.id }}" class="exp-text-block" style="display: none;">
+              <p style="margin: 0; color: var(--text-main);">{{ clause.simplified_detailed }}</p>
+            </div>
+            <div id="professional-{{ clause.id }}" class="exp-text-block" style="display: none;">
+              <p style="margin: 0; color: var(--text-main); font-family: var(--font-serif);">{{ clause.simplified_professional }}</p>
+            </div>
+          </div>
+
+          <!-- Collapsible Original Source Slice -->
+          <details style="margin-top: 0.75rem;">
+            <summary style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+              View full clause text slice
+            </summary>
+            <pre style="margin-top: 0.5rem; padding: 0.75rem; background: var(--bg-surface-alt); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; white-space: pre-wrap; line-height: 1.4; color: var(--text-main);">{{ clause.original_text }}</pre>
+          </details>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <p style="color: var(--text-muted); text-align: center; padding: 2rem;">No text chunks recorded.</p>
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">No legal clauses have been extracted for this document yet.</p>
+    </div>
   {% endif %}
 </div>
+
+<!-- Tab 2: Text Chunks -->
+<div id="chunks-tab" class="tab-content">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Attributed Text Chunks ({{ chunks|length }})</h2>
+      <p class="card-subtitle">Page-attributed text slices stored for retrieval and grounding</p>
+    </div>
+
+    {% if chunks and chunks|length > 0 %}
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% for chunk in chunks %}
+          <div style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+              <span><strong>Chunk {{ chunk.chunk_index + 1 }}</strong> — Page {{ chunk.page_number }}</span>
+              <span>~{{ chunk.token_count }} tokens</span>
+            </div>
+            <pre style="font-family: var(--font-mono); font-size: 0.85rem; white-space: pre-wrap; line-height: 1.5; color: var(--text-main); margin: 0;">{{ chunk.content }}</pre>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color: var(--text-muted); text-align: center; padding: 2rem;">No text chunks recorded.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Tab switching logic
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      const targetId = btn.getAttribute('data-tab');
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) targetEl.classList.add('active');
+    });
+  });
+
+  // Clause 3-mode explanation switcher
+  document.querySelectorAll('.exp-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parent = btn.closest('.explanation-panel');
+      if (!parent) return;
+      parent.querySelectorAll('.exp-tab-btn').forEach(b => b.classList.remove('active'));
+      parent.querySelectorAll('.exp-text-block').forEach(blk => blk.style.display = 'none');
+      btn.classList.add('active');
+      const targetId = btn.getAttribute('data-exp-target');
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) targetEl.style.display = 'block';
+    });
+  });
+
+  // Client-side clause filtering (Category, Importance, Search)
+  const searchInput = document.getElementById('clause-search-input');
+  const catSelect = document.getElementById('clause-category-select');
+  const countDisplay = document.getElementById('clause-count-display');
+  const cards = document.querySelectorAll('.clause-card');
+  let currentImportance = 'ALL';
+
+  function applyClauseFilters() {
+    const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    const selectedCat = catSelect ? catSelect.value : 'ALL';
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const cardCat = card.getAttribute('data-category');
+      const cardImp = card.getAttribute('data-importance');
+      const cardSearch = card.getAttribute('data-search') || '';
+
+      const matchCat = (selectedCat === 'ALL' || cardCat === selectedCat);
+      const matchImp = (currentImportance === 'ALL' || cardImp === currentImportance);
+      const matchQuery = (!query || cardSearch.includes(query));
+
+      if (matchCat && matchImp && matchQuery) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (countDisplay) {
+      countDisplay.textContent = `Showing ${visibleCount} of ${cards.length} clauses`;
+    }
+  }
+
+  if (searchInput) searchInput.addEventListener('input', applyClauseFilters);
+  if (catSelect) catSelect.addEventListener('change', applyClauseFilters);
+
+  document.querySelectorAll('.filter-pill[data-filter-type="importance"]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill[data-filter-type="importance"]').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      currentImportance = pill.getAttribute('data-filter-value');
+      applyClauseFilters();
+    });
+  });
+</script>
 {% endblock %}

@@ -32,7 +32,7 @@ def test_api_upload_valid_pdf(client, test_user, app):
     assert doc_json["originalFilename"] == "clean_nda.pdf"
     assert doc_json["fileType"] == "PDF"
     assert doc_json["pageCount"] == 2
-    assert doc_json["status"] == "EXTRACTED"
+    assert doc_json["status"] in ("EXTRACTED", "COMPLETED")
     doc_id = doc_json["id"]
 
     # 3. Verify chunks stored in MySQL

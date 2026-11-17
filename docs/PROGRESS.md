@@ -21,7 +21,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase M0 | Migration Preparation, Toolchain Audit & Baseline LLM Capture | Completed | 2026-11-17 |
 | Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Completed | 2026-11-17 |
 | Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Completed | 2026-11-17 |
-| Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Planned | - |
+| Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Completed | 2026-11-17 |
 | Phase M4 | Tri-Tier Rule-Based Simplification Engine | Planned | - |
 | Phase M5 | Grounded Risk Analyzer, Key Facts & Missing Provisions | Planned | - |
 | Phase M6 | Extractive Document QA & Conversation Engine | Planned | - |
@@ -1024,3 +1024,60 @@ cd frontend && npm test
 - Linter & Formatter:
   - `ruff check app tests` -> `All checks passed!`.
   - `black --check app tests` -> `30 files left unchanged.`.
+
+---
+
+### Phase M3: Clause Segmentation, Ensemble Classifier & Explainability
+- [x] Implemented centralized offline model singleton manager (`app/nlp/registry.py`) for spaCy (`en_core_web_md`), SentenceTransformer (`all-MiniLM-L6-v2`), and DistilBERT.
+- [x] Authored offline model verification and cache script (`scripts/download_models.py`).
+- [x] Defined SBERT prototype embeddings (`data/clause_prototypes.yaml`) covering all 18 standard categories and document types.
+- [x] Built legal pattern rules and importance indicators (`data/clause_rules.yaml`).
+- [x] Built document type classifier (`app/nlp/document_classifier.py`) combining heading regex patterns and SBERT zero-shot cosine similarity.
+- [x] Built ensemble clause classifier (`app/nlp/clause_classifier.py`) combining keyword rules, SBERT prototype cosine similarity, and DistilBERT with transparent fallback formula ($0.55 \text{ SBERT} + 0.45 \text{ Rules}$).
+- [x] Implemented multi-factor importance scorer (`app/nlp/importance.py`) recognizing predatory triggers ("uncapped", "without cause", "compounded daily", "sole discretion"), financial terms, and modal obligation verbs.
+- [x] Implemented contracting party and affected obligor detector (`app/nlp/parties.py`) combining preamble role extraction and spaCy dependency parsing.
+- [x] Implemented evidence quote selector (`app/nlp/evidence.py`) guaranteeing 100% exact substring slices of source clause text.
+- [x] Orchestrated database persistence pipeline (`app/services/clause_service.py`) persisting `DocumentAnalysis` and `ExtractedClause` records with verified quotes and verification rate.
+- [x] Extended REST API (`app/blueprints/documents.py`) with `GET /api/documents/<doc_id>/clauses` (supporting category, importance, and search filters) and `GET /api/documents/<doc_id>/analysis`.
+- [x] Built interactive Clauses tab UI (`app/templates/documents/detail.html`, `app/static/css/style.css`) featuring live category dropdown, importance filter pills, keyword search, verified quote callouts, 3-mode explanation toggles, and expandable source text slices.
+- [x] **Passed Hard Gate**: Evaluated against gold contracts (`clean_nda_gold.json`, `employment_agreement_gold.json`, `rental_agreement_gold.json`):
+  - **Clause Recall: 100.00%** (Gate Requirement: $\ge 80\%$)
+  - **Clause Precision: 85.71%** (Gate Requirement: $\ge 75\%$)
+  - **Macro F1: 92.31%**
+  - **Quote Verification Rate: 100.0%** (42 / 42 clauses verified exact substring slices)
+- [x] Automated test suite (`tests/test_clause_classification.py`) passing all 10 tests. Full test suite now passes 40 / 40 tests across SQLite and live MySQL 8 with 77% coverage.
+- [x] Linters clean: `ruff check app tests scripts` and `black --check app tests scripts` 100% clean.
+
+**What was built:**
+- `app/nlp/registry.py`: Thread-safe, cached model singleton loader for spaCy (`en_core_web_md`), SentenceTransformer (`all-MiniLM-L6-v2`), and Hugging Face DistilBERT.
+- `scripts/download_models.py`: Local model verification script ensuring zero cloud dependencies at runtime.
+- `data/clause_prototypes.yaml`: Domain prototype descriptions for all 18 standard legal categories and document types.
+- `data/clause_rules.yaml`: Keyword rules, regexes, and importance indicators.
+- `data/expected_provisions.yaml`: Document-type expected provisions checklists.
+- `app/nlp/document_classifier.py`: Document type classifier distinguishing NDAs, leases, employment agreements, MSAs, notes, and deeds.
+- `app/nlp/clause_classifier.py`: 3-way ensemble classifier combining Rules, SBERT Prototypes, and DistilBERT with graceful fallback.
+- `app/nlp/importance.py`: Heuristic importance rating (`HIGH`, `MEDIUM`, `LOW`).
+- `app/nlp/parties.py`: Preamble contracting party parser and clause-level affected party detector.
+- `app/nlp/evidence.py`: Evidence quote extractor guaranteeing exact substring slicing.
+- `app/services/clause_service.py`: Document clause processing service persisting `DocumentAnalysis` and `ExtractedClause` records with quote verification.
+- `app/blueprints/documents.py`: Added `GET /api/documents/<doc_id>/clauses` and `GET /api/documents/<doc_id>/analysis` with tenant authorization.
+- `app/templates/documents/detail.html`: Two-tab interface (Extracted Clauses, Text Chunks) with real-time filtering and 3-mode explanation toggles.
+- `tests/test_clause_classification.py`: 10 comprehensive tests validating document type detection, ensemble categorization, custom labels, importance rules, party detection, exact substring quote slices, fallback resilience, gold benchmark gate, and tenant isolation (404).
+
+**How it was verified:**
+- Gold Contract Benchmark Gate:
+  - `clean_nda.pdf`: 4/4 gold clauses matched (5 extracted).
+  - `employment_agreement.pdf`: 7/7 gold clauses matched (8 extracted).
+  - `rental_agreement.pdf`: 7/7 gold clauses matched (8 extracted).
+  - **Clause Recall: 100.00%** (18/18 gold matched).
+  - **Clause Precision: 85.71%** (18/21 extracted).
+  - **Macro F1: 92.31%**.
+- Exact Substring Quote Invariant:
+  - 42 out of 42 clauses (100.0%) across all test contracts verified: `evidence_quote in original_text == True`.
+- Full Test Suite:
+  - `.venv/bin/pytest -v` -> 40 passed in 17.99s.
+  - Coverage: 77% across 1,451 statements.
+- Code Quality:
+  - `ruff check app tests scripts` -> `All checks passed!`.
+  - `black --check app tests scripts` -> `40 files left unchanged.`.
+

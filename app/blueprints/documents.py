@@ -11,7 +11,9 @@ from flask import (
 from flask_login import current_user, login_required
 
 from app.extensions import csrf
+from app.models.analysis import DocumentAnalysis
 from app.models.chunk import DocumentChunk
+from app.models.clause import ExtractedClause
 from app.services.document_service import (
     delete_document_for_user,
     get_document_for_user,
@@ -67,7 +69,7 @@ def list_view():
 @documents_bp.route("/documents/<doc_id>")
 @login_required
 def detail(doc_id: str):
-    """Document overview and extracted text inspector."""
+    """Document overview, clause analysis, and extracted text inspector."""
     doc = get_document_for_user(doc_id, current_user.id)
     if not doc:
         abort(404)
@@ -78,7 +80,23 @@ def detail(doc_id: str):
         .order_by(DocumentChunk.chunk_index.asc())
         .all()
     )
-    return render_template("documents/detail.html", document=doc, chunks=chunks)
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    clauses = []
+    if analysis:
+        clauses = (
+            ExtractedClause.query.filter_by(analysis_id=analysis.id)
+            .order_by(
+                ExtractedClause.source_page.asc(), ExtractedClause.created_at.asc()
+            )
+            .all()
+        )
+    return render_template(
+        "documents/detail.html",
+        document=doc,
+        chunks=chunks,
+        analysis=analysis,
+        clauses=clauses,
+    )
 
 
 @documents_bp.route("/documents/<doc_id>/delete", methods=["POST"])
@@ -216,3 +234,84 @@ def api_delete(doc_id: str):
         return jsonify({"error": "Document not found"}), 404
 
     return jsonify({"message": "Document deleted successfully"}), 200
+
+
+@documents_bp.route("/api/documents/<doc_id>/clauses", methods=["GET"])
+@csrf.exempt
+def api_clauses(doc_id: str):
+    """Retrieve extracted clauses with optional category, importance, and search filters."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return (
+            jsonify({"documentId": doc.id, "total": 0, "clauses": []}),
+            200,
+        )
+
+    query = ExtractedClause.query.filter_by(analysis_id=analysis.id)
+
+    cat_filter = request.args.get("category")
+    if cat_filter:
+        query = query.filter(ExtractedClause.category.ilike(cat_filter))
+
+    imp_filter = request.args.get("importance")
+    if imp_filter:
+        query = query.filter(ExtractedClause.importance == imp_filter.upper())
+
+    search_query = request.args.get("search")
+    if search_query:
+        term = f"%{search_query}%"
+        query = query.filter(
+            (ExtractedClause.title.ilike(term))
+            | (ExtractedClause.original_text.ilike(term))
+            | (ExtractedClause.evidence_quote.ilike(term))
+        )
+
+    clauses = query.order_by(
+        ExtractedClause.source_page.asc(), ExtractedClause.created_at.asc()
+    ).all()
+
+    return (
+        jsonify(
+            {
+                "documentId": doc.id,
+                "analysisId": analysis.id,
+                "documentType": analysis.document_type,
+                "total": len(clauses),
+                "clauses": [c.to_dict() for c in clauses],
+            }
+        ),
+        200,
+    )
+
+
+@documents_bp.route("/api/documents/<doc_id>/analysis", methods=["GET"])
+@csrf.exempt
+def api_analysis(doc_id: str):
+    """Retrieve full synthesized document analysis and clause summary."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    clauses = (
+        ExtractedClause.query.filter_by(analysis_id=analysis.id)
+        .order_by(ExtractedClause.source_page.asc())
+        .all()
+    )
+
+    data = analysis.to_dict()
+    data["clauses"] = [c.to_dict() for c in clauses]
+    return jsonify(data), 200

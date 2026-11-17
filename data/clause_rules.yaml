@@ -1,0 +1,297 @@
+# Rule-based heuristics for clause categorization and importance evaluation.
+# Titles and keywords are matched case-insensitively.
+
+rules:
+  Confidentiality:
+    title_keywords:
+      - "confidential"
+      - "non-disclosure"
+      - "nondisclosure"
+      - "proprietary information"
+      - "trade secret"
+      - "secrecy"
+    body_keywords:
+      - "confidential information"
+      - "strictest confidence"
+      - "proprietary"
+      - "disclose"
+      - "receiving party"
+      - "disclosing party"
+    priority: 85
+
+  Non-Compete and Non-Solicitation:
+    title_keywords:
+      - "non-compete"
+      - "non compete"
+      - "non-solicitation"
+      - "non solicitation"
+      - "restrictive covenant"
+      - "competition"
+    body_keywords:
+      - "directly competes"
+      - "solicit"
+      - "following termination"
+      - "competing business"
+      - "covenant not to"
+    priority: 90
+
+  Termination:
+    title_keywords:
+      - "termination"
+      - "cancellation"
+      - "default and eviction"
+      - "default"
+      - "early termination"
+    body_keywords:
+      - "terminate"
+      - "without cause"
+      - "prior written notice"
+      - "material breach"
+      - "eviction"
+      - "cure period"
+    priority: 80
+
+  Liability and Indemnification:
+    title_keywords:
+      - "indemnif"
+      - "liability"
+      - "limitation of liability"
+      - "hold harmless"
+      - "damages"
+    body_keywords:
+      - "indemnify"
+      - "hold harmless"
+      - "consequential damages"
+      - "aggregate liability"
+      - "in no event shall"
+      - "limitation of"
+    priority: 85
+
+  Payment Terms:
+    title_keywords:
+      - "payment"
+      - "fee"
+      - "fees"
+      - "compensation"
+      - "rent"
+      - "security deposit"
+      - "salary"
+      - "invoicing"
+      - "charges"
+      - "reimbursement"
+    body_keywords:
+      - "payable"
+      - "monthly rent"
+      - "base salary"
+      - "annual base salary"
+      - "deposit"
+      - "in advance"
+      - "per month"
+      - "calendar month"
+      - "compounded daily"
+      - "late fee"
+    priority: 85
+
+  Intellectual Property:
+    title_keywords:
+      - "intellectual property"
+      - "ip assignment"
+      - "inventions"
+      - "proprietary rights"
+      - "work product"
+      - "patent"
+      - "copyright"
+    body_keywords:
+      - "assigns to company"
+      - "all right, title, and interest"
+      - "inventions"
+      - "works of authorship"
+      - "patent"
+      - "trademark"
+    priority: 85
+
+  Governing Law:
+    title_keywords:
+      - "governing law"
+      - "applicable law"
+      - "jurisdiction"
+      - "choice of law"
+    body_keywords:
+      - "governed by and construed in accordance with"
+      - "laws of the state of"
+      - "exclusive jurisdiction"
+    priority: 75
+
+  Dispute Resolution:
+    title_keywords:
+      - "dispute resolution"
+      - "arbitration"
+      - "mediation"
+      - "litigation"
+    body_keywords:
+      - "binding arbitration"
+      - "american arbitration association"
+      - "dispute arising out of"
+      - "arbitrator"
+    priority: 75
+
+  Term and Renewal:
+    title_keywords:
+      - "term"
+      - "duration"
+      - "renewal"
+      - "term and termination"
+      - "premises and term"
+    body_keywords:
+      - "remain in effect for a term"
+      - "fixed term of"
+      - "effective date"
+      - "automatically renew"
+      - "expiration"
+    priority: 70
+
+  Assignment:
+    title_keywords:
+      - "assignment"
+      - "sublet"
+      - "delegation"
+      - "transfer"
+    body_keywords:
+      - "shall not assign"
+      - "sublet the premises"
+      - "without prior written consent"
+      - "assign this agreement"
+    priority: 80
+
+  Severability:
+    title_keywords:
+      - "severability"
+      - "invalidity"
+    body_keywords:
+      - "held to be invalid"
+      - "unenforceable"
+      - "remaining provisions"
+      - "shall continue in full force"
+    priority: 80
+
+  Amendment:
+    title_keywords:
+      - "amendment"
+      - "modification"
+      - "variation"
+      - "waiver"
+    body_keywords:
+      - "amended in writing"
+      - "signed by both parties"
+      - "unilateral modification"
+    priority: 75
+
+  Notices:
+    title_keywords:
+      - "notices"
+      - "notice"
+      - "communication"
+    body_keywords:
+      - "all notices under this agreement"
+      - "certified mail"
+      - "written notice"
+    priority: 70
+
+  Force Majeure:
+    title_keywords:
+      - "force majeure"
+      - "act of god"
+      - "unforeseen events"
+    body_keywords:
+      - "acts of god"
+      - "strike"
+      - "war"
+      - "epidemic"
+      - "beyond reasonable control"
+    priority: 80
+
+  Representations and Warranties:
+    title_keywords:
+      - "representations"
+      - "warranties"
+      - "covenants"
+      - "maintenance and alterations"
+    body_keywords:
+      - "represents and warrants"
+      - "as is"
+      - "good condition"
+      - "maintain electrical"
+    priority: 70
+
+  Data Protection and Privacy:
+    title_keywords:
+      - "data protection"
+      - "privacy"
+      - "gdpr"
+      - "security"
+    body_keywords:
+      - "personal data"
+      - "data security"
+      - "privacy policy"
+    priority: 75
+
+  Insurance:
+    title_keywords:
+      - "insurance"
+      - "coverage"
+      - "policy"
+    body_keywords:
+      - "maintain insurance"
+      - "commercial general liability"
+      - "workers compensation"
+    priority: 75
+
+  Other:
+    title_keywords:
+      - "preamble"
+      - "recitals"
+      - "definitions"
+      - "position and scope"
+      - "duties"
+      - "property description"
+      - "services and scope"
+      - "general"
+    body_keywords: []
+    priority: 10
+
+importance_indicators:
+  high_categories:
+    - "Liability and Indemnification"
+    - "Non-Compete and Non-Solicitation"
+    - "Termination"
+    - "Payment Terms"
+    - "Intellectual Property"
+  low_categories:
+    - "Governing Law"
+    - "Notices"
+    - "Severability"
+    - "Amendment"
+  high_triggers:
+    - "uncapped"
+    - "unlimited"
+    - "without cause"
+    - "compounded daily"
+    - "sole discretion"
+    - "strictly prohibited"
+    - "shall not directly or indirectly"
+    - "assigns to company"
+    - "forfeit"
+    - "acceleration"
+    - "eviction"
+    - "indemnify, defend"
+    - "hold harmless"
+    - "in no event shall"
+    - "automatically renew"
+  modal_obligation_verbs:
+    - "shall"
+    - "must"
+    - "agrees to"
+    - "covenants"
+    - "warrants"
+    - "requires"
+
