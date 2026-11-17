@@ -20,7 +20,6 @@ def create_app(config_class=Config) -> Flask:
     csrf.init_app(app)
     limiter.init_app(app)
 
-    # Ensure upload directory exists
     upload_dir = app.config.get("UPLOAD_FOLDER")
     if upload_dir:
         os.makedirs(upload_dir, exist_ok=True)

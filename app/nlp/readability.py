@@ -16,7 +16,6 @@ _WORD_REGEX = re.compile(r"\b[A-Za-z0-9]+(?:'[A-Za-z0-9]+)?\b")
 
 
 def count_syllables_word(word: str) -> int:
-    """Estimate the number of syllables in a single word using rule-based heuristics."""
     clean = word.lower().strip()
     clean = re.sub(r"[^a-z]", "", clean)
     if not clean:
@@ -66,10 +65,6 @@ def count_syllables_word(word: str) -> int:
 
 
 def count_syllables_text(text: str) -> tuple[int, int]:
-    """Count total words and syllables in text.
-
-    Returns (total_words, total_syllables).
-    """
     words = _WORD_REGEX.findall(text)
     if not words:
         return 0, 0
@@ -79,7 +74,6 @@ def count_syllables_text(text: str) -> tuple[int, int]:
 
 
 def get_flesch_interpretation(score: float) -> str:
-    """Return a human-friendly reading ease interpretation."""
     if score >= 90.0:
         return "Very Easy (5th Grade)"
     if score >= 80.0:

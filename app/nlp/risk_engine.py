@@ -98,7 +98,6 @@ def detect_clause_risks(
     sbert = get_sbert()
     rule_embeddings = load_rule_embeddings()
 
-    # Pre-embed clause texts for batch cosine similarity
     clause_texts = [
         f"{getattr(c, 'title', '')}: {getattr(c, 'original_text', '')}" for c in clauses
     ]
@@ -119,13 +118,11 @@ def detect_clause_risks(
                 continue
 
             pattern_matched = False
-            # 1. Regex pattern check
             for pat in rule.get("patterns", []):
                 if re.search(pat, c_text, re.IGNORECASE | re.DOTALL):
                     pattern_matched = True
                     break
 
-            # 2. SBERT semantic similarity check
             sim_score = 0.0
             if proto_embs.shape[0] > 0 and proto_embs.shape[1] == c_emb.shape[0]:
                 similarities = np.dot(proto_embs, c_emb)
@@ -136,7 +133,6 @@ def detect_clause_risks(
             if pattern_matched or semantic_matched:
                 seen_rule_ids.add(rule_id)
 
-                # Extract exact evidence quote anchored to source page
                 quote, verified = extract_evidence_quote(
                     original_text=c_text,
                     category=rule.get("category", ""),
@@ -176,7 +172,6 @@ def detect_clause_risks(
 
                 detected_risks.append(risk_entry)
 
-    # Sort risks by severity: HIGH > MEDIUM > LOW > INFORMATIONAL
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2, "INFORMATIONAL": 3}
     detected_risks.sort(key=lambda r: severity_order.get(r["level"], 4))
 

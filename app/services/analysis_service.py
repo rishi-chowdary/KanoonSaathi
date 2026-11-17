@@ -39,7 +39,6 @@ def process_key_info_and_summaries(
         )
         db.session.add(analysis)
 
-    # 1. Extractive Summarization (SBERT TextRank + MMR)
     summary_res = generate_extractive_summary(
         full_text=full_text,
         pages=pages,
@@ -54,7 +53,6 @@ def process_key_info_and_summaries(
     analysis.obligations_summary = summary_res.obligations_summary
     analysis.financial_terms_summary = summary_res.financial_terms_summary
 
-    # Extract key facts, defaulting absent fields to "Not specified"
     key_info_res = extract_contract_key_info(full_text=full_text, pages=pages)
 
     key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()

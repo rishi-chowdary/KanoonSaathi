@@ -24,9 +24,6 @@ from reportlab.platypus import (
 
 logger = logging.getLogger("lexilegal.report_service")
 
-# -----------------------------------------------------------------------------
-# Color Palette & Semantic Tokens
-# -----------------------------------------------------------------------------
 COLOR_PRIMARY = colors.HexColor("#0B1B3D")  # Deep Navy
 COLOR_SECONDARY = colors.HexColor("#2C5282")  # Slate Blue
 COLOR_ACCENT = colors.HexColor("#D69E2E")  # Gold Accent
@@ -45,9 +42,6 @@ COLOR_RISK_LOW = colors.HexColor("#15803D")
 COLOR_RISK_LOW_BG = colors.HexColor("#F0FDF4")
 COLOR_PROVENANCE = colors.HexColor("#0E7490")  # Cyan/Teal for provenance badges
 
-# -----------------------------------------------------------------------------
-# TrueType Font Setup (₹, §, curly quotes, bullets)
-# -----------------------------------------------------------------------------
 _FONT_INITIALIZED = False
 _REGULAR_FONT = "Helvetica"
 _BOLD_FONT = "Helvetica-Bold"
@@ -105,9 +99,6 @@ def init_truetype_fonts() -> tuple[str, str, str]:
     return _REGULAR_FONT, _BOLD_FONT, _ITALIC_FONT
 
 
-# -----------------------------------------------------------------------------
-# NumberedCanvas for Running Headers & Footers (Page X of Y)
-# -----------------------------------------------------------------------------
 class NumberedCanvas(canvas.Canvas):
     """Two-pass canvas calculating total page count for running headers and footers."""
 
@@ -155,9 +146,6 @@ class NumberedCanvas(canvas.Canvas):
         self.restoreState()
 
 
-# -----------------------------------------------------------------------------
-# Report Generation Builder
-# -----------------------------------------------------------------------------
 def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     """Build a 10-section PDF report for an analyzed contract."""
     reg_font, bold_font, italic_font = init_truetype_fonts()
@@ -249,9 +237,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
 
     story: list[Any] = []
 
-    # -------------------------------------------------------------------------
-    # Section 1: Cover / Overview
-    # -------------------------------------------------------------------------
     badge_p = Paragraph(
         "<b>LEXILEGAL AI</b> &bull; CONTRACT ANALYSIS REPORT",
         style_badge,
@@ -336,9 +321,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     story.append(t_overview)
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 2: Executive Summary
-    # -------------------------------------------------------------------------
     story.append(Paragraph("1. Executive Summary", style_sec_heading))
     story.append(
         Paragraph(
@@ -380,9 +362,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     story.append(t_summary)
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 3: Important Clauses Table
-    # -------------------------------------------------------------------------
     story.append(Paragraph("2. Important Contractual Provisions", style_sec_heading))
     story.append(
         Paragraph(
@@ -456,9 +435,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
         )
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 4: Plain-Language Explanations (3 Modes)
-    # -------------------------------------------------------------------------
     story.append(Paragraph("3. Plain-Language Explanations", style_sec_heading))
     story.append(
         Paragraph(
@@ -535,9 +511,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
         )
     story.append(Spacer(1, 6))
 
-    # -------------------------------------------------------------------------
-    # Section 5: Risk Analysis (Color Coded)
-    # -------------------------------------------------------------------------
     story.append(Paragraph("4. Contract Risk Assessment", style_sec_heading))
     story.append(
         Paragraph(
@@ -614,9 +587,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
         )
     story.append(Spacer(1, 6))
 
-    # -------------------------------------------------------------------------
-    # Section 6: Financial Terms
-    # -------------------------------------------------------------------------
     story.append(Paragraph("5. Financial Terms & Payment Structure", style_sec_heading))
     story.append(
         Paragraph(
@@ -669,9 +639,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     story.append(t_fin)
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 7: Important Dates & Deadlines
-    # -------------------------------------------------------------------------
     story.append(Paragraph("6. Critical Dates & Timelines", style_sec_heading))
     story.append(
         Paragraph(
@@ -717,9 +684,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     story.append(t_dates)
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 8: Missing Provisions (Possible Omissions)
-    # -------------------------------------------------------------------------
     story.append(Paragraph("7. Standard Provisions Checklist", style_sec_heading))
     story.append(
         Paragraph(
@@ -777,9 +741,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
         )
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 9: Suggested Questions to Ask
-    # -------------------------------------------------------------------------
     story.append(
         Paragraph("8. Actionable Questions for Legal Counsel", style_sec_heading)
     )
@@ -827,9 +788,6 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     story.append(t_q)
     story.append(Spacer(1, 10))
 
-    # -------------------------------------------------------------------------
-    # Section 10: Legal Disclaimer & Jurisdiction Notice
-    # -------------------------------------------------------------------------
     story.append(
         Paragraph("9. Regulatory Notice & Legal Disclaimer", style_sec_heading)
     )
@@ -853,6 +811,5 @@ def generate_pdf_report(document: Any, analysis: Any) -> bytes:
     )
     story.append(Spacer(1, 6))
 
-    # Build document
     doc.build(story, canvasmaker=NumberedCanvas)
     return buf.getvalue()

@@ -126,7 +126,6 @@ FACT_INTENTS = [
 
 
 def _get_val_and_page(fact_record: Any, field_name: str) -> tuple[str, int]:
-    """Read string value and 1-indexed page from a fact dataclass or ORM model."""
     raw_val = getattr(fact_record, field_name, "Not specified")
     val = getattr(raw_val, "value", raw_val) if raw_val is not None else "Not specified"
     if hasattr(raw_val, "source_page") and raw_val.source_page:
@@ -570,12 +569,10 @@ def answer_document_query(
             "confidence": 0.0,
         }
 
-    # 1. Check Fact Intent Router for 100% verified metadata
     fact_result = match_fact_intent(clean_q, analysis, chunks=chunks)
     if fact_result is not None:
         return fact_result
 
-    # 2. Retrieve Top-4 Candidate Chunks via Hybrid Retrieval (SBERT + BM25 RRF)
     retrieved_chunks = hybrid_retrieve_chunks(clean_q, chunks, top_k=4)
     if not retrieved_chunks:
         return {
@@ -585,7 +582,6 @@ def answer_document_query(
             "confidence": 0.0,
         }
 
-    # 3. Run Extractive QA over Candidate Chunks
     best_candidate: dict[str, Any] | None = None
     best_chunk_page = 1
     best_diff = -float("inf")

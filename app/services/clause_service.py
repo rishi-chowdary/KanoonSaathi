@@ -31,14 +31,11 @@ def process_document_clauses(
     doc.status = "ANALYZING"
     db.session.commit()
 
-    # 1. Classify overall document type
     doc_type, _ = classify_document_type(full_text, doc.original_filename)
 
-    # 2. Extract contracting parties from the preamble / first section
     preamble_sample = full_text[:1500]
     parties = extract_document_parties(preamble_sample)
 
-    # 3. Create or update DocumentAnalysis record
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     if not analysis:
         analysis = DocumentAnalysis(
@@ -62,7 +59,6 @@ def process_document_clauses(
         analysis.document_type = doc_type
         analysis.parties = parties
 
-    # 4. Clear any existing clauses for this analysis to prevent duplication
     ExtractedClause.query.filter_by(analysis_id=analysis.id).delete()
 
     created_clauses: list[ExtractedClause] = []
@@ -99,7 +95,6 @@ def process_document_clauses(
         if is_verified:
             verified_count += 1
 
-        # Build simple, detailed, and professional explanations
         simplification_output = simplify_clause(
             original_text=clause.original_text,
             category=category,
@@ -130,7 +125,6 @@ def process_document_clauses(
         db.session.add(model_clause)
         created_clauses.append(model_clause)
 
-    # 5. Calculate verified quote rate
     total_clauses = len(created_clauses)
     verification_rate = (
         (verified_count / total_clauses * 100.0) if total_clauses > 0 else 100.0

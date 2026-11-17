@@ -6,7 +6,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class User(db.Model, UserMixin, TimestampMixin):
-    """User account entity for authentication and ownership isolation."""
 
     __tablename__ = "users"
 
@@ -30,11 +29,9 @@ class User(db.Model, UserMixin, TimestampMixin):
     )
 
     def set_password(self, password: str) -> None:
-        """Hash password using scrypt."""
         self.password_hash = generate_password_hash(password, method="scrypt")
 
     def check_password(self, password: str) -> bool:
-        """Verify plain text password against stored hash."""
         return check_password_hash(self.password_hash, password)
 
     def to_dict(self) -> dict:
@@ -52,5 +49,4 @@ class User(db.Model, UserMixin, TimestampMixin):
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    """Flask-Login callback to reload user from session."""
     return db.session.get(User, user_id)

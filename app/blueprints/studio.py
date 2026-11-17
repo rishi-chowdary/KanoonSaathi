@@ -155,7 +155,6 @@ def api_simplify():
 def api_glossary():
     """Return all terms in the legal glossary."""
     terms_raw = get_sorted_glossary_terms()
-    # Sort alphabetically by term for directory view
     terms_sorted = sorted(terms_raw, key=lambda x: x[0].lower())
 
     results = []

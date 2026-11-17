@@ -122,7 +122,6 @@ def validate_file(file_bytes: bytes, filename: str) -> str:
     elif lower_name.endswith(".txt"):
         return "TXT"
     else:
-        # Check by magic bytes if extension is missing/generic
         if file_bytes.startswith(b"%PDF"):
             return "PDF"
         elif file_bytes.startswith(b"PK\x03\x04"):

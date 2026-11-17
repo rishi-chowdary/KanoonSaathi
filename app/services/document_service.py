@@ -37,7 +37,6 @@ def save_and_extract_document(
     if len(file_bytes) > max_size:
         raise ValueError("File exceeds maximum allowed size of 10MB.")
 
-    # 1. Validate magic bytes and format
     file_type = validate_file(file_bytes, filename)
     file_hash = compute_sha256(file_bytes)
 
@@ -48,7 +47,6 @@ def save_and_extract_document(
             f"You have already uploaded this identical document ('{existing.original_filename}')."
         )
 
-    # 3. Securely persist raw file to user upload directory
     doc_id = str(uuid.uuid4())
     upload_root = Path(current_app.config.get("UPLOAD_FOLDER", "uploads"))
     user_dir = upload_root / user_id
@@ -62,16 +60,13 @@ def save_and_extract_document(
     with open(storage_path, "wb") as f:
         f.write(file_bytes)
 
-    # 4. Extract text per page, structural sections, and OCR if required
     try:
         extraction = extract_document(file_bytes, filename)
     except Exception as e:  # noqa: BLE001 - file cleanup on any extraction error
-        # Clean up stored file if extraction fails
         if storage_path.exists():
             storage_path.unlink()
         raise ValueError(f"Document extraction failed: {e}")
 
-    # 5. Create Document model in database
     doc = Document(
         id=doc_id,
         user_id=user_id,
@@ -86,7 +81,6 @@ def save_and_extract_document(
     )
     db.session.add(doc)
 
-    # 6. Create page-level chunks for retrieval and question answering
     chunks_data = create_chunks(extraction.pages, extraction.sections)
     for c in chunks_data:
         chunk_model = DocumentChunk(
@@ -99,7 +93,6 @@ def save_and_extract_document(
         )
         db.session.add(chunk_model)
 
-    # 7. Segment document into discrete clauses with exact source text character offsets
     clauses_data = segment_clauses(
         extraction.full_text, extraction.pages, extraction.sections
     )

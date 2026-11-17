@@ -28,7 +28,6 @@ def extract_document_parties(preamble_text: str) -> list[str]:
     found_roles: list[str] = []
     preamble_lower = preamble_text.lower()
 
-    # Check for known role pairs
     for role_a, role_b in ROLE_PAIRS:
         has_a = role_a.lower() in preamble_lower
         has_b = role_b.lower() in preamble_lower
@@ -65,7 +64,6 @@ def detect_affected_party(
 
     text_lower = original_text.lower()
 
-    # 1. Direct party role mentions in prominent subject positions
     parties = document_parties or [
         "Employee",
         "Tenant",
@@ -79,7 +77,6 @@ def detect_affected_party(
         "Lender",
     ]
 
-    # Check for specific one-sided covenants
     if "employee shall" in text_lower or "employee agrees" in text_lower:
         return "Employee"
     if "tenant shall" in text_lower or "tenant agrees" in text_lower:
@@ -113,7 +110,6 @@ def detect_affected_party(
     if len(matched_parties) == 1:
         return matched_parties[0]
     elif len(matched_parties) > 1:
-        # Check which one appears with modal verbs
         for p in matched_parties:
             if re.search(
                 rf"\b{re.escape(p)}\s+(?:shall|must|agrees|warrants)\b",

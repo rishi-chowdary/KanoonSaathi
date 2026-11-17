@@ -28,11 +28,6 @@ from app.services.document_service import (
 documents_bp = Blueprint("documents", __name__)
 
 
-# -----------------------------------------------------------------------------
-# Web Views (Jinja2 Templates)
-# -----------------------------------------------------------------------------
-
-
 @documents_bp.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
@@ -146,11 +141,6 @@ def delete_view(doc_id: str):
         abort(404)
     flash("Document deleted successfully.", "info")
     return redirect(url_for("documents.list_view"))
-
-
-# -----------------------------------------------------------------------------
-# REST API Endpoints (Grounded Backend & Test Clients)
-# -----------------------------------------------------------------------------
 
 
 @documents_bp.route("/api/documents/upload", methods=["POST"])
@@ -472,11 +462,6 @@ def api_risk_distribution(doc_id: str):
     return jsonify(distribution), 200
 
 
-# -----------------------------------------------------------------------------
-# Interactive Chat & Extractive QA Endpoints
-# -----------------------------------------------------------------------------
-
-
 @documents_bp.route("/api/documents/<doc_id>/chat", methods=["POST"])
 @csrf.exempt
 def api_chat_send(doc_id: str):
@@ -570,11 +555,6 @@ def api_chat_delete_conversation(doc_id: str, conversation_id: str):
         return jsonify({"error": "Conversation not found"}), 404
 
     return "", 204
-
-
-# -----------------------------------------------------------------------------
-# ReportLab PDF Report Export
-# -----------------------------------------------------------------------------
 
 
 @documents_bp.route("/documents/<doc_id>/report", methods=["GET"])

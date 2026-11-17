@@ -7,17 +7,14 @@ from app.extensions import db
 
 
 def generate_uuid() -> str:
-    """Generate a clean RFC 4122 UUID4 string."""
     return str(uuid.uuid4())
 
 
 def utc_now() -> datetime:
-    """Return current timestamp in UTC without timezone offset for clean MySQL storage."""
     return datetime.now(UTC).replace(tzinfo=None)
 
 
 class TimestampMixin:
-    """Standard audit timestamps for all persistent entities."""
 
     created_at = db.Column(DateTime, default=utc_now, nullable=False)
     updated_at = db.Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)

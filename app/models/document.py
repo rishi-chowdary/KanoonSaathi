@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class Document(db.Model, TimestampMixin):
-    """Uploaded contract document metadata and processing state."""
 
     __tablename__ = "documents"
 

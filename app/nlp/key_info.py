@@ -64,7 +64,6 @@ class ContractKeyInfoResult:
 
 
 def _find_page_for_span(start_char: int, pages: list[PageData]) -> int:
-    """Determine the source page index for a character offset in full text."""
     if not pages:
         return 1
     running = 0
@@ -93,21 +92,16 @@ def extract_contract_key_info(
     ]
     sentences = legal_sentence_tokenizer.tokenize(full_text)
 
-    # -------------------------------------------------------------------------
-    # 1. Dates: Start Date, End Date, Renewal Date & Important Dates
-    # -------------------------------------------------------------------------
     found_dates: list[tuple[str, int, str]] = []  # (date_str, page, sentence)
     for sent in sentences:
         for match in DATE_REGEX.finditer(sent):
             date_str = match.group(0).strip()
-            # Calculate offset to get source page
             sent_pos = full_text.find(sent)
             char_offset = sent_pos + match.start() if sent_pos >= 0 else 0
             page = _find_page_for_span(char_offset, page_list)
             found_dates.append((date_str, page, sent.strip()))
 
     if found_dates:
-        # Build important_dates list
         for d_str, pg, sn in found_dates:
             key_facts.important_dates.append(
                 {
@@ -175,9 +169,6 @@ def extract_contract_key_info(
             )
             break
 
-    # -------------------------------------------------------------------------
-    # 2. Contract Amount
-    # -------------------------------------------------------------------------
     # Primary amounts: salary, rent, principal, contract fees
     candidate_amounts: list[tuple[float, str, int, str]] = (
         []
@@ -267,9 +258,6 @@ def extract_contract_key_info(
             evidence_quote=best[3],
         )
 
-    # -------------------------------------------------------------------------
-    # 3. Payment Deadlines
-    # -------------------------------------------------------------------------
     for sent in sentences:
         sent_lower = sent.lower()
         if (
@@ -296,9 +284,6 @@ def extract_contract_key_info(
         if key_facts.payment_deadlines.value != NOT_SPECIFIED:
             break
 
-    # -------------------------------------------------------------------------
-    # 4. Penalties / Late Charges
-    # -------------------------------------------------------------------------
     for sent in sentences:
         sent_lower = sent.lower()
         if any(
@@ -325,9 +310,6 @@ def extract_contract_key_info(
                 )
                 break
 
-    # -------------------------------------------------------------------------
-    # 5. Notice Period
-    # -------------------------------------------------------------------------
     for sent in sentences:
         sent_lower = sent.lower()
         if "notice" in sent_lower:
@@ -350,9 +332,6 @@ def extract_contract_key_info(
                 )
                 break
 
-    # -------------------------------------------------------------------------
-    # 6. Termination Conditions
-    # -------------------------------------------------------------------------
     for sent in sentences:
         sent_lower = sent.lower()
         if "terminate" in sent_lower and (

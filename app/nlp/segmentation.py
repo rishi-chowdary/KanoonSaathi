@@ -68,7 +68,6 @@ class DocumentChunkData:
 
 
 def estimate_tokens(text: str) -> int:
-    """Heuristic token estimation (~4 characters per English token)."""
     return max(1, len(text) // 4)
 
 
@@ -125,7 +124,6 @@ def segment_clauses(
     page_offsets = build_page_offset_map(pages, full_text)
     clauses: list[SegmentedClause] = []
 
-    # 1. Heading-based segmentation when sections are detected
     if sections:
         # Locate exact starting offset of each section heading in full_text
         section_spans: list[tuple[int, SectionHeader]] = []
@@ -145,7 +143,6 @@ def segment_clauses(
                     section_spans.append((idx, sec))
                     search_start = idx + len(head)
 
-        # Sort found section spans by starting position
         section_spans.sort(key=lambda s: s[0])
 
         # If there is meaningful introductory preamble before the first section
@@ -176,7 +173,6 @@ def segment_clauses(
             if not clause_slice:
                 continue
 
-            # Compute precise trimmed boundaries in full_text
             actual_start = full_text.find(clause_slice, start_idx)
             actual_end = actual_start + len(clause_slice)
             source_page = get_page_for_offset(actual_start, page_offsets)

@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class ChatConversation(db.Model, TimestampMixin):
-    """Conversation thread associated with a specific contract document and user."""
 
     __tablename__ = "chat_conversations"
 
@@ -47,7 +46,6 @@ class ChatConversation(db.Model, TimestampMixin):
 
 
 class ChatMessage(db.Model, TimestampMixin):
-    """Individual Q&A turn with role, answer text, structured page citations, and grounding status."""
 
     __tablename__ = "chat_messages"
 

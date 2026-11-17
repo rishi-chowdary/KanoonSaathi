@@ -57,7 +57,6 @@ def generate_extractive_summary(
     ]
     raw_sentences = legal_sentence_tokenizer.tokenize(full_text)
 
-    # 1. Candidate Sentence Filtering
     candidates: list[tuple[str, int, int]] = []  # (sentence, char_offset, page_number)
     for sent in raw_sentences:
         clean = sent.strip()
@@ -106,26 +105,22 @@ def generate_extractive_summary(
             financial_terms_summary=[],
         )
 
-    # 2. SBERT Dense Embeddings
     model = get_sentence_transformer()
     candidate_texts = [c[0] for c in candidates]
     embs = model.encode(candidate_texts, convert_to_numpy=True)
     if embs.ndim == 1:
         embs = embs.reshape(1, -1)
 
-    # Normalize vectors
     norms = np.linalg.norm(embs, axis=1, keepdims=True)
     norms[norms == 0] = 1.0
     norm_embs = embs / norms
 
-    # 3. Document Centroid & Centrality Scoring
     centroid = np.mean(norm_embs, axis=0)
     c_norm = np.linalg.norm(centroid)
     if c_norm > 0:
         centroid = centroid / c_norm
     centrality_scores = np.dot(norm_embs, centroid)
 
-    # 4. Maximal Marginal Relevance (MMR) Selection
     # lambda_param = 0.65 balances document centrality with sentence diversity
     lambda_param = 0.65
     selected_indices: list[int] = []
@@ -160,7 +155,6 @@ def generate_extractive_summary(
 
         selected_indices.append(best_candidate)
 
-    # Sort selected sentences in chronological order of appearance in contract
     short_indices = sorted(
         selected_indices[: min(3, len(selected_indices))],
         key=lambda i: candidates[i][1],
@@ -173,14 +167,12 @@ def generate_extractive_summary(
     summary_short = " ".join(short_sentences)
     summary_detailed = "\n\n".join(detailed_sentences)
 
-    # 5. Purpose Synthesis
     parties_str = " and ".join(parties) if parties else "the contracting parties"
     purpose = (
         f"Establishes a legally binding {document_type.lower()} defining rights, obligations, "
         f"and operational conditions between {parties_str}."
     )
 
-    # 6. Structured Summary Sections
     main_conditions: list[dict] = []
     obligations_summary: list[dict] = []
     financial_terms_summary: list[dict] = []

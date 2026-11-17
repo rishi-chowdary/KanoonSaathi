@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class MissingClauseWarning(db.Model, TimestampMixin):
-    """Warning alerting to missing standard clauses expected for the document type."""
 
     __tablename__ = "missing_clause_warnings"
 

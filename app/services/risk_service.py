@@ -25,13 +25,11 @@ def process_document_risks_and_missing(
     full_text: str,
 ) -> tuple[list[RiskFinding], list[MissingClauseWarning]]:
     """Evaluate contract risks and missing provisions, persisting findings to database."""
-    # 1. Determine if governing law is explicitly established
     governing_law_stated = any(
         c.category == "GOVERNING_LAW" or "governing law" in c.title.lower()
         for c in clauses
     )
 
-    # 2. Detect contractual risks
     risk_dicts = detect_clause_risks(
         clauses=clauses,
         full_text=full_text,
@@ -63,14 +61,12 @@ def process_document_risks_and_missing(
         db.session.add(risk_model)
         created_risks.append(risk_model)
 
-    # 3. Detect missing expected provisions
     missing_dicts = detect_missing_provisions(
         clauses=clauses,
         document_type=analysis.document_type or "",
         full_text=full_text,
     )
 
-    # Clear previous missing warnings
     MissingClauseWarning.query.filter_by(analysis_id=analysis.id).delete()
 
     created_missing: list[MissingClauseWarning] = []

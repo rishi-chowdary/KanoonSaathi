@@ -131,11 +131,6 @@ def profile():
     return render_template("auth/profile.html", form=form, stats=stats)
 
 
-# -----------------------------------------------------------------------------
-# REST API endpoints for backwards compatibility and automated testing
-# -----------------------------------------------------------------------------
-
-
 @auth_bp.route("/api/auth/register", methods=["POST"])
 @csrf.exempt
 def api_register():

@@ -324,7 +324,6 @@ CONDITION_PATTERNS = [
 
 @lru_cache(maxsize=1)
 def get_glossary() -> dict[str, dict[str, str]]:
-    """Load the legal terms glossary from data/glossary.yaml. Cached singleton."""
     if not os.path.exists(_GLOSSARY_PATH):
         return {}
     with open(_GLOSSARY_PATH, encoding="utf-8") as f:
@@ -334,7 +333,6 @@ def get_glossary() -> dict[str, dict[str, str]]:
 
 @lru_cache(maxsize=1)
 def get_sorted_glossary_terms() -> list[tuple[str, str, str, str]]:
-    """Return glossary terms sorted by string length descending (term, plain_replacement, definition, category)."""
     glossary = get_glossary()
     items = []
     for term, meta in glossary.items():
@@ -394,7 +392,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 2. Unilateral Modification
     if re.search(
         r"\b(sole discretion|reserves the right to (?:modify|amend|alter|change)|without (?:prior )?notice)\b",
         text_lower,
@@ -407,7 +404,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 3. Automatic Renewal / Evergreen
     if re.search(
         r"\b(automatically renew|perpetual|evergreen|automatic extension)\b", text_lower
     ):
@@ -419,7 +415,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 4. Short Notice / Cure Window (<= 7 days)
     cure_match = re.search(
         r"\b(?:within|prior to)\s+(\d+|three|five|seven)\s+(?:business\s+)?days\b",
         text_lower,
@@ -435,7 +430,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 5. Waiver of Jury Trial or Class Action
     if re.search(
         r"\b(waive(?:s)? (?:any )?right to (?:a )?jury trial|class action waiver|no jury trial)\b",
         text_lower,
@@ -448,7 +442,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 6. Liquidated Damages / Forfeiture
     if re.search(
         r"\b(liquidated damages|forfeited as liquidated damages|penalty amount)\b",
         text_lower,
@@ -461,7 +454,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 7. Broad Restrictive Scope (> 1 year or worldwide)
     if re.search(
         r"\b(non-compete|non-competition|restrictive covenant)\b", text_lower
     ) and (
@@ -476,7 +468,6 @@ def detect_traps_and_nuances(text: str) -> list[dict[str, str]]:
             }
         )
 
-    # 8. Broad Confidentiality Survival in Perpetuity
     if re.search(r"\b(confidentiality|non-disclosure)\b", text_lower) and re.search(
         r"\b(in perpetuity|indefinitely|without limitation of time|survive forever)\b",
         text_lower,
@@ -499,11 +490,9 @@ def lexical_simplify(text: str) -> str:
 
     out = text
 
-    # 1. Apply phrase replacements first (multi-word patterns)
     for pattern, repl in LEGALESE_REPLACEMENTS:
         out = pattern.sub(repl, out)
 
-    # 2. Apply single-word glossary replacements where appropriate
     terms = get_sorted_glossary_terms()
     for term, plain, _, _ in terms:
         # Only substitute if plain replacement is concise (<= 3 words) and different
@@ -532,7 +521,6 @@ def verify_preservation(original_text: str, candidate_text: str) -> bool:
     if orig_has_neg and not cand_has_neg:
         return False
 
-    # 2. Condition Check
     orig_has_cond = any(p.search(original_text) for p in CONDITION_PATTERNS)
     cand_has_cond = any(
         re.search(
@@ -637,10 +625,8 @@ def simplify_simple_english(
     if not original_text or not original_text.strip():
         return ""
 
-    # 1. Lexical and phrase substitutions
     simplified = lexical_simplify(original_text)
 
-    # 2. Sentence splitting and restructuring
     sentences = split_into_plain_sentences(simplified)
     simplified_text = " ".join(sentences)
     simplified_text = re.sub(r"\s+", " ", simplified_text)
@@ -670,7 +656,6 @@ def simplify_detailed(
         else "The responsible party"
     )
 
-    # Extract numbers or deadlines from the clause
     days_match = re.findall(
         r"\b(\d+|thirty|sixty|ninety|ten|fifteen)\s+(?:business\s+)?days\b",
         original_text,
@@ -748,7 +733,6 @@ def simplify_professional(
         else "Contracting Party"
     )
 
-    # 1. Detect Obligation Type
     is_prohibition = bool(
         re.search(
             r"\b(shall not|must not|may not|prohibited|refrain)\b",
@@ -771,7 +755,6 @@ def simplify_professional(
     else:
         core_type = "Declaratory Covenant / Procedural Condition"
 
-    # 2. Extract Conditions / Triggers
     cond_match = re.search(
         r"\b(?:in the event(?: that)?|upon|if|subject to|provided that)\s+([^,.;]{10,80})",
         original_text,
@@ -783,7 +766,6 @@ def simplify_professional(
         else "Immediate upon execution / standard operation"
     )
 
-    # 3. Extract Exceptions / Carve-Outs
     exc_match = re.search(
         r"\b(?:except|unless|other than|excluding|provided however that)\s+([^,.;]{10,80})",
         original_text,
@@ -795,7 +777,6 @@ def simplify_professional(
         else "None explicitly stated in this clause"
     )
 
-    # 4. Extract Deadlines / Timelines
     time_match = re.search(
         r"\b(?:within|prior to|after|on or before)\s+([^,.;]{5,50})",
         original_text,
@@ -807,7 +788,6 @@ def simplify_professional(
         else "Standard business practice / Not specified"
     )
 
-    # 5. Extract Remedies / Consequences
     rem_match = re.search(
         r"\b(injunction|injunctive relief|liquidated damages|terminate|damages|attorney(?:s')? fees)\b",
         original_text,
@@ -819,7 +799,6 @@ def simplify_professional(
         else "Breach of contract damages and statutory remedies"
     )
 
-    # 6. Concise Summary of Duty
     lex_duty = lexical_simplify(original_text)
     short_duty = lex_duty.split(".")[0].strip()
     if len(short_duty) > 140:
@@ -862,12 +841,10 @@ def simplify_clause(
     detailed = simplify_detailed(original_text, category, affected_party)
     professional = simplify_professional(original_text, category, affected_party)
 
-    # Calculate readability before and after
     read_orig = calculate_readability(original_text)
     read_simple = calculate_readability(simple_eng)
     read_detailed = calculate_readability(detailed)
 
-    # Detect glossary terms and nuances
     glossary_terms = extract_clause_glossary(original_text)
     traps = detect_traps_and_nuances(original_text)
 

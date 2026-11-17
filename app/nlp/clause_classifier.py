@@ -83,7 +83,6 @@ def _load_prototypes() -> dict[str, np.ndarray]:
 
 
 def _rule_score(title: str, text: str) -> dict[str, float]:
-    """Compute rule-based keyword match scores for each standard category."""
     rules = _load_rules()
     title_lower = title.lower()
     text_lower = text.lower()[:1500]
@@ -106,7 +105,6 @@ def _rule_score(title: str, text: str) -> dict[str, float]:
 
         scores[cat] = score
 
-    # Normalize to [0, 1]
     max_val = max(scores.values()) if scores else 0.0
     if max_val > 0:
         return {cat: val / max_val for cat, val in scores.items()}
@@ -114,7 +112,6 @@ def _rule_score(title: str, text: str) -> dict[str, float]:
 
 
 def _sbert_score(title: str, text: str) -> dict[str, float]:
-    """Compute SBERT cosine similarity scores against prototype representations."""
     prototypes = _load_prototypes()
     if not prototypes:
         return {cat: 0.0 for cat in STANDARD_CATEGORIES}
@@ -142,7 +139,6 @@ def _sbert_score(title: str, text: str) -> dict[str, float]:
 
 
 def _hf_score(title: str, text: str) -> dict[str, float] | None:
-    """Compute classification probabilities with fine-tuned Hugging Face model if available."""
     model, tokenizer = get_clause_hf_classifier()
     if model is None or tokenizer is None:
         return None
@@ -184,12 +180,10 @@ def classify_clause(
     sbert_scores = _sbert_score(title, original_text)
     hf_scores = _hf_score(title, original_text)
 
-    # 1. Preamble and Recitals check
     title_norm = title.lower().strip()
     if any(k in title_norm for k in ["preamble", "recital", "witnesseth"]):
         return "Other", "Preamble and Recitals", 0.95, {"Other": 1.0}
 
-    # 2. Check for explicit "Other" clauses (e.g., Definitions, Position/Scope, Maintenance)
     if "definitions" in title_norm or "definition of" in title_norm:
         return "Other", "Definitions", 0.90, {"Other": 0.9}
     if "position and scope" in title_norm or "scope of duties" in title_norm:
@@ -203,7 +197,6 @@ def classify_clause(
     if "property description" in title_norm:
         return "Other", "Property Description", 0.90, {"Other": 0.9}
 
-    # 3. Combine model probabilities
     ensemble_scores: dict[str, float] = {}
     if hf_scores is not None:
         # Full 3-component ensemble: 0.40 DistilBERT + 0.35 SBERT + 0.25 Rules

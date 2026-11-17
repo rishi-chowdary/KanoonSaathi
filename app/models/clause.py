@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class ExtractedClause(db.Model, TimestampMixin):
-    """Extracted legal clause with classifications, 3-mode explanations, and evidence quote."""
 
     __tablename__ = "extracted_clauses"
 

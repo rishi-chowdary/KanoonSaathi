@@ -3,7 +3,6 @@ from app.models.base import TimestampMixin, generate_uuid
 
 
 class ExtractedInformation(db.Model, TimestampMixin):
-    """Structured contract metadata: amounts, critical dates, deadlines, and parties."""
 
     __tablename__ = "extracted_information"
 

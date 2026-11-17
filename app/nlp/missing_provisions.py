@@ -48,7 +48,6 @@ DOC_TYPE_MAPPING = {
 
 @lru_cache(maxsize=1)
 def load_expected_provisions() -> dict[str, Any]:
-    """Load expected contract provision checklists from data/expected_provisions.yaml."""
     if not os.path.exists(_CHECKLIST_PATH):
         return {}
     with open(_CHECKLIST_PATH, encoding="utf-8") as f:
@@ -57,7 +56,6 @@ def load_expected_provisions() -> dict[str, Any]:
 
 
 def normalize_document_type(doc_type_str: str) -> str:
-    """Normalize freeform document type to standard checklist key."""
     if not doc_type_str:
         return "GENERAL_CONTRACT"
     clean = doc_type_str.lower().strip()
@@ -160,7 +158,6 @@ def detect_missing_provisions(
     ]
     combined_corpus = full_text or " ".join(clause_texts)
 
-    # Pre-embed clauses if present
     clause_embs = None
     if clause_texts:
         clause_embs = sbert.encode(clause_texts, normalize_embeddings=True)
@@ -176,15 +173,12 @@ def detect_missing_provisions(
         typical_provision = provision["typical_provision"]
         prototypes = provision.get("prototype_phrases", [])
 
-        # 1. Keyword check
         if check_keyword_presence(prov_id, combined_corpus):
             continue
 
-        # 2. Semantic similarity check against prototype phrases
         is_present_semantically = False
         if clause_embs is not None and len(clause_embs) > 0 and prototypes:
             proto_embs = sbert.encode(prototypes, normalize_embeddings=True)
-            # Compute cross similarity matrix
             sim_matrix = np.dot(proto_embs, clause_embs.T)
             max_sim = float(np.max(sim_matrix))
 
@@ -204,7 +198,6 @@ def detect_missing_provisions(
                 }
             )
 
-    # Sort: HIGH > MEDIUM > LOW
     severity_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
     missing_findings.sort(key=lambda x: severity_order.get(x["risk_level"], 3))
 
