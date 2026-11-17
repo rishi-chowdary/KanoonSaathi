@@ -8,3 +8,4 @@ public record ChatRetrievedChunkDto(
     @JsonProperty("content") String content,
     @JsonProperty("section_ref") String sectionRef
 ) {}
+

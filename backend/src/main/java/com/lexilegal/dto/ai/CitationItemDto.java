@@ -8,3 +8,4 @@ public record CitationItemDto(
     String quote,
     @JsonProperty("quote_verified") Boolean quoteVerified
 ) {}
+

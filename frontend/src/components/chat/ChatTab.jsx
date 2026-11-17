@@ -453,3 +453,4 @@ export default function ChatTab({ documentId, onSelectPage = null }) {
     </div>
   );
 }
+

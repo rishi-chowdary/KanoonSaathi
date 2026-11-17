@@ -12,3 +12,4 @@ public record ChatConversationResponse(
     Integer messageCount,
     ChatMessageResponse lastMessage
 ) {}
+

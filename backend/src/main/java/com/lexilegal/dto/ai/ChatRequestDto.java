@@ -8,3 +8,4 @@ public record ChatRequestDto(
     @JsonProperty("retrieved_chunks") List<ChatRetrievedChunkDto> retrievedChunks,
     @JsonProperty("conversation_history") List<ChatMessageHistoryDto> conversationHistory
 ) {}
+

@@ -13,3 +13,4 @@ public record ChatMessageResponse(
     Boolean addressedInDocument,
     Instant createdAt
 ) {}
+

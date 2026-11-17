@@ -10,3 +10,4 @@ public record ChatQuestionRequest(
     @Size(max = 2000, message = "question must not exceed 2000 characters")
     String message
 ) {}
+

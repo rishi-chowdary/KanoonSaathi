@@ -9,3 +9,4 @@ public record ChatResponseDto(
     String confidence,
     @JsonProperty("addressed_in_document") Boolean addressedInDocument
 ) {}
+

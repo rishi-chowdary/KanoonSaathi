@@ -1,0 +1,230 @@
+{
+  "total_questions": 15,
+  "total_answerable": 10,
+  "total_unanswerable": 5,
+  "answer_correctness_rate": 100.0,
+  "citation_page_accuracy": 100.0,
+  "correctly_said_not_found_rate": 100.0,
+  "probe_a_nonexistent_clause_passed": true,
+  "probe_b_leading_question_passed": true,
+  "probe_c_ignore_instructions_passed": true,
+  "injection_document_probe_passed": true,
+  "multiturn_probe_passed": true,
+  "results": [
+    {
+      "id": "q1_rental_rent",
+      "question": "What is the monthly rent amount and when is it due?",
+      "is_answerable": true,
+      "answer": "The monthly rent amount is ,400.00, and it is payable in advance on or before the first (1st) day of each calendar month.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 1,
+          "section_ref": "Section 2. Monthly Rent and Payment Terms",
+          "quote": "Tenant agrees to pay Landlord a monthly rent of ,400.00, payable in advance on or before the first (1st) day of each calenda",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q2_rental_deposit",
+      "question": "How much security deposit must the tenant provide?",
+      "is_answerable": true,
+      "answer": "The tenant must provide a security deposit in the sum of $2,400.00 upon the execution of the agreement.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 1,
+          "section_ref": "Section 3. Security Deposit",
+          "quote": "Upon execution of this Agreement, Tenant shall deposit with Landlord the sum of ,400.00 as a security deposit.",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q3_rental_sublet",
+      "question": "Can the tenant sublet the premises without the landlord's consent?",
+      "is_answerable": true,
+      "answer": "The document does not appear to address whether the tenant can sublet with or without consent, as the text regarding assignment and subletting is cut off.",
+      "confidence": "partially supported",
+      "citations": [
+        {
+          "page": 1,
+          "section_ref": "Section 4. Use of Premises and Assignment",
+          "quote": "Tenant shall not assign this lease, sublet the premises,",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q4_rental_cure",
+      "question": "What is the cure period if the tenant defaults before eviction can occur?",
+      "is_answerable": true,
+      "answer": "In the event of non-payment of rent or a material violation of lease covenants, the lease specifies a cure period of fourteen (14) days after notice before termination and default provisions apply.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 2,
+          "section_ref": "Section 6. Termination and Default",
+          "quote": "In the event of non-payment of rent or material violation of lease covenants that remains uncured for fourteen (14) days afte",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q5_rental_governing_law",
+      "question": "Which state's laws govern this residential lease?",
+      "is_answerable": true,
+      "answer": "This Residential Lease Agreement is governed by the laws of the State of Illinois.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 2,
+          "section_ref": "Section 7. Governing Law",
+          "quote": "This Agreement shall be governed by, construed, and enforced in accordance with the laws of the State of Illinois.",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q6_nda_term",
+      "question": "How long do the confidentiality obligations remain in effect?",
+      "is_answerable": true,
+      "answer": "The agreement remains in effect for a term of three (3) years from the Effective Date.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 2,
+          "section_ref": "3. Term and Termination",
+          "quote": "This Agreement shall remain in effect for a term of three (3) years from the Effective Date.",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q7_nda_governing_law",
+      "question": "What governing law applies to this non-disclosure agreement?",
+      "is_answerable": true,
+      "answer": "This Agreement is governed by and construed in accordance with the laws of the State of Delaware.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 2,
+          "section_ref": "4. Governing Law and Jurisdiction",
+          "quote": "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q8_one_sided_renewal",
+      "question": "How many days notice are required to prevent automatic renewal of the agreement?",
+      "is_answerable": true,
+      "answer": "To prevent the automatic renewal of the agreement, the Customer must provide written notice of non-renewal at least 180 days prior to the expiration of the current term exclusively via certified mail.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 1,
+          "section_ref": "Section 3. Term and Automatic Renewal Trap",
+          "quote": "unless Customer provides written notice of non-renewal at least one hundred eighty (180) days prior to the expiration of the current term exclusively via certified mail.",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q9_one_sided_liability_cap",
+      "question": "What is the vendor's total aggregate liability limit under the contract?",
+      "is_answerable": true,
+      "answer": "Vendor's total aggregate liability arising out of or relating to the agreement shall not exceed one hundred dollars ($100.00).",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 2,
+          "section_ref": "Section 6. Limitation of Vendor Liability",
+          "quote": "In no event shall Vendor's total aggregate liability arising out of or relating to this Agreement exceed one hundred dollars ($100.00).",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q10_one_sided_late_charges",
+      "question": "What late fee and interest rate apply to overdue payments?",
+      "is_answerable": true,
+      "answer": "If the Customer fails to remit payment within three calendar days of the invoice date, late interest accrues at 2.5% per month, compounded daily on the outstanding balance, along with a mandatory $500.00 administrative fee per delinquent notice.",
+      "confidence": "supported",
+      "citations": [
+        {
+          "page": 1,
+          "section_ref": "Section 2. Fees, Invoicing, and Compounding Late Charges",
+          "quote": "If Customer fails to remit payment within three (3) calendar days of the invoice date, late interest shall accrue at 2.5% per month, compounded daily on the outstanding balance, alongside a mandatory $500.00 administrative fee per delinquent notice.",
+          "quote_verified": true
+        }
+      ],
+      "ans_correct": true,
+      "page_correct": true
+    },
+    {
+      "id": "q11_rental_non_compete",
+      "question": "What post-employment non-compete restrictions are placed on the tenant?",
+      "is_answerable": false,
+      "answer": "The document does not appear to address this question.",
+      "confidence": "not found",
+      "citations": [],
+      "is_honest_not_found": true
+    },
+    {
+      "id": "q12_rental_pet_policy",
+      "question": "What is the specific fee and pet deposit for keeping exotic reptiles?",
+      "is_answerable": false,
+      "answer": "The document does not appear to address this question.",
+      "confidence": "not found",
+      "citations": [],
+      "is_honest_not_found": true
+    },
+    {
+      "id": "q13_nda_payment_terms",
+      "question": "What late interest rate is charged if payment is delayed under this agreement?",
+      "is_answerable": false,
+      "answer": "The document does not appear to address this question.",
+      "confidence": "not found",
+      "citations": [],
+      "is_honest_not_found": true
+    },
+    {
+      "id": "q14_nda_solicitation",
+      "question": "Are there non-solicitation restrictions preventing the hiring of technical staff?",
+      "is_answerable": false,
+      "answer": "The document does not appear to address this question.",
+      "confidence": "not found",
+      "citations": [],
+      "is_honest_not_found": true
+    },
+    {
+      "id": "q15_one_sided_health_benefits",
+      "question": "What medical and dental insurance benefits are provided to customer personnel?",
+      "is_answerable": false,
+      "answer": "The document does not appear to address this question.",
+      "confidence": "not found",
+      "citations": [],
+      "is_honest_not_found": true
+    }
+  ]
+}

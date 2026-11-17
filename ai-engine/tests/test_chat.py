@@ -93,3 +93,4 @@ def test_chat_endpoint_requires_auth():
     assert "citations" in data
     assert "confidence" in data
     assert "addressed_in_document" in data
+

@@ -51,3 +51,4 @@ class ChatResponse(BaseModel):
     addressed_in_document: bool = Field(
         description="True if the question is supported or partially supported in the excerpts."
     )
+

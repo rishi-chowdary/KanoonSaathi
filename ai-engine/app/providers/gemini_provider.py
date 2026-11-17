@@ -43,8 +43,8 @@ class GeminiProvider(LLMProvider):
                 "Gemini API key is not configured. Please supply GEMINI_API_KEY in .env or switch to Ollama."
             )
 
-        max_retries = 3
-        base_delay = 1.5
+        max_retries = 5
+        base_delay = 2.0
 
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
@@ -85,7 +85,10 @@ class GeminiProvider(LLMProvider):
                 is_retryable = status_code in (429, 500, 502, 503, 504)
 
                 if is_retryable and attempt < max_retries:
-                    delay = base_delay * (2 ** attempt) + random.uniform(0.1, 0.5)
+                    if status_code == 429:
+                        delay = max(base_delay * (2 ** attempt), 8.0 + (attempt * 4.0)) + random.uniform(0.5, 1.5)
+                    else:
+                        delay = base_delay * (2 ** attempt) + random.uniform(0.1, 0.5)
                     logger.warning(
                         "gemini call failed with HTTP %s (attempt %d/%d). Retrying in %.2f seconds. Error: %s",
                         status_code,

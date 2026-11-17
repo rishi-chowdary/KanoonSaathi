@@ -4,3 +4,4 @@ public record ChatMessageHistoryDto(
     String role,
     String content
 ) {}
+

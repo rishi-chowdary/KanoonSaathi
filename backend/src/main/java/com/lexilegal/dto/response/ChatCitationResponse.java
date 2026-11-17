@@ -6,3 +6,4 @@ public record ChatCitationResponse(
     String quote,
     Boolean quoteVerified
 ) {}
+
