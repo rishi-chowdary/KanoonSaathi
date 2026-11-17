@@ -57,6 +57,9 @@ def get_sentence_transformer():
     return _sentence_model
 
 
+get_sbert = get_sentence_transformer
+
+
 def get_clause_hf_classifier() -> tuple[Any | None, Any | None]:
     """Retrieve fine-tuned Hugging Face clause classification model and tokenizer if present.
 

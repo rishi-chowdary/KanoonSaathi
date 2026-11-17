@@ -2,6 +2,11 @@
 
 {% block title %}{{ document.original_filename }} — LexiLegal AI{% endblock %}
 
+{% block extra_head %}
+<script src="{{ url_for('static', filename='vendor/chart.js') }}"></script>
+{% endblock %}
+
+
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
   <div>
@@ -91,10 +96,17 @@
   <button type="button" class="tab-btn" data-tab="clauses-tab">
     Extracted Clauses ({{ clauses|length if clauses else 0 }})
   </button>
+  <button type="button" class="tab-btn" data-tab="risks-tab">
+    Risk Analysis ({{ risks|length if risks else 0 }})
+  </button>
+  <button type="button" class="tab-btn" data-tab="missing-tab">
+    Missing Provisions ({{ missing_warnings|length if missing_warnings else 0 }})
+  </button>
   <button type="button" class="tab-btn" data-tab="chunks-tab">
     Text Chunks ({{ chunks|length if chunks else 0 }})
   </button>
 </div>
+
 
 <!-- Tab 1: Executive Summary -->
 <div id="summary-tab" class="tab-content active">
@@ -475,6 +487,190 @@
   {% endif %}
 </div>
 
+<!-- Tab: Grounded Risk Analysis -->
+<div id="risks-tab" class="tab-content">
+  {% if risks and risks|length > 0 %}
+    <!-- Chart.js Visualization Cards -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="risk-charts-grid">
+      <div class="card" style="padding: 1.25rem;">
+        <h3 style="font-size: 1rem; margin: 0 0 1rem 0; font-family: var(--font-serif); color: var(--color-primary);">
+          Risks by Category
+        </h3>
+        <div style="position: relative; height: 220px; display: flex; justify-content: center;">
+          <canvas id="riskCategoryChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="padding: 1.25rem;">
+        <h3 style="font-size: 1rem; margin: 0 0 1rem 0; font-family: var(--font-serif); color: var(--color-primary);">
+          Risks by Severity Level
+        </h3>
+        <div style="position: relative; height: 220px; display: flex; justify-content: center;">
+          <canvas id="riskLevelChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Severity Filter Bar -->
+    <div class="clause-filters" style="margin-bottom: 1.25rem;">
+      <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 0.25rem;">Filter by Severity:</span>
+      <button type="button" class="filter-pill active risk-filter-pill" data-risk-level="ALL">All ({{ risks|length }})</button>
+      <button type="button" class="filter-pill risk-filter-pill" data-risk-level="HIGH" style="border-color: var(--color-danger); color: var(--color-danger);">High</button>
+      <button type="button" class="filter-pill risk-filter-pill" data-risk-level="MEDIUM" style="border-color: var(--color-warning); color: var(--color-warning);">Medium</button>
+      <button type="button" class="filter-pill risk-filter-pill" data-risk-level="LOW" style="border-color: var(--color-info); color: var(--color-info);">Low</button>
+      <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+        Rule 7 Compliant: Grounded advisory warnings (no definitive legal conclusions)
+      </div>
+    </div>
+
+    <!-- Risk Finding Cards -->
+    <div id="risk-cards-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      {% for risk in risks %}
+        <div class="card risk-card" data-level="{{ risk.level }}" style="border-left: 4px solid {% if risk.level == 'HIGH' %}var(--color-danger){% elif risk.level == 'MEDIUM' %}var(--color-warning){% else %}var(--color-info){% endif %};">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <div>
+              <div style="display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem;">
+                {% if risk.level == 'HIGH' %}
+                  <span class="badge badge-danger">High Risk</span>
+                {% elif risk.level == 'MEDIUM' %}
+                  <span class="badge badge-warning">Medium Risk</span>
+                {% else %}
+                  <span class="badge badge-info">Low Risk</span>
+                {% endif %}
+                <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
+                  {{ risk.category }}
+                </span>
+                <span class="badge" style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); color: var(--text-muted);">
+                  Page {{ risk.source_page }}
+                </span>
+                <span class="badge badge-success" title="Exact source quote">
+                  {{ risk.provenance }}
+                </span>
+              </div>
+              <h3 style="font-size: 1.15rem; margin: 0; font-family: var(--font-serif); color: var(--text-main);">
+                {{ risk.title }}
+              </h3>
+            </div>
+            {% if risk.jurisdiction_caveat %}
+              <span class="badge" style="background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid var(--color-warning-border); font-size: 0.75rem;">
+                ⚠️ Jurisdiction Dependent
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Evidence Quote -->
+          <div class="evidence-quote-box" style="margin-bottom: 1rem;">
+            &ldquo;{{ risk.evidence_quote }}&rdquo;
+            <div>
+              <span class="quote-verification-tag">
+                &#10003; Verified exact contract quote (Page {{ risk.source_page }})
+              </span>
+            </div>
+          </div>
+
+          <!-- Explanation & Consequences -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; font-size: 0.92rem;">
+            <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <strong style="color: var(--color-primary); display: block; margin-bottom: 0.35rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                Why This Matters
+              </strong>
+              <p style="margin: 0; color: var(--text-main); line-height: 1.5;">{{ risk.why_it_matters }}</p>
+            </div>
+            <div style="background: var(--bg-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <strong style="color: var(--color-danger); display: block; margin-bottom: 0.35rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                Potential Consequences
+              </strong>
+              <p style="margin: 0; color: var(--text-main); line-height: 1.5;">{{ risk.possible_consequences }}</p>
+            </div>
+          </div>
+
+          <!-- Suggested Questions to Ask -->
+          {% if risk.suggested_questions and risk.suggested_questions|length > 0 %}
+            <div style="border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+              <span style="font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">
+                Suggested Questions to Negotiate:
+              </span>
+              <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.88rem; color: var(--color-secondary); line-height: 1.5;">
+                {% for q in risk.suggested_questions %}
+                  <li>{{ q }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+      <p style="color: var(--color-success); font-weight: 600; margin-bottom: 0.5rem; font-size: 1.05rem;">
+        ✓ No significant contract risks detected for this document.
+      </p>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">
+        All analyzed clauses conform to typical commercial baselines.
+      </span>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Tab: Missing Expected Provisions -->
+<div id="missing-tab" class="tab-content">
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header">
+      <h2 class="card-title">Document-Type Standard Provision Checklist</h2>
+      <p class="card-subtitle">
+        Compares this document against standard commercial clauses expected for <strong>{{ analysis.document_type or 'this contract type' }}</strong>.
+      </p>
+    </div>
+
+    {% if missing_warnings and missing_warnings|length > 0 %}
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for missing in missing_warnings %}
+          <div style="background: var(--bg-surface-alt); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+              <div>
+                <span class="badge badge-warning" style="margin-right: 0.4rem;">
+                  {{ missing.label }}
+                </span>
+                <span class="badge" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted);">
+                  {{ missing.category }}
+                </span>
+                {% if missing.risk_level == 'HIGH' %}
+                  <span class="badge badge-danger">High Priority</span>
+                {% elif missing.risk_level == 'MEDIUM' %}
+                  <span class="badge badge-warning">Medium Priority</span>
+                {% else %}
+                  <span class="badge badge-info">Low Priority</span>
+                {% endif %}
+                <h3 style="font-size: 1.05rem; margin: 0.4rem 0 0 0; color: var(--text-main);">
+                  {{ missing.clause_name }}
+                </h3>
+              </div>
+            </div>
+
+            <div style="margin-top: 0.75rem; font-size: 0.9rem; line-height: 1.5;">
+              <p style="margin: 0 0 0.5rem 0; color: var(--text-main);">
+                <strong>Why it matters:</strong> {{ missing.why_it_matters }}
+              </p>
+              <div style="background: var(--bg-surface); padding: 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--color-secondary); font-size: 0.85rem; color: var(--text-muted);">
+                <strong>Standard industry practice:</strong> {{ missing.typical_provision }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 2rem 1rem;">
+        <p style="color: var(--color-success); font-weight: 600; margin-bottom: 0.25rem;">
+          ✓ All expected provisions present
+        </p>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">
+          This agreement contains all customary clauses expected for {{ analysis.document_type or 'its type' }}.
+        </span>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+
 <!-- Tab 4: Text Chunks -->
 <div id="chunks-tab" class="tab-content">
   <div class="card">
@@ -573,5 +769,91 @@
       applyClauseFilters();
     });
   });
+
+  // Risk Severity Filtering
+  const riskCards = document.querySelectorAll('.risk-card');
+  document.querySelectorAll('.risk-filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.risk-filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const level = pill.getAttribute('data-risk-level');
+      riskCards.forEach(card => {
+        if (level === 'ALL' || card.getAttribute('data-level') === level) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Chart.js Risk Distribution
+  let chartsInitialized = false;
+  function initRiskCharts() {
+    if (chartsInitialized || typeof Chart === 'undefined') return;
+    const catCanvas = document.getElementById('riskCategoryChart');
+    const levelCanvas = document.getElementById('riskLevelChart');
+    if (!catCanvas || !levelCanvas) return;
+
+    fetch('/api/documents/{{ document.id }}/risk-distribution')
+      .then(res => res.json())
+      .then(data => {
+        chartsInitialized = true;
+        // Category Doughnut Chart
+        const catLabels = Object.keys(data.byCategory || {});
+        const catValues = Object.values(data.byCategory || {});
+        if (catLabels.length > 0) {
+          new Chart(catCanvas, {
+            type: 'doughnut',
+            data: {
+              labels: catLabels,
+              datasets: [{
+                data: catValues,
+                backgroundColor: ['#b91c1c', '#b45309', '#2c5282', '#15803d', '#7c3aed', '#0891b2'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'right' } }
+            }
+          });
+        }
+
+        // Level Bar Chart
+        const levelData = data.byLevel || {};
+        new Chart(levelCanvas, {
+          type: 'bar',
+          data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+              label: 'Risks',
+              data: [levelData.HIGH || 0, levelData.MEDIUM || 0, levelData.LOW || 0],
+              backgroundColor: ['#b91c1c', '#b45309', '#2c5282'],
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      })
+      .catch(err => console.log('Chart load error:', err));
+  }
+
+  // Trigger chart initialization when risks tab is clicked
+  const risksTabBtn = document.querySelector('.tab-btn[data-tab="risks-tab"]');
+  if (risksTabBtn) {
+    risksTabBtn.addEventListener('click', () => {
+      setTimeout(initRiskCharts, 100);
+    });
+  }
 </script>
 {% endblock %}
+

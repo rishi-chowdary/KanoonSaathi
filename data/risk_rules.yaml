@@ -1,0 +1,225 @@
+# LexiLegal AI — Grounded Contract Risk Detection Rules
+# Categories: Financial, Legal, Privacy, Contractual, Employment, Liability
+# Levels: HIGH, MEDIUM, LOW, INFORMATIONAL
+
+rules:
+  - id: "FIN_SEVERE_LATE_FEE"
+    title: "Severe Late Charges and Accelerated Administrative Fees"
+    category: "Financial"
+    level: "HIGH"
+    patterns:
+      - "(?:2\\.5%|3%|5%|two and a half percent)\\s+per\\s+month"
+      - "compounded\\s+daily"
+      - "administrative\\s+fee\\s+per\\s+delinquent\\s+notice"
+      - "late\\s+interest\\s+shall\\s+accrue\\s+at\\s+[2-9]%\\s+per\\s+month"
+      - "due\\s+immediately\\s+upon\\s+receipt"
+    prototypes:
+      - "All invoices are due immediately upon receipt. Late interest shall accrue at 2.5% per month, compounded daily on the outstanding balance alongside a mandatory administrative fee per delinquent notice."
+      - "If customer fails to remit payment within three days, severe daily compounding late interest and administrative penalty fees apply."
+    explanation: "The payment window is unusually short, and late interest accrues at an elevated rate with daily compounding alongside per-notice penalty fees."
+    why_it_matters: "Even minor administrative delays in accounts payable could cause penalties and interest to compound rapidly into large sums."
+    possible_consequences: "Substantial unexpected financial liabilities accumulating quickly over routine invoicing disputes."
+    suggested_questions:
+      - "Can the payment grace period be extended to a standard commercial 30-day window?"
+      - "Can the late interest rate be capped at statutory rates without daily compounding?"
+
+  - id: "CONT_AUTO_RENEWAL_TRAP"
+    title: "Automatic Renewal Trap with Strict Notice Requirements"
+    category: "Contractual"
+    level: "MEDIUM"
+    patterns:
+      - "automatically\\s+renew(?:\\s+for\\s+successive\\s+terms)?\\s+of\\s+(?:two|three|four|five|2|3|4|5)\\s+years"
+      - "at\\s+least\\s+(?:90|120|180|one\\s+hundred\\s+eighty)\\s+days\\s+prior"
+      - "exclusively\\s+via\\s+certified\\s+mail"
+      - "automatic\\s+extension.*prior\\s+written\\s+notice"
+    prototypes:
+      - "This Agreement shall automatically renew for successive terms of three years each, unless written notice of non-renewal is provided at least 180 days prior exclusively via certified mail."
+      - "The contract renews automatically for multi-year periods unless certified mail notice is delivered six months in advance."
+    explanation: "The agreement renews automatically for multi-year commitments unless cancelled within an expansive advance notice window via restrictive delivery channels."
+    why_it_matters: "Missing a narrow administrative deadline locks your organization into prolonged multi-year contractual and financial commitments involuntarily."
+    possible_consequences: "Unwanted continuation of vendor fees and legal duties without convenient exit opportunities."
+    suggested_questions:
+      - "Can the renewal notice window be reduced to a standard 30 or 60 days?"
+      - "Can electronic written notice by email be permitted instead of strictly certified postal mail?"
+
+  - id: "CONT_UNILATERAL_MOD"
+    title: "Unilateral Modification of Terms and Fees"
+    category: "Contractual"
+    level: "HIGH"
+    patterns:
+      - "reserves\\s+the\\s+right\\s+to\\s+(?:modify|amend|alter|change|update).*sole\\s+discretion"
+      - "without\\s+(?:prior\\s+)?notice"
+      - "modify\\s+fees.*at\\s+any\\s+time"
+      - "amend\\s+these\\s+terms\\s+unilaterally"
+    prototypes:
+      - "Vendor reserves the right to modify, amend, or alter these terms and pricing at any time in its sole discretion without prior notice."
+      - "Company may unilaterally revise fees and operational terms upon posting updates to its public website."
+    explanation: "One party claims the unilateral right to alter agreement terms, pricing, or specifications at will without requiring mutual consent or advance notice."
+    why_it_matters: "The counterparty could increase pricing or diminish service commitments during the contract term without your approval."
+    possible_consequences: "Unexpected cost escalations and altered operational responsibilities with no contractual price protection."
+    suggested_questions:
+      - "Can any amendments or price increases require mutual written agreement signed by both parties?"
+      - "Can a 60-day advance notice requirement with termination rights upon price changes be included?"
+
+  - id: "LIAB_UNCAPPED_INDEMNITY"
+    title: "Uncapped and Unilateral Indemnification Obligation"
+    category: "Liability"
+    level: "HIGH"
+    patterns:
+      - "indemnif.*hold\\s+harmless.*from\\s+and\\s+against\\s+any\\s+and\\s+all\\s+claims"
+      - "indemnif.*without\\s+limitation"
+      - "indemnif.*attorney(?:s')?\\s+fees"
+    prototypes:
+      - "Customer shall indemnify, defend, and hold harmless Vendor from and against any and all claims, liabilities, damages, and attorney fees without limitation."
+      - "Customer agrees to defend and indemnify Vendor for all third-party lawsuits and losses arising from the use of the service."
+    explanation: "This clause creates an open-ended, one-sided duty to indemnify and pay legal defense fees for the other party without an aggregate monetary limit."
+    why_it_matters: "You could be obligated to reimburse substantial third-party legal claims and attorney fees even if your fault was minimal."
+    possible_consequences: "Unquantifiable financial exposure and heavy litigation defense burdens arising from external lawsuits."
+    suggested_questions:
+      - "Can this indemnification obligation be made mutual rather than unilateral?"
+      - "Can an aggregate dollar cap equal to the annual fees paid under this agreement be added?"
+
+  - id: "LIAB_DISPROPORTIONATE_CAP"
+    title: "Extreme Disproportion in Liability Limits and Warranty Disclaimers"
+    category: "Liability"
+    level: "HIGH"
+    patterns:
+      - "liability\\s+shall\\s+not\\s+exceed\\s+(?:the\\s+amount\\s+of\\s+)?\\$100"
+      - "aggregate\\s+liability.*limited\\s+to\\s+\\$[0-9]+(?:\\.[0-9]+)?\\b"
+      - "disclaims\\s+all\\s+warranties.*liability\\s+capped\\s+at\\s+\\$"
+    prototypes:
+      - "Vendor's total aggregate liability under this agreement shall under no circumstances exceed the sum of $100.00."
+      - "Company disclaims all warranties of any kind and caps its maximum liability at one hundred dollars."
+    explanation: "The counterparty disclaims standard performance warranties while capping their maximum aggregate liability at a nominal dollar amount, offering minimal recourse if they breach."
+    why_it_matters: "If the counterparty causes substantial business disruption or data loss, your legal recovery could be capped at negligible sums."
+    possible_consequences: "Severe financial losses with virtually no avenue to recover damages from the defaulting vendor."
+    suggested_questions:
+      - "Can the liability cap be increased to match 12 months of paid fees or the actual contract value?"
+      - "Can exceptions for gross negligence, intentional misconduct, and confidentiality breaches be carved out?"
+
+  - id: "CONT_UNILATERAL_TERMINATION"
+    title: "Unilateral Termination Rights and Acceleration of Future Fees"
+    category: "Contractual"
+    level: "HIGH"
+    patterns:
+      - "terminate\\s+immediately.*without\\s+cause.*accelerat"
+      - "upon\\s+termination.*all\\s+future\\s+(?:fees|payments)\\s+shall\\s+immediately\\s+become\\s+due"
+      - "terminate\\s+at\\s+will.*without\\s+notice"
+    prototypes:
+      - "Vendor may terminate this Agreement immediately for convenience without notice, upon which all future fees for the remainder of the term become immediately due."
+      - "Upon early termination, all unpaid fees for the entire multi-year term become immediately due and payable as liquidated damages."
+    explanation: "One party retains the asymmetrical right to cancel immediately without cause while demanding acceleration and payment of all future fees for the remaining contract term."
+    why_it_matters: "The counterparty can walk away from obligations while forcing you to pay for services you will not receive."
+    possible_consequences: "Immediate financial forfeiture and sudden disruption of operations without transition support."
+    suggested_questions:
+      - "Can termination for convenience require 60 days advance written notice by either party?"
+      - "Can fee acceleration clauses be removed so payments only cover services actually delivered?"
+
+  - id: "EMP_BROAD_NON_COMPETE"
+    title: "Extensive Non-Compete Scope and Post-Employment Restrictions"
+    category: "Employment"
+    level: "HIGH"
+    patterns:
+      - "non-compete.*(?:two|three|five|2|3|5)\\s+years"
+      - "worldwide.*competitive\\s+activity"
+      - "not\\s+engage\\s+in.*competitive\\s+business.*for\\s+\\d+\\s+years"
+    prototypes:
+      - "Employee shall not engage in or contribute to any competitive business worldwide for a period of two years following termination of employment."
+      - "Restricts employee from working with any industry competitor nationwide for 24 months."
+    explanation: "The restrictive covenant imposes a lengthy non-compete restriction lasting two or more years or covering an expansive geographic territory."
+    why_it_matters: "It could significantly hinder your ability to secure employment in your professional domain after leaving the company."
+    possible_consequences: "Extended career disruption, inability to accept industry job offers, and risk of litigation over post-employment roles."
+    suggested_questions:
+      - "Can the non-compete duration be shortened to a maximum of 6 to 12 months?"
+      - "Can the geographic scope be strictly limited to territories where you directly managed key client accounts?"
+
+  - id: "EMP_BROAD_IP_ASSIGNMENT"
+    title: "Broad Intellectual Property Assignment Covering Personal Works"
+    category: "Employment"
+    level: "MEDIUM"
+    patterns:
+      - "all\\s+inventions.*whether\\s+or\\s+not\\s+during\\s+working\\s+hours"
+      - "all\\s+intellectual\\s+property.*belong\\s+exclusively\\s+to\\s+company"
+      - "conceived\\s+at\\s+any\\s+time\\s+during\\s+employment"
+    prototypes:
+      - "All inventions, software, and ideas conceived by Employee whether during work hours or personal time shall belong exclusively to Company."
+      - "Employee assigns all proprietary inventions and copyrightable materials developed at any time during the term."
+    explanation: "The assignment clause covers creations produced outside work hours or without company equipment, exceeding typical work-made-for-hire scopes."
+    why_it_matters: "Personal side projects, open-source contributions, or independent creative hobbies could be claimed as company property."
+    possible_consequences: "Loss of ownership of personal intellectual property developed independently outside business hours."
+    suggested_questions:
+      - "Can a statutory carve-out be added for inventions developed on personal time without company resources?"
+      - "Can an exhibit listing prior inventions and personal open-source projects be attached?"
+
+  - id: "CONT_SHORT_CURE_PERIOD"
+    title: "Short Cure Window for Termination and Default"
+    category: "Contractual"
+    level: "MEDIUM"
+    patterns:
+      - "cure.*within\\s+(?:three|five|seven|3|5|7)\\s+(?:business\\s+)?days"
+      - "immediate\\s+default.*without\\s+cure"
+      - "default.*fails\\s+to\\s+cure\\s+within\\s+[1-7]\\s+days"
+    prototypes:
+      - "If party fails to perform any covenant, the other party may terminate if default is not cured within three days of notice."
+      - "A default not cured within 5 business days leads to immediate cancellation."
+    explanation: "The notice or cure period to remedy an alleged contract violation is 7 days or fewer, providing inadequate time to address disputed issues."
+    why_it_matters: "Operational or invoicing discrepancies typically require more than a few days to investigate and cure, risking premature termination."
+    possible_consequences: "Precipitous contract termination and default penalties before problems can be analyzed or cured."
+    suggested_questions:
+      - "Can the cure period be extended to standard commercial 30 days?"
+      - "Can written notice specifying default with opportunity to meet and confer be required?"
+
+  - id: "LEGAL_JURY_WAIVER"
+    title: "Waiver of Jury Trial and Class Action Rights"
+    category: "Legal"
+    level: "MEDIUM"
+    patterns:
+      - "waive(?:s)?\\s+(?:any\\s+)?right\\s+to\\s+(?:a\\s+)?jury\\s+trial"
+      - "no\\s+jury\\s+trial"
+      - "class\\s+action\\s+waiver"
+      - "waives\\s+right\\s+to\\s+participate\\s+in\\s+class"
+    prototypes:
+      - "Each party hereby waives any right to a trial by jury and agrees to binding arbitration with cost-shifting."
+      - "Parties waive jury trial and class-action participation in all disputes."
+    explanation: "The clause waives the constitutional right to a jury trial and may prohibit participation in class action proceedings."
+    why_it_matters: "Disputes will be decided solely by a judge or private arbitrator rather than a jury of peers."
+    possible_consequences: "Loss of standard procedural jury trial protections and collective legal leverage."
+    suggested_questions:
+      - "Can dispute resolution be handled through standard civil court procedures or mutual mediation before arbitration?"
+
+  - id: "FIN_ACCELERATION_DEFAULT"
+    title: "Principal Acceleration Upon Default"
+    category: "Financial"
+    level: "MEDIUM"
+    patterns:
+      - "entire\\s+principal.*immediately\\s+become\\s+due\\s+and\\s+payable"
+      - "acceleration\\s+of\\s+(?:all\\s+)?unpaid\\s+balance"
+      - "accelerate\\s+all\\s+remaining\\s+payments"
+    prototypes:
+      - "Upon any default in payment, the entire unpaid principal balance and accrued interest shall immediately become due and payable."
+      - "Lender may accelerate the full loan balance upon a single missed payment date."
+    explanation: "A single missed payment or technical default allows the lender to demand immediate lump-sum repayment of the full loan balance."
+    why_it_matters: "Temporary cash flow interruptions could trigger immediate full balance payoff demands and financial distress."
+    possible_consequences: "Immediate demand for full payoff, potential foreclosure, or legal collection proceedings."
+    suggested_questions:
+      - "Can a 15-day written notice and grace period be required before acceleration can be declared?"
+      - "Can acceleration be restricted only to material payment defaults exceeding 60 days?"
+
+  - id: "PRIV_UNRESTRICTED_DATA_SHARING"
+    title: "Unrestricted Commercial Sharing of User or Confidential Data"
+    category: "Privacy"
+    level: "HIGH"
+    patterns:
+      - "share.*data\\s+with\\s+(?:third\\s+parties|affiliates|partners).*without\\s+consent"
+      - "monetize.*user\\s+data"
+      - "unrestricted\\s+right\\s+to\\s+use.*personal\\s+data"
+    prototypes:
+      - "Vendor may share, transfer, and monetize customer data with third-party advertising partners without prior consent."
+      - "Company retains unrestricted rights to analyze and disclose personal data to commercial affiliates."
+    explanation: "The counterparty reserves broad rights to share or commercialize customer data with external third parties without express consent."
+    why_it_matters: "Confidential customer data or personal employee details could be exposed to third parties without control."
+    possible_consequences: "Privacy compliance exposure (GDPR, CCPA) and loss of confidential information."
+    suggested_questions:
+      - "Can data use be strictly confined to providing the contracted service?"
+      - "Can third-party data sharing be prohibited without explicit written consent?"
+

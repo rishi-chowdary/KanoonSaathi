@@ -25,7 +25,8 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase M4 | Entities, Key Facts & Extractive Summarization | Completed | 2026-11-17 |
 | Phase M5 | Tri-Tier Rule-Based Simplification & Readability | Completed | 2026-11-17 |
 
-| Phase M6 | Grounded Risk Detection & Missing Provisions | Planned | - |
+| Phase M6 | Grounded Risk Detection & Missing Provisions | Completed | 2026-11-17 |
+
 | Phase M7 | Hybrid Retrieval & Extractive QA Document Chat | Planned | - |
 | Phase M8 | Dashboard, ReportLab PDF Dossier & UI Polish | Planned | - |
 | Phase M9 | Offline Evaluation Suite & Parity Benchmarks | Planned | - |
@@ -1175,6 +1176,69 @@ cd frontend && npm test
 - Linter & Formatter:
   - `ruff check app tests` -> `All checks passed!`.
   - `black --check app tests` -> `All done! 47 files left unchanged.`.
+
+---
+
+### Phase M6: Grounded Risk Detection & Missing Provisions
+- [x] Configured grounded contract risk rules (`data/risk_rules.yaml`) spanning all 6 required categories (*Financial, Legal, Privacy, Contractual, Employment, Liability*) with patterns, numeric thresholds, and SBERT prototype vectors.
+- [x] Implemented Rule 7 Legal Advice Guard (`app/nlp/risk_engine.py`):
+  - Strict post-processing sanitization replacing forbidden conclusion terms ("illegal" -> "potentially unfavorable", "void" -> "questionable under standard practice", "unenforceable" -> "subject to legal challenge").
+  - Automated check `count_rule7_violations` guarantees **0 violations** across all titles, explanations, consequences, and recommendations.
+- [x] Built Grounded Risk Detection Engine (`app/nlp/risk_engine.py`):
+  - Hybrid matching: regex patterns + SBERT prototype cosine similarity ($\ge 0.65$).
+  - Extracts exact verbatim evidence quotes anchored to source page numbers with 100% slice verification.
+  - Generates actionable negotiation questions and attaches jurisdiction caveats when governing law is unspecified.
+  - **Passed Hard Gate**: Detected all predatory clauses in `one_sided_agreement.pdf` (uncapped indemnity [HIGH], unilateral modification [HIGH], severe late charges with daily compounding [HIGH], disproportionate liability cap [HIGH], and automatic renewal trap [MEDIUM]).
+- [x] Built Missing Provisions Engine (`app/nlp/missing_provisions.py`):
+  - Configured checklists in `data/expected_provisions.yaml` for 5 standard contract types (*NDA, Lease, Employment, SaaS / Service, Promissory Note*).
+  - Matches provisions using SBERT semantic similarity against clause embeddings combined with keyword presence rules.
+  - **Passed Hard Gate**: Flags missing provisions with strict `"Possible omission"` labeling and zero Rule 7 conclusions (e.g. detected missing carve-outs & remedies in `clean_nda.pdf`, and missing security deposit return timeline in `rental_agreement.pdf`).
+- [x] Built Risk & Missing Provisions Service (`app/services/risk_service.py`):
+  - Idempotent database persistence for `RiskFinding` and `MissingClauseWarning` records.
+  - Computes `get_risk_distribution` aggregated by severity level and category for Chart.js.
+  - Integrated into the automatic document ingestion pipeline (`app/services/document_service.py`).
+- [x] Extended REST API (`app/blueprints/documents.py`):
+  - `GET /api/documents/<id>/risks` -> list of verified risk findings with quotes and page citations.
+  - `GET /api/documents/<id>/missing-provisions` -> list of missing clauses with `"Possible omission"` tag.
+  - `GET /api/documents/<id>/risk-distribution` -> aggregated counts by level and category.
+  - Enforced tenant isolation (404 on cross-user queries).
+- [x] Enhanced Document Details UI (`app/templates/documents/detail.html`):
+  - Added **Risk Analysis** tab with interactive severity filter pills (*All, High, Medium, Low*), evidence quotes, "Why This Matters" and "Potential Consequences" boxes, suggested negotiation questions, and jurisdiction warnings.
+  - Added **Missing Provisions** tab displaying standard expected provisions with `"Possible omission"` tags and industry recommendations.
+  - Integrated local static Chart.js (`app/static/vendor/chart.js`, zero CDN) rendering Category Doughnut Chart and Severity Bar Chart dynamically from the risk distribution API.
+- [x] Comprehensive automated test suite (`tests/test_risk.py`):
+  - 10 tests verifying Rule 7 sanitization, YAML integrity, predatory terms detection in `one_sided_agreement.pdf`, missing provisions in `clean_nda.pdf` and `rental_agreement.pdf`, exact quote slices, database persistence, REST APIs, and tenant isolation.
+- [x] Full test suite now passes **72 / 72 tests** across SQLite and live MySQL 8 with **84% coverage** (2,318 statements).
+- [x] Linters & formatters 100% clean: `ruff check app tests` (0 warnings) and `black app tests` (clean).
+
+**What was built:**
+- `data/risk_rules.yaml`: Rules with regex patterns, thresholds, and SBERT prototypes across 6 risk categories.
+- `data/expected_provisions.yaml`: Standard contract checklists across 5 contract types.
+- `app/nlp/risk_engine.py`: Grounded risk detection engine and Rule 7 sanitization guard.
+- `app/nlp/missing_provisions.py`: Missing expected provisions detector with `"Possible omission"` labeling.
+- `app/services/risk_service.py`: Service managing `RiskFinding` and `MissingClauseWarning` persistence and distribution computation.
+- `app/static/vendor/chart.js`: Local Chart.js bundle (zero external CDN).
+- `tests/test_risk.py`: 10 tests verifying predatory terms detection, Rule 7 compliance, missing provisions, and APIs.
+
+**How it was verified:**
+- Predatory Terms in `one_sided_agreement.pdf`:
+  - Flagged 6 risks with 100% verified evidence quotes and zero Rule 7 violations:
+    - `[HIGH] Financial: Severe Late Charges and Accelerated Administrative Fees`
+    - `[HIGH] Contractual: Unilateral Termination Rights and Acceleration of Future Fees`
+    - `[HIGH] Liability: Uncapped and Unilateral Indemnification Obligation`
+    - `[HIGH] Liability: Extreme Disproportion in Liability Limits and Warranty Disclaimers`
+    - `[HIGH] Contractual: Unilateral Modification of Terms and Fees`
+    - `[MEDIUM] Contractual: Automatic Renewal Trap with Strict Notice Requirements`
+- Missing Provisions in `clean_nda.pdf` & `rental_agreement.pdf`:
+  - Flagged missing carve-outs, return of materials, and security deposit return timelines with strict `label == "Possible omission"`.
+- Rule 7 Strict Legal Conclusion Invariant:
+  - 0 occurrences of forbidden words ("illegal", "void", "unenforceable") across all generated risk outputs.
+- Full Test Suite:
+  - `.venv/bin/pytest tests/ --cov=app -q` -> **72 passed in 32.40s (84% coverage across 2,318 statements)**.
+- Linter & Formatter:
+  - `ruff check app tests` -> `All checks passed!`.
+  - `black --check app tests` -> `All done! 51 files left unchanged.`.
+
 
 
 

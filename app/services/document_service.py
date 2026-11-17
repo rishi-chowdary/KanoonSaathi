@@ -109,9 +109,16 @@ def save_and_extract_document(
     try:
         from app.services.analysis_service import process_key_info_and_summaries
         from app.services.clause_service import process_document_clauses
+        from app.services.risk_service import process_document_risks_and_missing
 
-        process_document_clauses(doc, extraction.full_text, clauses_data)
+        analysis, extracted_clauses = process_document_clauses(
+            doc, extraction.full_text, clauses_data
+        )
         process_key_info_and_summaries(doc, extraction.full_text, extraction.pages)
+        process_document_risks_and_missing(
+            doc, analysis, extracted_clauses, extraction.full_text
+        )
+
     except Exception as exc:  # noqa: BLE001 - non-blocking clause extraction failure
         current_app.logger.warning(
             "Automatic clause and analysis processing error: %s", exc

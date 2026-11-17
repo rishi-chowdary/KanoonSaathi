@@ -15,6 +15,8 @@ from app.models.analysis import DocumentAnalysis
 from app.models.chunk import DocumentChunk
 from app.models.clause import ExtractedClause
 from app.models.key_info import ExtractedInformation
+from app.models.missing_warning import MissingClauseWarning
+from app.models.risk import RiskFinding
 from app.services.document_service import (
     delete_document_for_user,
     get_document_for_user,
@@ -84,6 +86,8 @@ def detail(doc_id: str):
     analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
     clauses = []
     key_info = None
+    risks = []
+    missing_warnings = []
     if analysis:
         clauses = (
             ExtractedClause.query.filter_by(analysis_id=analysis.id)
@@ -93,6 +97,14 @@ def detail(doc_id: str):
             .all()
         )
         key_info = ExtractedInformation.query.filter_by(analysis_id=analysis.id).first()
+        risks = (
+            RiskFinding.query.filter_by(analysis_id=analysis.id)
+            .order_by(RiskFinding.source_page.asc(), RiskFinding.created_at.asc())
+            .all()
+        )
+        missing_warnings = MissingClauseWarning.query.filter_by(
+            analysis_id=analysis.id
+        ).all()
 
     return render_template(
         "documents/detail.html",
@@ -101,6 +113,8 @@ def detail(doc_id: str):
         analysis=analysis,
         clauses=clauses,
         key_info=key_info,
+        risks=risks,
+        missing_warnings=missing_warnings,
     )
 
 
@@ -374,3 +388,66 @@ def api_summary(doc_id: str):
         ),
         200,
     )
+
+
+@documents_bp.route("/api/documents/<doc_id>/risks", methods=["GET"])
+@csrf.exempt
+def api_risks(doc_id: str):
+    """Retrieve grounded risk findings with exact page and quote evidence."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    risks = (
+        RiskFinding.query.filter_by(analysis_id=analysis.id)
+        .order_by(RiskFinding.source_page.asc(), RiskFinding.created_at.asc())
+        .all()
+    )
+    return jsonify([r.to_dict() for r in risks]), 200
+
+
+@documents_bp.route("/api/documents/<doc_id>/missing-provisions", methods=["GET"])
+@csrf.exempt
+def api_missing_provisions(doc_id: str):
+    """Retrieve missing standard provisions labeled strictly as 'Possible omission'."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    warnings = MissingClauseWarning.query.filter_by(analysis_id=analysis.id).all()
+    return jsonify([w.to_dict() for w in warnings]), 200
+
+
+@documents_bp.route("/api/documents/<doc_id>/risk-distribution", methods=["GET"])
+@csrf.exempt
+def api_risk_distribution(doc_id: str):
+    """Retrieve risk aggregation breakdown by level and category for Chart.js."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc = get_document_for_user(doc_id, current_user.id)
+    if not doc:
+        return jsonify({"error": "Document not found"}), 404
+
+    analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+    if not analysis:
+        return jsonify({"error": "Analysis not ready"}), 404
+
+    from app.services.risk_service import get_risk_distribution
+
+    distribution = get_risk_distribution(analysis.id)
+    return jsonify(distribution), 200
