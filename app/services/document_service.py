@@ -112,17 +112,13 @@ def save_and_extract_document(
             doc, analysis, extracted_clauses, extraction.full_text
         )
 
-    except (
-        Exception
-    ) as exc:  # noqa: BLE001 - record failure_reason at pipeline boundary
+    except Exception as exc:  # noqa: BLE001
         doc.status = "COMPLETED_WITH_WARNINGS"
         doc.failure_reason = f"analysis failed: {exc}"
         db.session.commit()
         current_app.logger.warning(
             "analysis pipeline failed for document %s: %s", doc.id, exc
         )
-        doc.status = "COMPLETED_WITH_WARNINGS"
-        db.session.commit()
 
     return doc, extraction, clauses_data, chunks_data
 

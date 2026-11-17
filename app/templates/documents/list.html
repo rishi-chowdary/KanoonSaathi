@@ -3,16 +3,12 @@
 {% block title %}Documents — LexiLegal AI{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+<div class="doc-header">
   <div>
-    <h1 style="font-size: 2rem; margin: 0;">My Documents</h1>
-    <p style="color: var(--text-muted); margin: 0.25rem 0 0 0;">
-      Browse your uploaded contracts and inspect extracted text
-    </p>
+    <h1>Documents</h1>
+    <p class="card-subtitle">Uploaded contracts and analysis status</p>
   </div>
-  <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">
-    + Upload Document
-  </a>
+  <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload</a>
 </div>
 
 <div class="card">
@@ -68,10 +64,9 @@
       </table>
     </div>
   {% else %}
-    <div style="text-align: center; padding: 3.5rem 1rem; color: var(--text-muted);">
-      <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">No documents uploaded yet</h3>
-      <p style="margin-bottom: 1.5rem;">Upload your first legal contract to begin automated text extraction and clause analysis.</p>
-      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload Contract</a>
+    <div style="padding: 2rem 0.5rem;">
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">No documents yet. Upload a contract to get started.</p>
+      <a href="{{ url_for('documents.upload') }}" class="btn btn-primary">Upload</a>
     </div>
   {% endif %}
 </div>

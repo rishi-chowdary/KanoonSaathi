@@ -14,7 +14,7 @@
       {{ form.hidden_tag() }}
 
       <div class="form-group">
-        <label for="email" class="form-label">{{ form.email.label }}</label>
+        <label for="email" class="form-label">{{ form.email.label.text }}</label>
         {{ form.email(class="form-input", placeholder="you@example.com", id="email", autofocus=True) }}
         {% for error in form.email.errors %}
           <div class="form-error">{{ error }}</div>
@@ -22,8 +22,8 @@
       </div>
 
       <div class="form-group">
-        <label for="password" class="form-label">{{ form.password.label }}</label>
-        {{ form.password(class="form-input", placeholder="••••••••", id="password") }}
+        <label for="password" class="form-label">{{ form.password.label.text }}</label>
+        {{ form.password(class="form-input", placeholder="Password", id="password") }}
         {% for error in form.password.errors %}
           <div class="form-error">{{ error }}</div>
         {% endfor %}

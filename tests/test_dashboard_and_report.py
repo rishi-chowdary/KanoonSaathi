@@ -353,9 +353,8 @@ def test_empty_state_dashboard_brand_new_user(client, app):
     resp_html = client.get("/dashboard")
     assert resp_html.status_code == 200
     html_text = resp_html.get_data(as_text=True)
-    assert "Welcome to LexiLegal AI" in html_text
-    assert "Upload your first contract to extract important clauses" in html_text
-    assert "Upload Your First Contract" in html_text
+    assert "No documents yet. Upload a contract to get started." in html_text
+    assert "Upload" in html_text
 
     # Check API stats endpoint
     resp_api = client.get("/api/dashboard/stats")

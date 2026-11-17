@@ -294,8 +294,8 @@ class TestStudioEndpoints:
         assert resp.status_code == 200
         html = resp.get_data(as_text=True)
         assert "Simplification Studio" in html
-        assert "Load Pre-loaded Sample Clauses" in html
-        assert "Glossary Directory" in html
+        assert "Sample clauses" in html
+        assert "Glossary" in html
 
     def test_api_simplify_success(self, client):
         payload = {
