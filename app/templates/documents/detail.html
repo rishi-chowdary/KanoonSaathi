@@ -159,6 +159,43 @@
         </div>
       {% endif %}
 
+      {% if statute_references %}
+        <div style="margin-bottom: 1.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem; background: var(--bg-surface);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <h3 style="font-size: 0.95rem; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-main); margin: 0;">
+              Detected Indian Statute References (BNS / IPC / Constitution)
+            </h3>
+            <span class="badge badge-provenance">Offline reference lookup</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Title</th>
+                  <th>Plain-English Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ref in statute_references %}
+                  <tr>
+                    <td style="white-space: nowrap; font-weight: 600;">
+                      {% if ref.statute_type == 'Constitution' %}
+                        Article {{ ref.article }}
+                      {% else %}
+                        BNS {{ ref.bns_section }} &harr; IPC {{ ref.ipc_section }}
+                      {% endif %}
+                    </td>
+                    <td>{{ ref.title }}</td>
+                    <td style="font-size: 0.88rem; color: var(--text-muted);">{{ ref.plain_english }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
+
       {% if analysis.summary_detailed %}
         <div style="margin-top: 1.5rem;">
           <h3 style="font-size: 1.1rem; font-family: var(--font-serif); margin-bottom: 0.75rem;">

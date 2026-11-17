@@ -9,11 +9,23 @@ from app.nlp.registry import get_sentence_transformer
 # Document type regexes for fast and accurate heading detection
 DOCUMENT_TYPE_PATTERNS = [
     (
+        r"\b(?:bharatiya\s+nyaya\s+sanhita|bns,?\s*2023|bns\s+sections?)\b",
+        "Bharatiya Nyaya Sanhita (BNS) Statute",
+    ),
+    (
+        r"\b(?:indian\s+penal\s+code|ipc,?\s*1860|ipc\s+sections?)\b",
+        "Indian Penal Code (IPC) Statute",
+    ),
+    (
+        r"\b(?:constitution\s+of\s+india|part\s+iii\s*[-—:]?\s*fundamental\s+rights|fundamental\s+rights)\b",
+        "Constitution of India",
+    ),
+    (
         r"\b(?:non[\s-]disclosure|confidential(?:ity)?\s+agreement|mutual\s+nda)\b",
         "Non-Disclosure Agreement (NDA)",
     ),
     (
-        r"\b(?:residential\s+lease|rental\s+agreement|lease\s+agreement|tenancy\s+agreement)\b",
+        r"\b(?:leave\s+and\s+license|residential\s+lease|rental\s+agreement|lease\s+agreement|tenancy\s+agreement)\b",
         "Residential Lease Agreement",
     ),
     (
@@ -29,7 +41,7 @@ DOCUMENT_TYPE_PATTERNS = [
         "Promissory Note",
     ),
     (
-        r"\b(?:quitclaim\s+deed|warranty\s+deed|grant\s+deed|deed\s+of\s+trust)\b",
+        r"\b(?:quitclaim\s+deed|warranty\s+deed|grant\s+deed|sale\s+deed|deed\s+of\s+trust)\b",
         "Property Deed",
     ),
 ]
@@ -78,9 +90,13 @@ def classify_document_type(full_text: str, filename: str = "") -> tuple[str, flo
         return "General Contract", 0.0
 
     header_sample = full_text[:1200]
+    earliest_match: tuple[int, str] | None = None
     for pattern, doc_type in DOCUMENT_TYPE_PATTERNS:
-        if re.search(pattern, header_sample, re.IGNORECASE):
-            return doc_type, 0.95
+        m = re.search(pattern, header_sample, re.IGNORECASE)
+        if m and (earliest_match is None or m.start() < earliest_match[0]):
+            earliest_match = (m.start(), doc_type)
+    if earliest_match is not None:
+        return earliest_match[1], 0.95
 
     # Also check filename if informative
     for pattern, doc_type in DOCUMENT_TYPE_PATTERNS:

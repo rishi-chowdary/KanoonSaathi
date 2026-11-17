@@ -1,14 +1,15 @@
 # LexiLegal AI
 
-LexiLegal AI is a local web application for reading and reviewing legal contracts. You upload a PDF, DOCX, or plain text file and it extracts the text page by page, breaks the contract into clauses, highlights risk patterns, pulls out key dates and amounts, rewrites clauses in simpler English, and lets you ask questions about the document.
+LexiLegal AI is a local web application built for Indian legal documents—including Bharatiya Nyaya Sanhita (BNS, 2023) sections, Indian Penal Code (IPC, 1860) sections, Constitution of India articles, and Indian contracts (leave and license agreements, NDAs, employment agreements, and service contracts). You upload a PDF, DOCX, or plain text file and it extracts the text page by page, breaks the text into clauses or sections, detects BNS/IPC/Constitutional cross-references, highlights risk patterns, pulls out key dates and rupee amounts, rewrites dense legal language in simpler English, and lets you ask questions about the document.
 
 Everything runs locally in Python on your machine. No document text is sent to any external API or hosted model.
 
 ## What it does
 
+- **Indian statute & BNS/IPC reference lookup**: Detects BNS 2023 sections, IPC 1860 sections, and Constitution of India articles inside uploaded documents and pasted Studio text, surfacing offline BNS <-> IPC cross-references, punishment notes, cognizable/bailable status, and constitutional restrictions (`data/indian_statutes.yaml`, `/studio`, `GET /api/statutes`).
 - **Text extraction and OCR**: Reads PDFs with PyMuPDF, Word files with `python-docx`, and plain text files directly. Scanned PDF pages with very little text fall back to Tesseract OCR.
-- **Clause extraction and classification**: Splits contracts on headings and sentence boundaries, then classifies each clause across 17 categories (such as Payment Terms, Termination, Confidentiality, and Indemnity) using an ensemble of a LEDGAR DistilBERT model, sentence-transformer prototypes, and keyword rules.
-- **Plain-language simplification**: Rewrites clauses using three rule-based modes (`simple`, `detailed`, and `professional`) backed by a 151-term legal glossary, sentence splitting, and Flesch readability scores. Also available standalone at `/studio`.
+- **Clause and section extraction**: Splits contracts and Indian statutes on `Section`, `Article` (including `21A`, `300A`, `498A`), and sentence boundaries, then classifies each section across 22 contract and Indian statutory categories.
+- **Plain-language simplification**: Rewrites Indian statutes and contract clauses using three rule-based modes (`simple`, `detailed`, and `professional`) backed by a 200+ term Indian and general legal glossary, sentence splitting, and Flesch readability scores. Also available standalone at `/studio`.
 - **Key facts and summaries**: Extracts parties, amounts, deadlines, late fees, dates, and notice periods using spaCy NER, regex patterns, and `dateparser`. Produces an extractive summary using SBERT TextRank with Maximal Marginal Relevance (MMR).
 - **Risk flags and missing provisions**: Matches clauses against YAML risk rules and semantic prototypes, then compares the document against a per-contract-type checklist to note possible omissions.
 - **Document Q&A**: Uses hybrid retrieval (SBERT dense embeddings plus BM25 merged with Reciprocal Rank Fusion), a deterministic fact matcher, and `deepset/minilm-uncased-squad2` extractive QA. When the score falls below the unanswerable threshold, it replies: `"The document does not appear to address this."`

@@ -634,3 +634,239 @@ terms:
     definition: "A court order requiring a breaching party to complete their exact contractual duty rather than paying damages."
     category: "Remedy"
 
+  bharatiya nyaya sanhita:
+    plain_replacement: "Bharatiya Nyaya Sanhita (India's 2023 criminal code)"
+    definition: "India's primary criminal code enacted in 2023 (BNS), replacing the Indian Penal Code of 1860 from July 1, 2024."
+    category: "Indian Statute"
+  indian penal code:
+    plain_replacement: "Indian Penal Code (former 1860 criminal code)"
+    definition: "India's historical criminal code enacted in 1860 (IPC), now replaced by the Bharatiya Nyaya Sanhita (BNS), 2023."
+    category: "Indian Statute"
+  cognizable offence:
+    plain_replacement: "serious crime where police can arrest without a warrant"
+    definition: "An offence under Indian criminal procedure (BNSS/CrPC) where police can register an FIR, investigate, and arrest without prior magistrate approval."
+    category: "Criminal Law"
+  non-cognizable offence:
+    plain_replacement: "lesser offence where police need court permission to investigate or arrest"
+    definition: "An offence where police cannot arrest without a warrant or start an investigation without a magistrate's order."
+    category: "Criminal Law"
+  bailable offence:
+    plain_replacement: "offence where the accused can claim bail as a right"
+    definition: "An offence in which the arrested person is entitled to release on bail by police or court upon furnishing surety."
+    category: "Criminal Law"
+  non-bailable offence:
+    plain_replacement: "serious offence where bail is at the court's discretion"
+    definition: "An offence where bail is not an automatic right and must be granted by a magistrate or higher court after a hearing."
+    category: "Criminal Law"
+  compoundable offence:
+    plain_replacement: "offence that can be legally settled between victim and accused"
+    definition: "An offence where the complainant may withdraw charges through compromise, sometimes with the court's permission."
+    category: "Criminal Law"
+  culpable homicide:
+    plain_replacement: "unlawfully causing a person's death"
+    definition: "Causing death by an act done with the intention or knowledge that it is likely to cause death (BNS Sections 100–105 / IPC Sections 299–304)."
+    category: "Criminal Law"
+  grievous hurt:
+    plain_replacement: "severe bodily injury"
+    definition: "Serious injury specified by law, including bone fracture, permanent loss of sight or hearing, permanent disfigurement, or life-endangering harm (BNS Sec. 116 / IPC Sec. 320)."
+    category: "Criminal Law"
+  criminal breach of trust:
+    plain_replacement: "dishonestly misusing property or money entrusted to you"
+    definition: "Misappropriating or converting money or property that was legally entrusted to a person in violation of law or contract (BNS Sec. 316 / IPC Sec. 406)."
+    category: "Criminal Law"
+  criminal intimidation:
+    plain_replacement: "threatening someone with harm to force or stop an action"
+    definition: "Threatening another person with injury to body, reputation, or property to cause alarm or compel an act (BNS Sec. 351 / IPC Sec. 503/506)."
+    category: "Criminal Law"
+  abetment:
+    plain_replacement: "encouraging, helping, or conspiring in a crime"
+    definition: "Instigating someone to commit an offence, joining a conspiracy to commit it, or intentionally aiding it (BNS Sec. 45 / IPC Sec. 107)."
+    category: "Criminal Law"
+  rigorous imprisonment:
+    plain_replacement: "prison sentence with mandatory hard labour"
+    definition: "A jail sentence under BNS/IPC where the convicted person is required to perform hard labour during confinement."
+    category: "Criminal Law"
+  simple imprisonment:
+    plain_replacement: "prison sentence without hard labour"
+    definition: "A jail sentence under BNS/IPC involving confinement without compulsory hard labour."
+    category: "Criminal Law"
+  imprisonment of either description:
+    plain_replacement: "prison sentence (with or without hard labour)"
+    definition: "Allows the sentencing court to impose either rigorous imprisonment or simple imprisonment."
+    category: "Criminal Law"
+  imprisonment for life:
+    plain_replacement: "life sentence in prison"
+    definition: "Confinement for the remainder of the convict's natural life, subject to statutory remission powers."
+    category: "Criminal Law"
+  dishonestly:
+    plain_replacement: "intending to cause wrongful financial gain or loss"
+    definition: "Under BNS Sec. 2(7) / IPC Sec. 24, doing something intending to cause wrongful gain to one person or wrongful loss to another."
+    category: "Criminal Law"
+  fraudulently:
+    plain_replacement: "intending to deceive and cause injury"
+    definition: "Under BNS Sec. 2(9) / IPC Sec. 25, doing something with intent to defraud someone."
+    category: "Criminal Law"
+  valuable security:
+    plain_replacement: "legal document creating, transferring, or ending a right or debt"
+    definition: "A document (such as a cheque, promissory note, sale deed, or contract) that creates, extends, transfers, restricts, or extinguishes a legal right."
+    category: "Indian Statute"
+  movable property:
+    plain_replacement: "physical property that can be moved (not land or buildings)"
+    definition: "Corporeal property of every description except land and things permanently attached to the earth."
+    category: "Indian Statute"
+  mens rea:
+    plain_replacement: "guilty mind or criminal intent"
+    definition: "The mental intention or knowledge of wrongdoing that forms an essential element of most criminal offences."
+    category: "Latin"
+  wrongful restraint:
+    plain_replacement: "blocking someone from going in a direction they have a right to go"
+    definition: "Voluntarily obstructing any person so they cannot proceed in a lawful direction (BNS Sec. 126 / IPC Sec. 339)."
+    category: "Criminal Law"
+  wrongful confinement:
+    plain_replacement: "trapping someone within fixed boundaries"
+    definition: "Wrongfully restraining a person in a way that prevents them from moving beyond circumscribed limits (BNS Sec. 127 / IPC Sec. 340)."
+    category: "Criminal Law"
+  unlawful assembly:
+    plain_replacement: "group of five or more people gathered for an illegal goal"
+    definition: "An assembly of five or more persons sharing a common unlawful object such as using criminal force or committing trespass (BNS Sec. 189 / IPC Sec. 141)."
+    category: "Criminal Law"
+  community service:
+    plain_replacement: "unpaid public work ordered by a court instead of jail"
+    definition: "A new form of punishment formally introduced in the Bharatiya Nyaya Sanhita (2023) for minor offences like petty theft or defamation."
+    category: "Criminal Law"
+  first information report:
+    plain_replacement: "initial police complaint (FIR)"
+    definition: "The first written record prepared by police upon receiving information about a cognizable offence under BNSS Section 173."
+    category: "Criminal Law"
+  procedure established by law:
+    plain_replacement: "fair, just, and lawful legal process"
+    definition: "Constitutional standard under Article 21 requiring that any law depriving life or liberty must follow a fair, just, and reasonable procedure."
+    category: "Constitutional"
+  reasonable restrictions:
+    plain_replacement: "fair, legally defined limits on a freedom"
+    definition: "Statutory limits permitted under Article 19(2)–(6) on grounds such as public order, security of the State, sovereignty, decency, morality, or defamation."
+    category: "Constitutional"
+  fundamental rights:
+    plain_replacement: "core rights guaranteed by Part III of the Constitution"
+    definition: "Basic enforceable rights in Articles 12–35 of the Constitution of India protecting equality, freedom, life, liberty, and constitutional remedies."
+    category: "Constitutional"
+  directive principles:
+    plain_replacement: "guiding policy goals for the government (Part IV)"
+    definition: "Social and economic guidelines in Articles 36–51 of the Constitution that guide lawmaking but are not directly enforceable in courts."
+    category: "Constitutional"
+  habeas corpus:
+    plain_replacement: "court order requiring an arrested person to be produced in court"
+    definition: "A constitutional writ under Articles 32 and 226 used to challenge unlawful detention and require authorities to justify holding a person."
+    category: "Constitutional"
+  mandamus:
+    plain_replacement: "court order directing a public authority to perform its legal duty"
+    definition: "A writ issued by the Supreme Court or High Court commanding a government officer, tribunal, or public body to carry out a statutory duty."
+    category: "Constitutional"
+  certiorari:
+    plain_replacement: "higher court order quashing an unlawful lower-court or tribunal decision"
+    definition: "A writ issued to review and cancel an order made by a lower court or quasi-judicial body that exceeded its jurisdiction."
+    category: "Constitutional"
+  quo warranto:
+    plain_replacement: "court challenge asking by what legal authority someone holds public office"
+    definition: "A writ requiring a person holding a public office to prove their legal right to occupy that office."
+    category: "Constitutional"
+  prohibition:
+    plain_replacement: "higher court order stopping a lower court from exceeding its powers"
+    definition: "A writ preventing an inferior court or tribunal from continuing proceedings outside its lawful jurisdiction."
+    category: "Constitutional"
+  writ:
+    plain_replacement: "formal constitutional court order"
+    definition: "A written command issued by the Supreme Court (Article 32) or a High Court (Article 226) to enforce constitutional or legal rights."
+    category: "Constitutional"
+  ultra vires:
+    plain_replacement: "beyond legal authority or constitutional power"
+    definition: "An act, rule, or law passed outside the legal powers granted by a statute or the Constitution, making it invalid."
+    category: "Latin"
+  locus standi:
+    plain_replacement: "legal right or standing to file a case in court"
+    definition: "The sufficient legal connection or interest required for a person to bring a petition before a court (relaxed in Public Interest Litigation)."
+    category: "Latin"
+  suo motu:
+    plain_replacement: "on the court's own initiative without a formal petition"
+    definition: "Action taken by a court or authority on its own motion after noticing a matter of public importance."
+    category: "Latin"
+  double jeopardy:
+    plain_replacement: "being prosecuted and punished twice for the same offence"
+    definition: "Prohibited under Article 20(2) of the Constitution: no person may be prosecuted and punished for the same offence more than once."
+    category: "Constitutional"
+  self-incrimination:
+    plain_replacement: "being forced to testify against yourself"
+    definition: "Protected against under Article 20(3): no person accused of an offence can be compelled to be a witness against themselves."
+    category: "Constitutional"
+  proviso:
+    plain_replacement: "built-in condition or exception to the rule"
+    definition: "A clause starting with 'Provided that' in Indian statutes and contracts that qualifies, limits, or carves out an exception to the main rule."
+    category: "Indian Statute"
+  non-obstante clause:
+    plain_replacement: "override clause that takes priority over other rules"
+    definition: "A provision starting with 'Notwithstanding anything contained in...' that gives the clause overriding effect over conflicting provisions."
+    category: "Indian Statute"
+  mutatis mutandis:
+    plain_replacement: "with the necessary changes made"
+    definition: "Applying a rule or section to a new context while adjusting the details (names, dates, references) that need to change."
+    category: "Latin"
+  leave and license:
+    plain_replacement: "Indian residential or commercial rental permission without transferring tenancy rights"
+    definition: "A common Indian rental arrangement (under the Indian Easements Act, 1882) granting permission to occupy property for a fixed period without creating permanent tenancy."
+    category: "Indian Contract"
+  stamp duty:
+    plain_replacement: "government tax paid to make a contract or deed legally valid as evidence"
+    definition: "State-level tax payable under the Indian Stamp Act or State Stamp Acts on agreements, leases, deeds, and promissory notes."
+    category: "Indian Contract"
+  vakalatnama:
+    plain_replacement: "written authorization allowing an advocate to represent you in court"
+    definition: "A signed legal document filed in an Indian court authorizing an advocate to appear, plead, and act on a client's behalf."
+    category: "Indian Statute"
+  arbitration and conciliation act:
+    plain_replacement: "India's 1996 law governing private dispute arbitration"
+    definition: "The Arbitration and Conciliation Act, 1996, which regulates domestic and international arbitration and enforcement of awards in India."
+    category: "Indian Contract"
+  indian contract act:
+    plain_replacement: "India's 1872 law governing valid contracts"
+    definition: "The Indian Contract Act, 1872, setting rules for offer, acceptance, consideration, void agreements (including Section 27 restraint of trade), and breach damages."
+    category: "Indian Contract"
+  restraint of trade:
+    plain_replacement: "restriction preventing someone from practising a lawful profession or business"
+    definition: "Under Section 27 of the Indian Contract Act, 1872, post-employment non-compete clauses restraining lawful trade are closely scrutinized and generally void except on sale of goodwill."
+    category: "Indian Contract"
+  preventive detention:
+    plain_replacement: "detaining someone without trial to prevent a feared future offence"
+    definition: "Exceptional detention regulated by Article 22(4)–(7) of the Constitution, requiring advisory board review beyond three months."
+    category: "Constitutional"
+  ordinance:
+    plain_replacement: "temporary law issued by the President or Governor when the legislature is not in session"
+    definition: "An urgent law promulgated under Article 123 or Article 213 that lapses unless approved by the legislature within six weeks of reassembly."
+    category: "Constitutional"
+  promulgate:
+    plain_replacement: "officially enact and publish into law"
+    definition: "To formally announce and bring a statute, ordinance, or government notification into legal force."
+    category: "Constitutional"
+  imputation:
+    plain_replacement: "accusation or harmful claim made about someone"
+    definition: "An allegation or statement attributing misconduct or a negative trait to a person, commonly used in BNS/IPC defamation law."
+    category: "Criminal Law"
+  disapprobation:
+    plain_replacement: "lawful criticism or disagreement"
+    definition: "Strong disapproval or criticism of government policy without inciting violence or rebellion (protected under BNS Section 152 Explanation)."
+    category: "Indian Statute"
+  ab initio:
+    plain_replacement: "from the very beginning"
+    definition: "A Latin phrase meaning a contract or action is treated as legally invalid right from the start."
+    category: "Latin"
+  prima facie:
+    plain_replacement: "at first glance (based on initial evidence)"
+    definition: "Evidence sufficient on its face to establish a fact or raise a presumption unless disproved later."
+    category: "Latin"
+  sub judice:
+    plain_replacement: "currently under review by a court"
+    definition: "A matter currently pending before a judge or court and therefore restricted from prejudicial public comment."
+    category: "Latin"
+  ex parte:
+    plain_replacement: "court decision made after hearing only one side"
+    definition: "A legal proceeding or order granted in the absence of the other party, usually when they failed to appear despite notice."
+    category: "Latin"

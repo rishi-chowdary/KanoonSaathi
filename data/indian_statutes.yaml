@@ -1,0 +1,449 @@
+# Offline Indian statute reference data (BNS 2023 <-> IPC 1860 and Constitution of India).
+# Used for section detection, BNS/IPC cross-referencing, and Studio lookup.
+# Informational reference only; not legal advice.
+
+criminal_sections:
+  - id: BNS_61
+    bns_section: "61"
+    ipc_section: "120A / 120B"
+    title: "Criminal conspiracy"
+    chapter: "Chapter IV — Of Abetment, Criminal Conspiracy and Attempt"
+    cognizable: "Depends on the underlying offence"
+    bailable: "Depends on the underlying offence"
+    punishment: "Same as abetment of the offence (if punishable with death, life, or >= 2 years RI); otherwise up to 6 months imprisonment, fine, or both."
+    plain_english: "When two or more people agree to commit an illegal act, or a legal act through illegal means, they commit criminal conspiracy. For non-offence illegal acts, at least one overt step must follow the agreement."
+    excerpt: "Section 61. Criminal conspiracy. (1) When two or more persons agree with the common object to do, or cause to be done, an illegal act, or an act which is not illegal by illegal means, such an agreement is designated a criminal conspiracy: Provided that no agreement except an agreement to commit an offence shall amount to a criminal conspiracy unless some act besides the agreement is done by one or more parties to such agreement in pursuance thereof."
+
+  - id: BNS_62
+    bns_section: "62"
+    ipc_section: "511"
+    title: "Punishment for attempting to commit offences punishable with imprisonment for life or other imprisonment"
+    chapter: "Chapter IV — Of Abetment, Criminal Conspiracy and Attempt"
+    cognizable: "Depends on the underlying offence"
+    bailable: "Depends on the underlying offence"
+    punishment: "Up to half of the longest imprisonment term for the completed offence (or half of life imprisonment), fine, or both."
+    plain_english: "Trying to commit a crime punishable with imprisonment—and taking an actual step toward it—is still punishable even if the crime is not completed, with up to half the maximum sentence for the full offence."
+    excerpt: "Section 62. Whoever attempts to commit an offence punishable by this Sanhita with imprisonment for life or imprisonment, or to cause such an offence to be committed, and in such attempt does any act towards the commission of the offence, shall, where no express provision is made by this Sanhita for the punishment of such attempt, be punished with imprisonment of any description provided for the offence, for a term which may extend to one-half of the imprisonment for life or, as the case may be, one-half of the longest term of imprisonment provided for that offence, or with such fine as is provided for the offence, or with both."
+
+  - id: BNS_64
+    bns_section: "64"
+    ipc_section: "376"
+    title: "Punishment for rape"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Rigorous imprisonment not less than 10 years, extendable to imprisonment for life, and fine."
+    plain_english: "A person convicted of rape faces a mandatory minimum sentence of 10 years of rigorous imprisonment, which can extend to life imprisonment, along with a fine."
+    excerpt: "Section 64. Punishment for rape. (1) Whoever, except in the cases provided for in sub-section (2), commits rape, shall be punished with rigorous imprisonment of either description for a term which shall not be less than ten years, but which may extend to imprisonment for life, and shall also be liable to fine."
+
+  - id: BNS_69
+    bns_section: "69"
+    ipc_section: "New in BNS (no direct IPC equivalent)"
+    title: "Sexual intercourse by employing deceitful means"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment of either description up to 10 years and fine."
+    plain_english: "A new BNS provision that punishes obtaining sexual intercourse with a woman through deceitful means—such as a false promise of marriage with no intention of fulfilling it, or concealing identity or employment—with up to 10 years imprisonment and a fine."
+    excerpt: "Section 69. Whoever, by deceitful means or by making promise to marry to a woman without any intention of fulfilling the same, has sexual intercourse with her, such sexual intercourse not amounting to the offence of rape, shall be punished with imprisonment of either description for a term which may extend to ten years and shall also be liable to fine."
+
+  - id: BNS_74
+    bns_section: "74"
+    ipc_section: "354"
+    title: "Assault or use of criminal force to woman with intent to outrage her modesty"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment not less than 1 year, extendable to 5 years, and fine."
+    plain_english: "Assaulting or using criminal force against a woman intending to outrage her modesty carries a minimum sentence of 1 year and up to 5 years in prison, plus a fine."
+    excerpt: "Section 74. Whoever assaults or uses criminal force to any woman, intending to outrage or knowing it to be likely that he will thereby outrage her modesty, shall be punished with imprisonment of either description for a term which shall not be less than one year but which may extend to five years, and shall also be liable to fine."
+
+  - id: BNS_78
+    bns_section: "78"
+    ipc_section: "354D"
+    title: "Stalking"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable"
+    bailable: "Bailable (first conviction); Non-bailable (subsequent)"
+    punishment: "Up to 3 years imprisonment and fine on first conviction; up to 5 years and fine on repeat conviction."
+    plain_english: "Repeatedly following, contacting, or monitoring a woman online or in person despite her clear disinterest is stalking, punishable with up to 3 years imprisonment on a first offence and up to 5 years on repeat offences."
+    excerpt: "Section 78. Stalking. (1) Any man who follows a woman and contacts, or attempts to contact such woman to foster personal interaction repeatedly despite a clear indication of disinterest by such woman, or monitors the use by a woman of the internet, e-mail or any other form of electronic communication, commits the offence of stalking."
+
+  - id: BNS_80
+    bns_section: "80"
+    ipc_section: "304B"
+    title: "Dowry death"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment not less than 7 years, extendable to imprisonment for life."
+    plain_english: "If a woman dies from burns, bodily injury, or unnatural causes within 7 years of marriage and was subjected to cruelty or dowry harassment soon before death, the husband or relatives face at least 7 years and up to life imprisonment."
+    excerpt: "Section 80. Dowry death. (1) Where the death of a woman is caused by any burns or bodily injury or occurs otherwise than under normal circumstances within seven years of her marriage and it is shown that soon before her death she was subjected to cruelty or harassment by her husband or any relative of her husband for, or in connection with, any demand for dowry, such death shall be called dowry death."
+
+  - id: BNS_85
+    bns_section: "85"
+    ipc_section: "498A"
+    title: "Husband or relative of husband of a woman subjecting her to cruelty"
+    chapter: "Chapter V — Of Offences Against Woman and Child"
+    cognizable: "Cognizable (if information given by victim or specified relatives)"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment up to 3 years and fine."
+    plain_english: "A husband or his relatives who subject a wife to wilful physical or mental cruelty, or harass her for unlawful property or dowry demands, can be imprisoned for up to 3 years and fined."
+    excerpt: "Section 85. Whoever, being the husband or the relative of the husband of a woman, subjects such woman to cruelty shall be punished with imprisonment for a term which may extend to three years and shall also be liable to fine."
+
+  - id: BNS_103
+    bns_section: "103"
+    ipc_section: "302"
+    title: "Punishment for murder"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Death or imprisonment for life, and fine. Under 103(2), mob lynching by 5 or more persons on specified grounds carries death or life imprisonment and fine."
+    plain_english: "Anyone convicted of murder faces either the death penalty or life imprisonment, plus a fine. Sub-section (2) specifically covers mob killing by a group of five or more people based on race, caste, community, language, or similar grounds."
+    excerpt: "Section 103. Punishment for murder. (1) Whoever commits murder shall be punished with death or imprisonment for life, and shall also be liable to fine. (2) When a group of five or more persons acting in concert commits murder on the ground of race, caste or community, sex, place of birth, language, personal belief or any other similar ground each member of such group shall be punished with death or with imprisonment for life, and shall also be liable to fine."
+
+  - id: BNS_105
+    bns_section: "105"
+    ipc_section: "304"
+    title: "Punishment for culpable homicide not amounting to murder"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Life imprisonment or 5 to 10 years imprisonment and fine (if intended to cause death); up to 10 years and fine (if done with knowledge without intention)."
+    plain_english: "Unlawfully causing a person's death without meeting the legal definition of murder carries 5 to 10 years or life imprisonment if death was intended, or up to 10 years and a fine if done with knowledge that it was likely to cause death."
+    excerpt: "Section 105. Whoever commits culpable homicide not amounting to murder, shall be punished with imprisonment for life, or imprisonment of either description for a term which shall not be less than five years but which may extend to ten years, and shall also be liable to fine, if the act by which the death is caused is done with the intention of causing death, or of causing such bodily injury as is likely to cause death."
+
+  - id: BNS_106
+    bns_section: "106"
+    ipc_section: "304A"
+    title: "Causing death by negligence"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Bailable under 106(1); Non-bailable under 106(2)"
+    punishment: "Up to 5 years imprisonment and fine (up to 2 years for registered medical practitioners during medical procedures); under 106(2), hit-and-run without reporting carries up to 10 years and fine."
+    plain_english: "Causing someone's death through a rash or negligent act carries up to 5 years in prison and a fine (capped at 2 years for doctors performing medical procedures). Fleeing a fatal vehicle crash without reporting it to police or a magistrate carries up to 10 years."
+    excerpt: "Section 106. Causing death by negligence. (1) Whoever causes death of any person by doing any rash or negligent act not amounting to culpable homicide, shall be punished with imprisonment of either description for a term which may extend to five years, and shall also be liable to fine; and if such act is done by a registered medical practitioner while performing medical procedure, he shall be punished with imprisonment of either description for a term which may extend to two years, and shall also be liable to fine."
+
+  - id: BNS_111
+    bns_section: "111"
+    ipc_section: "New in BNS (no direct IPC equivalent)"
+    title: "Organised crime"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Death or life imprisonment and minimum Rs. 10 lakh fine if it results in death; otherwise 5 years to life imprisonment and minimum Rs. 5 lakh fine."
+    plain_english: "Continuing unlawful activity—such as kidnapping, extortion, contract killing, cybercrime, or trafficking—carried out by a syndicate or group for financial or material gain is punishable with 5 years to life imprisonment (or death if a death occurs) plus heavy fines."
+    excerpt: "Section 111. Organised crime. (1) Any continuing unlawful activity including kidnapping, robbery, vehicle theft, extortion, land grabbing, contract killing, economic offence, cyber-crimes, trafficking of persons, drugs, weapons or illicit goods or services, human trafficking for prostitution or ransom, by any person or a group of persons acting in concert, singly or jointly, either as a member of an organised crime syndicate or on behalf of such syndicate, by use of violence, threat of violence, intimidation, coercion, or by any other unlawful means to obtain direct or indirect material benefit including a financial benefit, shall constitute organised crime."
+
+  - id: BNS_115
+    bns_section: "115"
+    ipc_section: "323"
+    title: "Voluntarily causing hurt"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Non-cognizable"
+    bailable: "Bailable"
+    punishment: "Imprisonment up to 1 year, or fine up to Rs. 10,000, or both."
+    plain_english: "Intentionally causing bodily pain, disease, or infirmity to another person (without grave provocation) is punishable with up to 1 year in prison, a fine up to Rs. 10,000, or both."
+    excerpt: "Section 115. Voluntarily causing hurt. (2) Whoever, except in the case provided for by sub-section (1) of section 122, voluntarily causes hurt, shall be punished with imprisonment of either description for a term which may extend to one year, or with fine which may extend to ten thousand rupees, or with both."
+
+  - id: BNS_117
+    bns_section: "117"
+    ipc_section: "325"
+    title: "Voluntarily causing grievous hurt"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Bailable"
+    punishment: "Imprisonment up to 7 years and fine (higher if resulting in permanent disability or persistent vegetative state)."
+    plain_english: "Intentionally causing severe injury—such as bone fracture, permanent loss of sight or hearing, or disfigurement—carries up to 7 years imprisonment and a fine."
+    excerpt: "Section 117. Voluntarily causing grievous hurt. (2) Whoever, except in the case provided for by sub-section (2) of section 122, voluntarily causes grievous hurt, shall be punished with imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine."
+
+  - id: BNS_126
+    bns_section: "126"
+    ipc_section: "339 / 341"
+    title: "Wrongful restraint"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Bailable"
+    punishment: "Simple imprisonment up to 1 month, or fine up to Rs. 5,000, or both."
+    plain_english: "Voluntarily blocking someone from moving in a direction where they have a lawful right to go is wrongful restraint, punishable with up to 1 month simple imprisonment or a fine up to Rs. 5,000."
+    excerpt: "Section 126. Wrongful restraint. (1) Whoever voluntarily obstructs any person so as to prevent that person from proceeding in any direction in which that person has a right to proceed, is said wrongfully to restrain that person. (2) Whoever wrongfully restrains any person shall be punished with simple imprisonment for a term which may extend to one month, or with fine which may extend to five thousand rupees, or with both."
+
+  - id: BNS_137
+    bns_section: "137"
+    ipc_section: "359 / 361 / 363"
+    title: "Kidnapping"
+    chapter: "Chapter VI — Of Offences Affecting the Human Body"
+    cognizable: "Cognizable"
+    bailable: "Bailable"
+    punishment: "Imprisonment up to 7 years and fine."
+    plain_english: "Taking a person out of India without consent, or taking a minor (under 18) or person of unsound mind away from their lawful guardian without the guardian's consent, is kidnapping and carries up to 7 years imprisonment and a fine."
+    excerpt: "Section 137. Kidnapping. (2) Whoever kidnaps any person from India or from lawful guardianship shall be punished with imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine."
+
+  - id: BNS_152
+    bns_section: "152"
+    ipc_section: "Replaced IPC 124A (Sedition)"
+    title: "Act endangering sovereignty, unity and integrity of India"
+    chapter: "Chapter VII — Of Offences Against the State"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment for life, or imprisonment up to 7 years, and fine."
+    plain_english: "Replaces the colonial sedition section (IPC 124A). Punishes intentionally exciting secession, armed rebellion, subversive activities, or acts endangering India's sovereignty, unity, and integrity, while explicitly excluding lawful criticism aimed at changing government measures peacefully."
+    excerpt: "Section 152. Whoever, purposely or knowingly, by words, either spoken or written, or by signs, or by visible representation, or by electronic communication or by use of financial mean, or otherwise, excites or attempts to excite, secession or armed rebellion or subversive activities, or encourages feelings of separatist activities or endangers sovereignty or unity and integrity of India; or indulges in or commits any such act shall be punished with imprisonment for life or with imprisonment which may extend to seven years, and shall also be liable to fine. Explanation.—Comments expressing disapprobation of the measures, or administrative or other action of the Government with a view to obtain their alteration by lawful means without exciting or attempting to excite the activities referred to in this section do not constitute an offence under this section."
+
+  - id: BNS_189
+    bns_section: "189"
+    ipc_section: "141 / 143"
+    title: "Unlawful assembly"
+    chapter: "Chapter XI — Of Offences Against the Public Tranquillity"
+    cognizable: "Cognizable"
+    bailable: "Bailable"
+    punishment: "Up to 6 months imprisonment, fine, or both (higher if armed with a deadly weapon)."
+    plain_english: "A gathering of five or more people sharing an unlawful common object—such as intimidating public servants, resisting lawful process, or committing trespass or mischief—is an unlawful assembly."
+    excerpt: "Section 189. Unlawful assembly. (1) An assembly of five or more persons is designated an unlawful assembly, if the common object of the persons composing that assembly is to overawe by criminal force, or show of criminal force, the Central Government or any State Government or Parliament or the Legislature of any State, or any public servant in the exercise of the lawful power of such public servant, or to commit any mischief or criminal trespass, or other offence."
+
+  - id: BNS_303
+    bns_section: "303"
+    ipc_section: "378 / 379"
+    title: "Theft"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Up to 3 years imprisonment, fine, or both (community service possible for first-time petty theft under Rs. 5,000 if property is returned); 1 to 5 years RI on repeat conviction."
+    plain_english: "Dishonestly taking movable property out of someone's possession without their consent is theft. First-time offenders carry up to 3 years imprisonment or fine, with community service introduced under BNS for returned stolen property worth under Rs. 5,000."
+    excerpt: "Section 303. Theft. (1) Whoever, intending to take dishonestly any movable property out of the possession of any person without that person's consent, moves that property in order to such taking, is said to commit theft. (2) Whoever commits theft shall be punished with imprisonment of either description for a term which may extend to three years, or with fine, or with both: Provided that in cases of theft where the value of the stolen property is less than five thousand rupees, and a person is convicted for the first time, he shall upon return of the value of property or restoration of the stolen property, be punished with community service."
+
+  - id: BNS_304
+    bns_section: "304"
+    ipc_section: "New in BNS (no direct IPC equivalent)"
+    title: "Snatching"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment up to 3 years and fine."
+    plain_english: "A new BNS offence specifically covering sudden, quick, or forcible grabbing of movable property (such as a mobile phone or chain) from a person, punishable with up to 3 years imprisonment and a fine."
+    excerpt: "Section 304. Snatching. (1) Theft is snatching if, in order to commit theft, the offender suddenly or quickly or forcibly seizes or secures or grabs or takes away from any person or from his possession any movable property. (2) Whoever commits snatching, shall be punished with imprisonment of either description for a term which may extend to three years, and shall also be liable to fine."
+
+  - id: BNS_308
+    bns_section: "308"
+    ipc_section: "383 / 384"
+    title: "Extortion"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment up to 7 years, or fine, or both."
+    plain_english: "Intentionally putting someone in fear of injury to dishonestly force them to hand over money, property, or a signed legal document is extortion, punishable under BNS with up to 7 years imprisonment (increased from 3 years under IPC 384)."
+    excerpt: "Section 308. Extortion. (1) Whoever intentionally puts any person in fear of any injury to that person, or to any other, and thereby dishonestly induces the person so put in fear to deliver to any person any property, or valuable security or anything signed or sealed which may be converted into a valuable security, commits extortion. (2) Whoever commits extortion shall be punished with imprisonment of either description for a term which may extend to seven years, or with fine, or with both."
+
+  - id: BNS_309
+    bns_section: "309"
+    ipc_section: "390 / 392"
+    title: "Robbery"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Rigorous imprisonment up to 10 years and fine (up to 14 years if committed on a highway between sunset and sunrise)."
+    plain_english: "Robbery is an aggravated form of theft or extortion involving violence, wrongful restraint, or immediate threat of death or hurt. It carries up to 10 years rigorous imprisonment and a fine (up to 14 years for nighttime highway robbery)."
+    excerpt: "Section 309. Robbery. (4) Whoever commits robbery shall be punished with rigorous imprisonment for a term which may extend to ten years, and shall also be liable to fine; and, if the robbery be committed on the highway between sunset and sunrise, the imprisonment may be extended to fourteen years."
+
+  - id: BNS_316
+    bns_section: "316"
+    ipc_section: "405 / 406"
+    title: "Criminal breach of trust"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Non-bailable"
+    punishment: "Imprisonment up to 5 years, or fine, or both (higher for clerks, carriers, or public servants)."
+    plain_english: "If someone is entrusted with property or control over it and dishonestly misuses, keeps, or disposes of it in violation of the law or contract, they commit criminal breach of trust—punishable under BNS with up to 5 years imprisonment (increased from 3 years under IPC 406)."
+    excerpt: "Section 316. Criminal breach of trust. (1) Whoever, being in any manner entrusted with property, or with any dominion over property, dishonestly misappropriates or converts to his own use that property, or dishonestly uses or disposes of that property in violation of any direction of law prescribing the mode in which such trust is to be discharged, or of any legal contract, express or implied, which he has made touching the discharge of such trust, commits criminal breach of trust. (2) Whoever commits criminal breach of trust shall be punished with imprisonment of either description for a term which may extend to five years, or with fine, or with both."
+
+  - id: BNS_318
+    bns_section: "318"
+    ipc_section: "415 / 417 / 420"
+    title: "Cheating"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Non-cognizable under 318(2); Cognizable under 318(4)"
+    bailable: "Bailable under 318(2); Non-bailable under 318(4)"
+    punishment: "Up to 3 years, fine, or both for simple cheating (318(2)); up to 7 years and fine for cheating and dishonestly inducing delivery of property (318(4), equivalent to IPC 420)."
+    plain_english: "Deceiving a person to dishonestly make them hand over money or property, or do something that harms them, is cheating. Under sub-section (4)—the BNS equivalent of IPC Section 420—inducing delivery of property carries up to 7 years imprisonment and a fine."
+    excerpt: "Section 318. Cheating. (1) Whoever, by deceiving any person, fraudulently or dishonestly induces the person so deceived to deliver any property to any person, or to consent that any person shall retain any property, or intentionally induces the person so deceived to do or omit to do anything which he would not do or omit if he were not so deceived, and which act or omission causes or is likely to cause damage or harm to that person in body, mind, reputation or property, is said to cheat. (4) Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security, shall be punished with imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine."
+
+  - id: BNS_329
+    bns_section: "329"
+    ipc_section: "441 / 442 / 447 / 448"
+    title: "Criminal trespass and house-trespass"
+    chapter: "Chapter XVII — Of Offences Against Property"
+    cognizable: "Cognizable"
+    bailable: "Bailable"
+    punishment: "Up to 3 months imprisonment, fine up to Rs. 5,000, or both for criminal trespass; up to 1 year, fine up to Rs. 5,000, or both for house-trespass."
+    plain_english: "Entering or staying on someone else's property intending to commit an offence, intimidate, insult, or annoy them is criminal trespass (up to 3 months or Rs. 5,000 fine). Entering a building or dwelling carries up to 1 year."
+    excerpt: "Section 329. Criminal trespass and house-trespass. (1) Whoever enters into or upon property in the possession of another with intent to commit an offence or to intimidate, insult or annoy any person in possession of such property, or having lawfully entered into or upon such property, unlawfully remains there with intent thereby to intimidate, insult or annoy any such person or with intent to commit an offence is said to commit criminal trespass."
+
+  - id: BNS_336
+    bns_section: "336"
+    ipc_section: "463 / 465 / 468"
+    title: "Forgery"
+    chapter: "Chapter XVIII — Of Offences Relating to Documents and to Property Marks"
+    cognizable: "Non-cognizable (336(2)); Cognizable (336(3) for cheating)"
+    bailable: "Bailable (336(2)); Non-bailable (336(3))"
+    punishment: "Up to 2 years, fine, or both for general forgery; up to 7 years and fine for forgery for the purpose of cheating."
+    plain_english: "Creating a false document or electronic record intending to cause damage, support a false claim, or commit fraud is forgery, carrying up to 2 years imprisonment—or up to 7 years and a fine when done to cheat someone."
+    excerpt: "Section 336. Forgery. (1) Whoever makes any false document or false electronic record or part of a document or electronic record, with intent to cause damage or injury, to the public or to any person, or to support any claim or title, or to cause any person to part with property, or to enter into any express or implied contract, or with intent to commit fraud or that fraud may be committed, commits forgery."
+
+  - id: BNS_351
+    bns_section: "351"
+    ipc_section: "503 / 506"
+    title: "Criminal intimidation"
+    chapter: "Chapter XIX — Of Criminal Intimidation, Insult, Annoyance, Defamation, Etc."
+    cognizable: "Non-cognizable"
+    bailable: "Bailable"
+    punishment: "Up to 2 years, fine, or both; up to 7 years, fine, or both if the threat is to cause death, grievous hurt, or destruction of property by fire."
+    plain_english: "Threatening someone with injury to their body, reputation, or property to alarm them or force them to do something they are not legally required to do is criminal intimidation (up to 2 years, or up to 7 years for threats of death or serious harm)."
+    excerpt: "Section 351. Criminal intimidation. (1) Whoever threatens another by any means, with any injury to his person, reputation or property, or to the person or reputation of any one in whom that person is interested, with intent to cause alarm to that person, or to cause that person to do any act which he is not legally bound to do, or to omit to do any act which that person is legally entitled to do, as the means of avoiding the execution of such threat, commits criminal intimidation."
+
+  - id: BNS_356
+    bns_section: "356"
+    ipc_section: "499 / 500"
+    title: "Defamation"
+    chapter: "Chapter XIX — Of Criminal Intimidation, Insult, Annoyance, Defamation, Etc."
+    cognizable: "Non-cognizable"
+    bailable: "Bailable"
+    punishment: "Simple imprisonment up to 2 years, or fine, or both, or community service."
+    plain_english: "Publishing or speaking a false statement intending to harm someone's reputation is defamation (subject to ten exceptions such as truth for public good or fair comment). BNS adds community service as an alternative punishment alongside up to 2 years simple imprisonment or a fine."
+    excerpt: "Section 356. Defamation. (1) Whoever, by words either spoken or intended to be read, or by signs or by visible representations, makes or publishes in any manner, any imputation concerning any person intending to harm, or knowing or having reason to believe that such imputation will harm, the reputation of such person, is said, except in the cases hereinafter excepted, to defame that person. (2) Whoever defames another shall be punished with simple imprisonment for a term which may extend to two years, or with fine, or with both, or with community service."
+
+constitutional_articles:
+  - id: ART_14
+    article: "14"
+    part: "Part III — Fundamental Rights"
+    title: "Equality before law"
+    scope: "Applies to all persons (citizens and non-citizens) within India"
+    key_restrictions: "Permits reasonable classification based on intelligible differentia with rational nexus to the law's objective."
+    plain_english: "The State cannot deny anyone in India equality before the law or equal protection of the laws. Similar people must be treated alike, and arbitrary government action is prohibited."
+    excerpt: "Article 14. Equality before law. The State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India."
+
+  - id: ART_15
+    article: "15"
+    part: "Part III — Fundamental Rights"
+    title: "Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth"
+    scope: "Applies to citizens of India"
+    key_restrictions: "Allows special provisions for women, children, socially and educationally backward classes, Scheduled Castes, Scheduled Tribes, and Economically Weaker Sections (EWS)."
+    plain_english: "The State cannot discriminate against any citizen solely because of religion, race, caste, sex, or place of birth, and no citizen can be barred from public places on those grounds. Clauses (3)–(6) allow affirmative-action measures for women, children, SC/ST/OBC, and EWS."
+    excerpt: "Article 15. Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth. (1) The State shall not discriminate against any citizen on grounds only of religion, race, caste, sex, place of birth or any of them. (3) Nothing in this article shall prevent the State from making any special provision for women and children."
+
+  - id: ART_16
+    article: "16"
+    part: "Part III — Fundamental Rights"
+    title: "Equality of opportunity in matters of public employment"
+    scope: "Applies to citizens of India"
+    key_restrictions: "Allows reservation for backward classes, SC/ST, and EWS, and residence requirements set by Parliament."
+    plain_english: "All citizens have equal opportunity in government jobs and cannot be discriminated against on grounds of religion, race, caste, sex, descent, place of birth, or residence, subject to constitutional reservation provisions."
+    excerpt: "Article 16. Equality of opportunity in matters of public employment. (1) There shall be equality of opportunity for all citizens in matters relating to employment or appointment to any office under the State."
+
+  - id: ART_17
+    article: "17"
+    part: "Part III — Fundamental Rights"
+    title: "Abolition of Untouchability"
+    scope: "Absolute right (enforceable against State and private persons)"
+    key_restrictions: "No exceptions."
+    plain_english: "Untouchability is completely abolished and forbidden in any form. Enforcing any social or civil disability based on untouchability is a punishable criminal offence."
+    excerpt: "Article 17. Abolition of Untouchability. Untouchability is abolished and its practice in any form is forbidden. The enforcement of any disability arising out of Untouchability shall be an offence punishable in accordance with law."
+
+  - id: ART_19
+    article: "19"
+    part: "Part III — Fundamental Rights"
+    title: "Protection of certain rights regarding freedom of speech, assembly, association, movement, residence, and profession"
+    scope: "Applies to citizens of India"
+    key_restrictions: "Clauses (2)–(6) allow reasonable restrictions by law on specified grounds such as sovereignty and integrity of India, security of the State, public order, decency or morality, contempt of court, defamation, or incitement to an offence."
+    plain_english: "Guarantees citizens six core freedoms: speech and expression, peaceful assembly without arms, forming associations or unions, free movement across India, living anywhere in India, and practising any profession or trade. Each freedom is subject to reasonable statutory restrictions listed in clauses (2) through (6)."
+    excerpt: "Article 19. Protection of certain rights regarding freedom of speech, etc. (1) All citizens shall have the right (a) to freedom of speech and expression; (b) to assemble peaceably and without arms; (c) to form associations or unions or co-operative societies; (d) to move freely throughout the territory of India; (e) to reside and settle in any part of the territory of India; and (g) to practise any profession, or to carry on any occupation, trade or business. (2) Nothing in sub-clause (a) of clause (1) shall affect the operation of any existing law, or prevent the State from making any law, in so far as such law imposes reasonable restrictions on the exercise of the right conferred by the said sub-clause in the interests of the sovereignty and integrity of India, the security of the State, friendly relations with foreign States, public order, decency or morality or in relation to contempt of court, defamation or incitement to an offence."
+
+  - id: ART_20
+    article: "20"
+    part: "Part III — Fundamental Rights"
+    title: "Protection in respect of conviction for offences"
+    scope: "Applies to all persons; cannot be suspended even during Emergency"
+    key_restrictions: "Applies to criminal proceedings, not retrospective civil or tax laws."
+    plain_english: "Gives three safeguards in criminal law: (1) you cannot be punished under a law that did not exist when you acted, (2) you cannot be prosecuted and punished twice for the same offence (double jeopardy), and (3) you cannot be forced to testify against yourself."
+    excerpt: "Article 20. Protection in respect of conviction for offences. (1) No person shall be convicted of any offence except for violation of a law in force at the time of the commission of the act charged as an offence, nor be subjected to a penalty greater than that which might have been inflicted under the law in force at the time of the commission of the offence. (2) No person shall be prosecuted and punished for the same offence more than once. (3) No person accused of any offence shall be compelled to be a witness against himself."
+
+  - id: ART_21
+    article: "21"
+    part: "Part III — Fundamental Rights"
+    title: "Protection of life and personal liberty"
+    scope: "Applies to all persons (citizens and non-citizens); cannot be suspended during Emergency"
+    key_restrictions: "Deprivation is permitted only according to a fair, just, and reasonable procedure established by law."
+    plain_english: "No one in India can have their life or personal freedom taken away except by a lawful, fair, and reasonable legal process. Courts have read dignity, privacy, fair trial, and clean environment into this right."
+    excerpt: "Article 21. Protection of life and personal liberty. No person shall be deprived of his life or personal liberty except according to procedure established by law."
+
+  - id: ART_21A
+    article: "21A"
+    part: "Part III — Fundamental Rights"
+    title: "Right to education"
+    scope: "Children aged 6 to 14 years"
+    key_restrictions: "Implemented in the manner determined by Parliament by law (Right of Children to Free and Compulsory Education Act, 2009)."
+    plain_english: "Requires the State to provide free and compulsory elementary education to all children between the ages of 6 and 14."
+    excerpt: "Article 21A. Right to education. The State shall provide free and compulsory education to all children of the age of six to fourteen years in such manner as the State may, by law, determine."
+
+  - id: ART_22
+    article: "22"
+    part: "Part III — Fundamental Rights"
+    title: "Protection against arrest and detention in certain cases"
+    scope: "Persons arrested under ordinary law, with separate safeguards for preventive detention"
+    key_restrictions: "Clauses (1)–(2) do not apply to enemy aliens or persons held under a preventive detention law, which is governed by clauses (4)–(7)."
+    plain_english: "Anyone arrested must be told why they are being arrested, has the right to consult a lawyer of their choice, and must be brought before a magistrate within 24 hours (excluding travel time). Separate rules limit preventive detention without an advisory board."
+    excerpt: "Article 22. Protection against arrest and detention in certain cases. (1) No person who is arrested shall be detained in custody without being informed, as soon as may be, of the grounds for such arrest nor shall he be denied the right to consult, and to be defended by, a legal practitioner of his choice. (2) Every person who is arrested and detained in custody shall be produced before the nearest magistrate within a period of twenty-four hours of such arrest excluding the time necessary for the journey from the place of arrest to the court of the magistrate."
+
+  - id: ART_25
+    article: "25"
+    part: "Part III — Fundamental Rights"
+    title: "Freedom of conscience and free profession, practice and propagation of religion"
+    scope: "Applies to all persons"
+    key_restrictions: "Subject to public order, morality, health, and other Fundamental Rights; State may regulate secular activity linked to religious practice."
+    plain_english: "Everyone is equally free to hold any religious belief and to practise and share it, as long as it does not conflict with public order, morality, health, or other constitutional rights."
+    excerpt: "Article 25. Freedom of conscience and free profession, practice and propagation of religion. (1) Subject to public order, morality and health and to the other provisions of this Part, all persons are equally entitled to freedom of conscience and the right freely to profess, practise and propagate religion."
+
+  - id: ART_32
+    article: "32"
+    part: "Part III — Fundamental Rights"
+    title: "Remedies for enforcement of rights conferred by this Part"
+    scope: "Direct access to the Supreme Court for Fundamental Rights violations"
+    key_restrictions: "Cannot be suspended except as expressly provided by the Constitution."
+    plain_english: "Gives anyone the right to approach the Supreme Court directly if their Fundamental Rights are violated. The Supreme Court can issue writs—habeas corpus, mandamus, prohibition, quo warranto, and certiorari—to enforce those rights."
+    excerpt: "Article 32. Remedies for enforcement of rights conferred by this Part. (1) The right to move the Supreme Court by appropriate proceedings for the enforcement of the rights conferred by this Part is guaranteed. (2) The Supreme Court shall have power to issue directions or orders or writs, including writs in the nature of habeas corpus, mandamus, prohibition, quo warranto and certiorari, whichever may be appropriate, for the enforcement of any of the rights conferred by this Part."
+
+  - id: ART_44
+    article: "44"
+    part: "Part IV — Directive Principles of State Policy"
+    title: "Uniform civil code for the citizens"
+    scope: "Directive Principle guiding State policy (not directly enforceable by courts)"
+    key_restrictions: "Non-justiciable under Article 37."
+    plain_english: "Directs the State to work toward a common set of civil laws (covering matters like marriage, divorce, inheritance, and adoption) for all citizens across India."
+    excerpt: "Article 44. Uniform civil code for the citizens. The State shall endeavour to secure for the citizens a uniform civil code throughout the territory of India."
+
+  - id: ART_226
+    article: "226"
+    part: "Part VI — The States (High Courts)"
+    title: "Power of High Courts to issue certain writs"
+    scope: "High Courts can enforce both Fundamental Rights and any other legal right"
+    key_restrictions: "Discretionary remedy; High Courts may decline if an adequate alternative remedy exists."
+    plain_english: "Empowers every State High Court to issue writs (habeas corpus, mandamus, prohibition, quo warranto, certiorari) to enforce Fundamental Rights and any other legal right within its jurisdiction."
+    excerpt: "Article 226. Power of High Courts to issue certain writs. (1) Notwithstanding anything in article 32, every High Court shall have powers, throughout the territories in relation to which it exercise jurisdiction, to issue to any person or authority, including in appropriate cases, any Government, within those territories directions, orders or writs, including writs in the nature of habeas corpus, mandamus, prohibition, quo warranto and certiorari, or any of them, for the enforcement of any of the rights conferred by Part III and for any other purpose."
+
+  - id: ART_300A
+    article: "300A"
+    part: "Part XII — Finance, Property, Contracts and Suits"
+    title: "Persons not to be deprived of property save by authority of law"
+    scope: "Constitutional legal right (no longer a Fundamental Right after 44th Amendment)"
+    key_restrictions: "Property can be taken only under a valid law enacted by a competent legislature."
+    plain_english: "The government cannot take away anyone's private property by mere executive order; it can only do so under a valid statute passed by a legislature."
+    excerpt: "Article 300A. Persons not to be deprived of property save by authority of law. No person shall be deprived of his property save by authority of law."
+
+  - id: ART_368
+    article: "368"
+    part: "Part XX — Amendment of the Constitution"
+    title: "Power of Parliament to amend the Constitution and procedure therefor"
+    scope: "Governs constitutional amendments by Parliament"
+    key_restrictions: "Federal provisions require ratification by at least half the States; Supreme Court precedent bars altering the Basic Structure of the Constitution."
+    plain_english: "Explains how Parliament can amend the Constitution through a special majority (two-thirds of members present and voting, plus a majority of total membership), with at least half of State legislatures also approving changes affecting federal structure."
+    excerpt: "Article 368. Power of Parliament to amend the Constitution and procedure therefor. (1) Notwithstanding anything in this Constitution, Parliament may in exercise of its constituent power amend by way of addition, variation or repeal any provision of this Constitution in accordance with the procedure laid down in this article."
+

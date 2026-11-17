@@ -17,7 +17,7 @@
       "category": "Payment Terms",
       "alternate_categories": ["Other"],
       "section_reference": "Section 2",
-      "key_quote": "annual base salary of $185,000.00",
+      "key_quote": "annual base salary of ₹18,00,000.00",
       "importance": "HIGH"
     },
     {
@@ -62,7 +62,7 @@
       "category": "Governing Law",
       "alternate_categories": ["Dispute Resolution"],
       "section_reference": "Section 7",
-      "key_quote": "laws of the State of California",
+      "key_quote": "laws of India",
       "importance": "LOW"
     }
   ],
@@ -73,7 +73,7 @@
       "category": "Restrictive Covenants",
       "level": "HIGH",
       "key_indicators": ["twelve (12) months", "directly competes", "shall not directly or indirectly"],
-      "why_it_matters": "Imposes a 12-month post-employment restriction on working with competing businesses, which may face enforceability issues under California law."
+      "why_it_matters": "Imposes a 12-month post-employment restriction on working with competing businesses, which faces strict scrutiny under Section 27 of the Indian Contract Act, 1872."
     },
     {
       "id": "emp_risk_2",
@@ -93,8 +93,8 @@
     }
   ],
   "gold_key_info": {
-    "contract_amount": "$185,000.00",
-    "payment_deadlines": "bi-weekly",
+    "contract_amount": "₹18,00,000.00",
+    "payment_deadlines": "monthly",
     "penalties": "Not specified",
     "start_date": "March 1, 2026",
     "end_date": "Not specified",

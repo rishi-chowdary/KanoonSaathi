@@ -47,6 +47,16 @@ _ITALIC_FONT = "Helvetica-Oblique"
 
 _FONT_CANDIDATES = [
     (
+        "/usr/share/fonts/google-carlito-fonts/Carlito-Regular.ttf",
+        "/usr/share/fonts/google-carlito-fonts/Carlito-Bold.ttf",
+        "/usr/share/fonts/google-carlito-fonts/Carlito-Italic.ttf",
+    ),
+    (
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+    ),
+    (
         "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
         "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Bold.ttf",
         "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Italic.ttf",

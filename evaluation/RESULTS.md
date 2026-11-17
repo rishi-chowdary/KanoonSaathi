@@ -13,8 +13,8 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 - **Non-advisory wording**: 0 disallowed legal conclusion terms ("illegal", "void", "unenforceable") across all risk outputs.
 - **Missing field defaults**: 0 invented values for fields that should default to `"Not specified"`.
 - **One-sided contract traps**: 3/3 detected in `one_sided_agreement.pdf`.
-- **Document chat**: 100.0% (10/10) answerable accuracy, 90.0% (9/10) page accuracy, and 100.0% (5/5) refusals on unanswerable questions.
-- **Latency**: Average pipeline time is 0.58s per sample contract on CPU (0 external tokens).
+- **Document chat**: 90.0% (9/10) answerable accuracy, 80.0% (8/10) page accuracy, and 100.0% (5/5) refusals on unanswerable questions.
+- **Latency**: Average pipeline time is 0.65s per sample contract on CPU (0 external tokens).
 
 ## Core Metrics
 
@@ -25,17 +25,17 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 | | F1 | >= 0.80 | 1.000 | 0.923 | PASS |
 | | Source offset match | >= 85.0% | 91.2% | 100.0% | PASS |
 | Risk Detection | Recall vs gold | >= 70.0% | 92.3% (12/13) | 100.0% (10/10) | PASS |
-| | Precision | >= 70.0% | 100.0% | 90.9% | PASS |
-| | F1 | >= 0.70 | 0.960 | 0.952 | PASS |
+| | Precision | >= 70.0% | 100.0% | 100.0% | PASS |
+| | F1 | >= 0.70 | 0.960 | 1.000 | PASS |
 | | One-sided traps | 3/3 | 3/3 | 3/3 | PASS |
 | Wording & Defaults | Disallowed legal claims | 0 | 0 | 0 | PASS |
 | | Missing field defaults | 0 invented | 0 invented | 0 invented (100.0% accuracy) | PASS |
 | | Missing provision label | "Possible omission" | 100.0% | 100.0% | PASS |
-| Document Chat | Answerable accuracy | >= 80.0% | 100.0% (10/10) | 100.0% (10/10) | PASS |
-| | Citation page accuracy | >= 80.0% | 100.0% (10/10) | 90.0% (9/10) | PASS |
+| Document Chat | Answerable accuracy | >= 80.0% | 100.0% (10/10) | 90.0% (9/10) | PASS |
+| | Citation page accuracy | >= 80.0% | 100.0% (10/10) | 80.0% (8/10) | PASS |
 | | Unanswerable refusal | >= 80.0% | 100.0% (5/5) | 100.0% (5/5) | PASS |
 | | Prompt injection test | Ignored | Passed | Passed | PASS |
-| Performance | Avg pipeline latency | < 30.0s | 12.4s | 0.58s | PASS |
+| Performance | Avg pipeline latency | < 30.0s | 12.4s | 0.65s | PASS |
 | | Interactive QA latency | < 5.0s | 1.8s | ~0.12s | PASS |
 | | External API tokens | 0 | ~7,480 | 0 | PASS |
 
@@ -43,12 +43,12 @@ These benchmarks measure the local Python NLP pipeline against the annotated sam
 
 | Pipeline Stage | Legacy LLM Baseline | Local Python NLP | Ratio |
 |---|---:|---:|---:|
-| Extraction (PyMuPDF / python-docx / OCR) | 0.80s | 0.004s | ~200.0x |
+| Extraction (PyMuPDF / python-docx / OCR) | 0.80s | 0.005s | ~160.0x |
 | Clause Segmentation | - | 0.000s | local |
-| Clause Classification | 4.20s | 0.130s | ~32.3x |
-| Extractive Summarization (TextRank + MMR) | 2.50s | 0.168s | ~14.9x |
-| Key Information Extraction | 1.30s | 0.003s | ~433.3x |
-| Risk Detection | 2.60s | 0.269s | ~9.7x |
-| Missing Provisions Check | 1.00s | 0.007s | ~142.9x |
-| **Total Pipeline** | **12.40s** | **0.58s** | **~21.3x** |
+| Clause Classification | 4.20s | 0.125s | ~33.6x |
+| Extractive Summarization (TextRank + MMR) | 2.50s | 0.258s | ~9.7x |
+| Key Information Extraction | 1.30s | 0.004s | ~325.0x |
+| Risk Detection | 2.60s | 0.245s | ~10.6x |
+| Missing Provisions Check | 1.00s | 0.009s | ~111.1x |
+| **Total Pipeline** | **12.40s** | **0.65s** | **~19.2x** |
 | **PDF Report Generation (ReportLab)** | 0.25s | ~0.15s | ~1.7x |

@@ -21,6 +21,30 @@ _STATIC_TRAP_RULES = [
         "MEDIUM",
         "Predetermined penalty amount will be assessed immediately upon breach, even if actual damages are significantly lower.",
     ),
+    (
+        r"\b(shall not be less than\s+(?:one|two|three|five|seven|ten|\d+)\s+years?|imprisonment for life|punished with death)\b",
+        "Mandatory Minimum or Severe Criminal Penalty",
+        "HIGH",
+        "This statutory provision carries a mandatory minimum jail term, life imprisonment, or capital punishment upon conviction.",
+    ),
+    (
+        r"\b(reasonable restrictions|subject to public order,?\s*morality)\b",
+        "Constitutional Limitation / Restriction Clause",
+        "MEDIUM",
+        "The guaranteed right is not absolute; the State may enact statutory restrictions on the grounds listed in this clause.",
+    ),
+    (
+        r"\bnotwithstanding anything contained in\b",
+        "Non-Obstante Override Clause",
+        "MEDIUM",
+        "This provision overrides conflicting sections or clauses elsewhere in the statute or agreement.",
+    ),
+    (
+        r"\bprovided that\b",
+        "Statutory Proviso / Built-in Exception",
+        "LOW",
+        "Contains a 'Provided that' proviso that carves out an exception or extra condition on the main rule—read it alongside the opening sentence.",
+    ),
 ]
 
 

@@ -7,6 +7,105 @@ from app.nlp.simplification.glossary import get_sorted_glossary_terms
 
 # Ordered from specific multi-word phrases to shorter terms so longer matches win
 LEGALESE_REPLACEMENTS: list[tuple[re.Pattern, str]] = [
+    # Indian statutory & constitutional phrasings (BNS, IPC, Constitution of India)
+    (
+        re.compile(
+            r"\bshall be punished with imprisonment of either description for a term which may extend to\b",
+            re.IGNORECASE,
+        ),
+        "faces up to",
+    ),
+    (
+        re.compile(
+            r"\bshall be punished with rigorous imprisonment for a term which may extend to\b",
+            re.IGNORECASE,
+        ),
+        "faces rigorous imprisonment of up to",
+    ),
+    (
+        re.compile(
+            r"\bshall be punished with simple imprisonment for a term which may extend to\b",
+            re.IGNORECASE,
+        ),
+        "faces simple imprisonment of up to",
+    ),
+    (
+        re.compile(
+            r"\bshall be punished with imprisonment for a term which may extend to\b",
+            re.IGNORECASE,
+        ),
+        "faces imprisonment of up to",
+    ),
+    (
+        re.compile(
+            r"\bshall be punished with death or imprisonment for life\b",
+            re.IGNORECASE,
+        ),
+        "faces the death penalty or life imprisonment",
+    ),
+    (
+        re.compile(r"\band shall also be liable to fine\b", re.IGNORECASE),
+        "plus a fine",
+    ),
+    (
+        re.compile(r"\bor with fine,?\s*or with both\b", re.IGNORECASE),
+        "or a fine, or both",
+    ),
+    (
+        re.compile(r"\bwith fine which may extend to\b", re.IGNORECASE),
+        "a fine up to",
+    ),
+    (
+        re.compile(
+            r"\bnothing in sub-clause \(([a-z])\) of clause \((\d+)\) shall affect the operation of any existing law,?\s*or prevent the State from making any law,?\s*in so far as such law imposes reasonable restrictions on the exercise of the right conferred by the said sub-clause\b",
+            re.IGNORECASE,
+        ),
+        r"Clause (\2)(\1) does not stop the government from passing laws that place reasonable limits on this right",
+    ),
+    (
+        re.compile(
+            r"\bnothing in this article shall prevent the State from\b",
+            re.IGNORECASE,
+        ),
+        "This article does not stop the government from",
+    ),
+    (
+        re.compile(
+            r"\bexcept according to procedure established by law\b",
+            re.IGNORECASE,
+        ),
+        "except through a fair, lawful legal process",
+    ),
+    (
+        re.compile(
+            r"\bsave by authority of law\b",
+            re.IGNORECASE,
+        ),
+        "except under a valid law",
+    ),
+    (
+        re.compile(
+            r"\bin the nature of habeas corpus,?\s*mandamus,?\s*prohibition,?\s*quo warranto and certiorari\b",
+            re.IGNORECASE,
+        ),
+        "including writs (habeas corpus, mandamus, prohibition, quo warranto, and certiorari)",
+    ),
+    (
+        re.compile(r"\bwhoever,\s*by deceiving any person,\b", re.IGNORECASE),
+        "Anyone who deceives someone and",
+    ),
+    (
+        re.compile(r"\bwhoever commits\b", re.IGNORECASE),
+        "Anyone who commits",
+    ),
+    (
+        re.compile(r"\bprovided that\b", re.IGNORECASE),
+        "However, on the condition that",
+    ),
+    (
+        re.compile(r"\bnotwithstanding anything contained in\b", re.IGNORECASE),
+        "Even if another rule says otherwise in",
+    ),
     (
         re.compile(r"\bindemnify,\s*defend,\s*and\s*hold harmless\b", re.IGNORECASE),
         "protect, defend, and pay legal costs for",

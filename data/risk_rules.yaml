@@ -77,20 +77,20 @@ rules:
     possible_consequences: "Unquantifiable financial exposure and heavy litigation defense burdens arising from external lawsuits."
     suggested_questions:
       - "Can this indemnification obligation be made mutual rather than unilateral?"
-      - "Can an aggregate dollar cap equal to the annual fees paid under this agreement be added?"
+      - "Can an aggregate cap equal to the annual fees paid under this agreement be added?"
 
   - id: "LIAB_DISPROPORTIONATE_CAP"
     title: "Extreme Disproportion in Liability Limits and Warranty Disclaimers"
     category: "Liability"
     level: "HIGH"
     patterns:
-      - "liability\\s+shall\\s+not\\s+exceed\\s+(?:the\\s+amount\\s+of\\s+)?\\$100"
-      - "aggregate\\s+liability.*limited\\s+to\\s+\\$[0-9]+(?:\\.[0-9]+)?\\b"
-      - "disclaims\\s+all\\s+warranties.*liability\\s+capped\\s+at\\s+\\$"
+      - "liability\\s+shall\\s+not\\s+exceed\\s+(?:the\\s+(?:sum|amount)\\s+of\\s+)?(?:\\$|₹|Rs\\.?\\s*)[0-9,]+"
+      - "aggregate\\s+liability.*(?:limited\\s+to|exceed\\s+the\\s+sum\\s+of)\\s+(?:\\$|₹|Rs\\.?\\s*)[0-9,]+(?:\\.[0-9]+)?\\b"
+      - "disclaims\\s+all\\s+warranties.*liability\\s+capped\\s+at\\s+(?:\\$|₹|Rs\\.?\\s*)"
     prototypes:
-      - "Vendor's total aggregate liability under this agreement shall under no circumstances exceed the sum of $100.00."
-      - "Company disclaims all warranties of any kind and caps its maximum liability at one hundred dollars."
-    explanation: "The counterparty disclaims standard performance warranties while capping their maximum aggregate liability at a nominal dollar amount, offering minimal recourse if they breach."
+      - "Vendor's total aggregate liability under this agreement shall under no circumstances exceed the sum of Rs. 1,000.00 or $100.00."
+      - "Company disclaims all warranties of any kind and caps its maximum liability at one thousand rupees or one hundred dollars."
+    explanation: "The counterparty disclaims standard performance warranties while capping their maximum aggregate liability at a nominal amount, offering minimal recourse if they breach."
     why_it_matters: "If the counterparty causes substantial business disruption or data loss, your legal recovery could be capped at negligible sums."
     possible_consequences: "Severe financial losses with virtually no avenue to recover damages from the defaulting vendor."
     suggested_questions:

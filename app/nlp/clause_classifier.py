@@ -10,7 +10,7 @@ from app.nlp.registry import get_clause_hf_classifier, get_sentence_transformer
 
 logger = logging.getLogger("lexilegal.nlp.classifier")
 
-# 18 Standard Clause Categories
+# Standard Contract & Indian Statute Categories
 STANDARD_CATEGORIES = [
     "Confidentiality",
     "Termination",
@@ -29,6 +29,10 @@ STANDARD_CATEGORIES = [
     "Term and Renewal",
     "Data Protection and Privacy",
     "Insurance",
+    "Criminal Offence and Punishment",
+    "Constitutional Right and Provision",
+    "Statutory Definition and Exception",
+    "Jurisdiction and Procedure",
     "Other",
 ]
 

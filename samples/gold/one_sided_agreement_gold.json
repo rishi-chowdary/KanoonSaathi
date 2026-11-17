@@ -31,15 +31,15 @@
       "title": "Disproportionate Liability Cap Imbalance",
       "category": "Liability",
       "level": "HIGH",
-      "key_indicators": ["one hundred dollars ($100.00)", "disclaims all"],
-      "why_it_matters": "Vendor caps its liability at $100 while Customer bears uncapped liability."
+      "key_indicators": ["one thousand rupees (₹1,000.00)", "disclaims all"],
+      "why_it_matters": "Vendor caps its liability at ₹1,000 while Customer bears uncapped liability."
     },
     {
       "id": "one_sided_risk_5",
       "title": "Compounding Daily Late Interest",
       "category": "Financial",
       "level": "MEDIUM",
-      "key_indicators": ["2.5% per month", "compounded daily", "three (3) calendar days", "$500"],
+      "key_indicators": ["2.5% per month", "compounded daily", "three (3) calendar days", "₹50,000"],
       "why_it_matters": "Extreme late payment interest compounding daily after only 3 days."
     },
     {
@@ -54,7 +54,7 @@
   "gold_key_info": {
     "contract_amount": "Not specified",
     "payment_deadlines": "within three (3) calendar days",
-    "penalties": "2.5% per month compounded daily alongside a mandatory $500 administrative fee",
+    "penalties": "2.5% per month compounded daily alongside a mandatory ₹50,000 administrative fee",
     "start_date": "November 1, 2026",
     "end_date": "Not specified",
     "renewal_date": "Not specified",

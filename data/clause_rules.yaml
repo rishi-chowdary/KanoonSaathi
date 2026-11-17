@@ -246,6 +246,101 @@ rules:
       - "workers compensation"
     priority: 75
 
+  Criminal Offence and Punishment:
+    title_keywords:
+      - "murder"
+      - "culpable homicide"
+      - "cheating"
+      - "theft"
+      - "extortion"
+      - "robbery"
+      - "criminal breach of trust"
+      - "criminal intimidation"
+      - "defamation"
+      - "hurt"
+      - "grievous hurt"
+      - "forgery"
+      - "kidnapping"
+      - "stalking"
+      - "dowry death"
+      - "criminal conspiracy"
+      - "organised crime"
+      - "snatching"
+      - "unlawful assembly"
+      - "punishment for"
+    body_keywords:
+      - "shall be punished with"
+      - "imprisonment of either description"
+      - "rigorous imprisonment"
+      - "simple imprisonment"
+      - "imprisonment for life"
+      - "liable to fine"
+      - "community service"
+      - "commits theft"
+      - "commits cheating"
+      - "commits murder"
+      - "bharatiya nyaya sanhita"
+      - "indian penal code"
+    priority: 95
+
+  Constitutional Right and Provision:
+    title_keywords:
+      - "equality before law"
+      - "prohibition of discrimination"
+      - "freedom of speech"
+      - "protection of life"
+      - "personal liberty"
+      - "right to education"
+      - "arrest and detention"
+      - "abolition of untouchability"
+      - "freedom of conscience"
+      - "constitutional remedies"
+      - "remedies for enforcement"
+      - "uniform civil code"
+      - "high courts to issue"
+      - "amend the constitution"
+      - "fundamental rights"
+    body_keywords:
+      - "the state shall not deny"
+      - "procedure established by law"
+      - "reasonable restrictions"
+      - "all citizens shall have the right"
+      - "habeas corpus"
+      - "mandamus"
+      - "certiorari"
+      - "quo warranto"
+      - "fundamental rights"
+      - "part iii"
+      - "supreme court shall have power to issue"
+    priority: 95
+
+  Statutory Definition and Exception:
+    title_keywords:
+      - "explanation"
+      - "illustration"
+      - "exception"
+    body_keywords:
+      - "for the purposes of this section"
+      - "in this sanhita"
+      - "in this code"
+      - "nothing in this section"
+      - "provided that"
+    priority: 70
+
+  Jurisdiction and Procedure:
+    title_keywords:
+      - "cognizable"
+      - "bailable"
+      - "writ jurisdiction"
+      - "procedure"
+    body_keywords:
+      - "nearest magistrate"
+      - "within a period of twenty-four hours"
+      - "high court shall have powers"
+      - "cognizable"
+      - "non-bailable"
+    priority: 75
+
   Other:
     title_keywords:
       - "preamble"
@@ -266,6 +361,8 @@ importance_indicators:
     - "Termination"
     - "Payment Terms"
     - "Intellectual Property"
+    - "Criminal Offence and Punishment"
+    - "Constitutional Right and Provision"
   low_categories:
     - "Governing Law"
     - "Notices"

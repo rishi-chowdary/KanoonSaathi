@@ -99,7 +99,7 @@ def test_full_lifecycle_smoke(client, app):
     chat_data = chat_resp.get_json()
     assert chat_data["addressedInDocument"] is True
     answer_text = chat_data.get("content") or chat_data.get("answer", "")
-    assert "2,400" in answer_text
+    assert "28,000" in answer_text
     citations = chat_data.get("citations", [])
     assert len(citations) > 0
     assert citations[0]["page"] == 1

@@ -51,12 +51,28 @@ categories:
     - "The parties shall maintain adequate data security, confidentiality safeguards, and comply with privacy regulations."
     - "Obligations regarding processing, storage, protection, and non-disclosure of personal data and privacy compliance."
   Insurance:
-    - "Party shall maintain comprehensive commercial general liability, professional indemnity, and workers compensation insurance."
+    - "Party shall maintain commercial general liability, professional indemnity, and workers compensation insurance."
     - "Requirements for insurance policies, minimum coverage limits, and naming the other party as additional insured."
+  Criminal Offence and Punishment:
+    - "Whoever commits an offence under the Bharatiya Nyaya Sanhita or Indian Penal Code shall be punished with imprisonment, fine, or community service."
+    - "Criminal offence definition specifying mens rea, dishonest inducement, theft, hurt, homicide, or intimidation and prescribed jail sentence."
+  Constitutional Right and Provision:
+    - "Fundamental right under the Constitution of India guaranteeing equality before law, freedom of speech, life, personal liberty, or writ remedies."
+    - "Constitutional article limiting State power, specifying reasonable restrictions, or granting Supreme Court and High Court writ jurisdiction."
+  Statutory Definition and Exception:
+    - "Statutory explanation, proviso, illustration, or carve-out defining terms and exceptions under an Act of Parliament."
+  Jurisdiction and Procedure:
+    - "Criminal or constitutional procedure governing arrest, production before a magistrate, bail, cognizable status, or High Court jurisdiction."
   Other:
     - "General miscellaneous contract provisions, preamble, definitions, recitals, or operational descriptions."
 
 document_types:
+  "Bharatiya Nyaya Sanhita (BNS) Statute":
+    - "Bharatiya Nyaya Sanhita, 2023 statutory sections defining criminal offences, punishments, imprisonment terms, fines, and community service in India."
+  "Indian Penal Code (IPC) Statute":
+    - "Indian Penal Code, 1860 statutory sections defining criminal offences, penalties, culpable homicide, theft, cheating, and criminal breach of trust."
+  "Constitution of India":
+    - "Articles of the Constitution of India covering Fundamental Rights, equality before law, freedom of speech, life and personal liberty, and constitutional remedies."
   "Non-Disclosure Agreement (NDA)":
     - "Non-disclosure and confidentiality agreement protecting confidential proprietary information between disclosing and receiving party."
   "Residential Lease Agreement":

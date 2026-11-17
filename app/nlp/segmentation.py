@@ -40,6 +40,21 @@ _punkt_params.abbrev_types = {
     "approx",
     "dept",
     "reg",
+    "rs",
+    "cr",
+    "hon'ble",
+    "govt",
+    "ipc",
+    "bns",
+    "bnss",
+    "bsa",
+    "crpc",
+    "cpc",
+    "air",
+    "scc",
+    "u/s",
+    "r/w",
+    "pvt",
 }
 legal_sentence_tokenizer = PunktSentenceTokenizer(_punkt_params)
 
