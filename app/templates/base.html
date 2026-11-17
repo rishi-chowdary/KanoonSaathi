@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}KanoonSaathi — Contract Analysis & Simplification{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   {% block extra_head %}{% endblock %}
@@ -12,7 +13,10 @@
 <body>
   <header>
     <nav class="navbar" aria-label="Main navigation">
-      <a href="{{ url_for('main.index') }}" class="nav-brand">KanoonSaathi</a>
+      <a href="{{ url_for('main.index') }}" class="nav-brand">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="28" height="28" class="nav-logo">
+        <span>KanoonSaathi</span>
+      </a>
 
       <div class="nav-links">
         <a href="{{ url_for('studio.legal_helper') }}">Legal Helper</a>

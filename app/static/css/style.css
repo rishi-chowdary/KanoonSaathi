@@ -174,11 +174,20 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-nav);
   letter-spacing: 0.2px;
+}
+
+.nav-logo {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 4px;
 }
 
 .nav-brand:hover { text-decoration: none; color: var(--text-nav); }
