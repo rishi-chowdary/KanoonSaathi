@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — LexiLegal AI{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">Create Account</h1>
+      <p class="card-subtitle">Get started analyzing legal documents with offline NLP</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label for="full_name" class="form-label">{{ form.full_name.label }}</label>
+        {{ form.full_name(class="form-input", placeholder="Jane Doe", id="full_name", autofocus=True) }}
+        {% for error in form.full_name.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="email" class="form-label">{{ form.email.label }}</label>
+        {{ form.email(class="form-input", placeholder="you@example.com", id="email") }}
+        {% for error in form.email.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">{{ form.password.label }}</label>
+        {{ form.password(class="form-input", placeholder="At least 8 characters", id="password") }}
+        {% for error in form.password.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password" class="form-label">{{ form.confirm_password.label }}</label>
+        {{ form.confirm_password(class="form-input", placeholder="Repeat password", id="confirm_password") }}
+        {% for error in form.confirm_password.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Register Account</button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+      Already have an account?
+      <a href="{{ url_for('auth.login') }}">Sign in here</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

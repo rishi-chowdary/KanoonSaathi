@@ -228,3 +228,4 @@ lexilegal-ai/
   - Security review, restart recovery, `style_check.py`, and `leftover_check.py`.
   - Fresh-clone dry run.
   - *Gate*: All tests pass, style and leftover checks 100% clean.
+

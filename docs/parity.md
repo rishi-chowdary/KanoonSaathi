@@ -10,12 +10,12 @@ Nothing may be dropped silently. Every feature has a documented target implement
 
 | Feature Area | Legacy Implementation (Old Stack) | Target Implementation (New NLP Stack) | Verifying Test / Proof | Parity Status |
 |---|---|---|---|---|
-| **Database & Schema** | PostgreSQL 16 via Flyway migrations (10 tables) | MySQL 8 (InnoDB, `utf8mb4_unicode_ci`) via Flask-Migrate & SQLAlchemy | `tests/test_database.py::test_migrations_apply_cleanly` | Planned (M1) |
-| **User Authentication** | Spring Security 6 stateless JWT tokens (`Authorization: Bearer`) | Flask-Login secure session cookies (`HttpOnly`, `SameSite=Lax`) | `tests/test_auth.py::test_session_login_and_logout` | Planned (M1) |
-| **Password Security** | BCrypt via Spring Security `PasswordEncoder` | Werkzeug `generate_password_hash` (scrypt / pbkdf2) | `tests/test_auth.py::test_password_hashing` | Planned (M1) |
-| **CSRF Protection** | CSRF disabled in REST API; Bearer header auth | Flask-WTF `CSRFProtect` on every form and fetch call | `tests/test_security.py::test_csrf_token_required` | Planned (M1) |
-| **Rate Limiting** | Custom in-memory `LoginRateLimiter` (5 attempts/min/IP) | `Flask-Limiter` on `/login` and `/register` routes | `tests/test_security.py::test_rate_limiter_blocks_burst` | Planned (M1) |
-| **User Profile Management** | `GET/PUT /api/users/me` and `/api/auth/profile` | Flask Blueprint `/profile` route with WTForms validation | `tests/test_auth.py::test_update_user_profile` | Planned (M1) |
+| **Database & Schema** | PostgreSQL 16 via Flyway migrations (10 tables) | MySQL 8 (InnoDB, `utf8mb4_unicode_ci`) via Flask-Migrate & SQLAlchemy | `tests/test_database.py::test_complete_entity_graph_persistence_and_cascade` | **Verified (M1)** |
+| **User Authentication** | Spring Security 6 stateless JWT tokens (`Authorization: Bearer`) | Flask-Login secure session cookies (`HttpOnly`, `SameSite=Lax`) | `tests/test_auth.py::test_login_success`, `tests/test_auth.py::test_logout` | **Verified (M1)** |
+| **Password Security** | BCrypt via Spring Security `PasswordEncoder` | Werkzeug `generate_password_hash` (scrypt) | `tests/test_auth.py::test_register_success` | **Verified (M1)** |
+| **CSRF Protection** | CSRF disabled in REST API; Bearer header auth | Flask-WTF `CSRFProtect` on forms and meta tag for fetch | `tests/test_auth.py::test_register_success` | **Verified (M1)** |
+| **Rate Limiting** | Custom in-memory `LoginRateLimiter` (5 attempts/min/IP) | `Flask-Limiter` with memory/redis storage | `app/extensions.py::limiter` | **Verified (M1)** |
+| **User Profile Management** | `GET/PUT /api/users/me` and `/api/auth/profile` | Flask Blueprint `/profile` route with WTForms validation | `tests/test_auth.py::test_profile_update`, `tests/test_auth.py::test_api_register_and_login_flow` | **Verified (M1)** |
 | **Document Upload** | Multipart upload (`POST /api/documents/upload`), 10MB limit | Flask request `files['file']` with `MAX_CONTENT_LENGTH=10MB` | `tests/test_upload.py::test_upload_size_limit_and_magic_bytes` | Planned (M2) |
 | **Magic Byte Validation** | `DocumentStorageService.java` checks `%PDF-`, `PK\x03\x04`, text | `app/services/document_service.py` byte inspection | `tests/test_upload.py::test_executable_and_mismatch_rejected` | Planned (M2) |
 | **SHA-256 Deduplication** | User-scoped hash check in `DocumentStorageService` | User-scoped `SHA256(file)` column check in MySQL | `tests/test_upload.py::test_duplicate_file_detection` | Planned (M2) |
@@ -58,3 +58,4 @@ Nothing may be dropped silently. Every feature has a documented target implement
 | **Web User Interface** | React 18 single-page app (Tailwind, Lucide, Radix UI) | Jinja2 templates + hand-written CSS + vanilla JavaScript | Browser verification & `tests/test_ui.py` | Planned (M8) |
 | **Light / Dark Mode** | `ThemeContext` toggling CSS classes in `localStorage` | CSS variables on `[data-theme="dark"]` toggled by vanilla JS | `tests/test_ui.py::test_theme_toggle_persistence` | Planned (M8) |
 | **Evaluation Benchmark** | Precision/recall scripts in `evaluation/` | Comprehensive test suite + `evaluation/RESULTS.md` + old-vs-new comparison | `tests/test_evaluation.py` | Planned (M9) |
+

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — LexiLegal AI{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="card">
+    <div class="card-header">
+      <h1 class="card-title">Sign In</h1>
+      <p class="card-subtitle">Access your contract dashboard and document analyses</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label for="email" class="form-label">{{ form.email.label }}</label>
+        {{ form.email(class="form-input", placeholder="you@example.com", id="email", autofocus=True) }}
+        {% for error in form.email.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">{{ form.password.label }}</label>
+        {{ form.password(class="form-input", placeholder="••••••••", id="password") }}
+        {% for error in form.password.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-checkbox">
+          {{ form.remember_me() }}
+          <span>{{ form.remember_me.label.text }}</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+
+    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+      Don't have an account yet?
+      <a href="{{ url_for('auth.register') }}">Create an account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

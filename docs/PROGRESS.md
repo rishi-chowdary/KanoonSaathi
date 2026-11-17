@@ -19,7 +19,7 @@ This document tracks implementation status across the 10 phases of the project. 
 | Phase 9 | OpenPDF Report Generation, Dashboard Statistics & Workspace Polish | Completed | 2026-11-17 |
 | Phase 10 | Evaluation Suite, End-to-End Testing & Viva Preparation | Completed | 2026-11-17 |
 | Phase M0 | Migration Preparation, Toolchain Audit & Baseline LLM Capture | Completed | 2026-11-17 |
-| Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Planned | - |
+| Phase M1 | Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth | Completed | 2026-11-17 |
 | Phase M2 | Document Extraction, OCR, Segmentation & Chunk Storage | Planned | - |
 | Phase M3 | Clause Segmentation, Ensemble Classifier & Explainability | Planned | - |
 | Phase M4 | Tri-Tier Rule-Based Simplification Engine | Planned | - |
@@ -931,3 +931,54 @@ cd frontend && npm test
   - `python3 evaluation/capture_baseline_llm.py` executed cleanly across all 6 sample contracts.
   - Outputs inspected and confirmed non-empty valid JSON in `evaluation/baseline_llm/`.
   - Cloud Gemini API 503 unavailability spikes observed and handled gracefully by retry backoff, confirming empirical rationale for offline local NLP models.
+
+---
+
+### Phase M1: Flask Skeleton, MySQL 8, SQLAlchemy Models & Session Auth
+- [x] Pin exact package versions in `requirements.txt` strictly limited to allowed libraries (Flask, Flask-SQLAlchemy, Flask-Migrate, Flask-Login, Flask-WTF, Flask-Limiter, PyMySQL, cryptography, PyTorch, spaCy, NLTK, sentence-transformers, transformers, scikit-learn, ReportLab, etc.).
+- [x] Launch and configure MySQL 8 container (utf8mb4, InnoDB) on port 3306 via `docker-compose.yml`.
+- [x] Implement Flask application factory (`app/create_app`) with environment configuration (`app/config.py`).
+- [x] Define declarative SQLAlchemy models in `app/models/` for all 10 schema tables matching legacy schema with UUID primary keys, JSON columns, and cascade deletes (`users`, `documents`, `document_analyses`, `extracted_clauses`, `risk_findings`, `extracted_information`, `missing_clause_warnings`, `document_chunks`, `chat_conversations`, `chat_messages`).
+- [x] Initialize Flask-Migrate (Alembic) migrations and apply schema to MySQL 8 (`migrations/`).
+- [x] Implement Flask-Login session authentication with scrypt password hashing via Werkzeug (`app/blueprints/auth.py`).
+- [x] Construct base Jinja2 layout (`app/templates/base.html`) with navbar, footer, theme toggle, and CSRF token in meta tag.
+- [x] Implement auth templates (`login.html`, `register.html`, `profile.html`) and error templates (`403.html`, `404.html`, `500.html`, `error.html`).
+- [x] Build hand-written responsive CSS (`app/static/css/style.css`) with Navy/Slate legal palette and light/dark theme variables.
+- [x] Add client-side theme persistence and CSRF-aware fetch wrapper (`app/static/js/main.js`).
+- [x] Write and verify unit and database test suite (`tests/test_auth.py`, `tests/test_database.py`) passing 12/12 with 86% coverage.
+- [x] Format and lint code with ruff and black.
+
+**What was built:**
+- `requirements.txt`: Pinned versions of Flask 3.1.3, SQLAlchemy 2.1.9, PyMySQL 1.2.4, Flask-Login 0.6.3, Flask-WTF 1.3.0, Flask-Limiter 4.1.1, PyTorch CPU, spaCy 3.8.18, etc.
+- `docker-compose.yml`: Configured MySQL 8.0 container with utf8mb4 character set, utf8mb4_unicode_ci collation, InnoDB storage engine, and healthchecks.
+- `app/`:
+  - `__init__.py`: Application factory with extension initialization, error handlers, and global context injection.
+  - `config.py`: Configuration loader supporting `Config` and `TestConfig`.
+  - `extensions.py`: Centralized extension instances (`db`, `migrate`, `login_manager`, `csrf`, `limiter`).
+  - `models/`: Declarative models for `User`, `Document`, `DocumentAnalysis`, `ExtractedClause`, `RiskFinding`, `ExtractedInformation`, `MissingClauseWarning`, `DocumentChunk`, `ChatConversation`, and `ChatMessage`.
+  - `blueprints/`:
+    - `auth.py`: Web views for `/login`, `/register`, `/logout`, `/profile` alongside JSON API endpoints (`/api/auth/register`, `/api/auth/login`, `/api/auth/profile`, `/api/users/me`).
+    - `main.py`: Landing view (`/`) and authenticated dashboard view (`/dashboard`).
+  - `forms/`: WTForms definitions for `LoginForm`, `RegisterForm`, and `ProfileForm`.
+  - `templates/`: Base layout, landing, dashboard, auth views, and error pages.
+  - `static/css/style.css`: Hand-crafted responsive legal-tech stylesheet with CSS variables, light/dark modes, and serif/sans typography.
+  - `static/js/main.js`: Vanilla JS for theme persistence and CSRF token propagation.
+- `migrations/`: Alembic initial migration (`b48685134ed8_initial_schema.py`) creating all 10 tables, indexes, and foreign keys.
+- `tests/`:
+  - `conftest.py`: Test fixtures for clean database state, app context, and test user.
+  - `test_auth.py`: 11 test cases covering web registration, duplicate rejection, password mismatch, password length, login success, invalid password, nonexistent email, protected route redirects, logout, profile update, and API auth flows.
+  - `test_database.py`: Complete entity graph persistence, JSON attribute storage, and cascade deletion verification.
+
+**How it was verified:**
+- MySQL 8 Container:
+  - `podman compose up -d mysql` -> running `mysql:8.0` on port 3306.
+  - PyMySQL query -> `('8.0.46', 'utf8mb4', 'utf8mb4_unicode_ci')`.
+- Alembic Migration:
+  - `FLASK_APP=run:app .venv/bin/flask db upgrade` -> `Running upgrade -> b48685134ed8, initial schema`.
+  - `SHOW TABLES;` -> 10 application tables + `alembic_version` created.
+- Automated Test Suite:
+  - SQLite in-memory: `.venv/bin/pytest --cov=app tests/ -v` -> 12 passed in 2.59s (86% coverage).
+  - Live MySQL 8: `TEST_DATABASE_URL="mysql+pymysql://lexilegal:lexilegal@127.0.0.1:3306/lexilegal?charset=utf8mb4" .venv/bin/pytest tests/ -v` -> 12 passed in 4.84s.
+- Code Quality:
+  - `ruff check app tests` -> `All checks passed!`.
+  - `black --check app tests` -> `All done! 23 files left unchanged.`.

@@ -1,23 +1,30 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: lexilegal-postgres
+  mysql:
+    image: mysql:8.0
+    container_name: lexilegal-mysql
     restart: unless-stopped
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-storage-engine=InnoDB
+      --max_connections=200
+      --innodb_file_per_table=1
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-lexilegal}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lexilegal}
+      MYSQL_USER: ${MYSQL_USER:-lexilegal}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lexilegal}
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
-      - lexilegal_pgdata:/var/lib/postgresql/data
+      - lexilegal_mysqldata:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-lexilegal}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
 
 volumes:
-  lexilegal_pgdata:
-    name: lexilegal_pgdata
-
+  lexilegal_mysqldata:
+    name: lexilegal_mysqldata
